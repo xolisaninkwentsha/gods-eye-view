@@ -118,6 +118,25 @@ test('a YouTube record with a bad ID is dropped and its neighbours still load', 
   assert.equal(warnings.filter((w) => w.includes('za-bad')).length, 1);
 });
 
+test('a listed camera with a missing or unreadable coordinate is dropped with one warning and its neighbours still load', async (t) => {
+  const warnings = [];
+  t.mock.method(console, 'warn', (...args) => warnings.push(args.join(' ')));
+  const noLat = { ...STILL, id: 'za-no-lat', lat: undefined };
+  const commaLat = { ...STILL, id: 'za-comma-lat', lat: '-33,9' };
+  const offWorld = { ...STILL, id: 'za-off-world', lon: 218.42 };
+  const { get } = await startServer(t, [STILL, noLat, commaLat, offWorld]);
+  const { sources } = JSON.parse((await get('/sources')).body);
+  const ids = sources.map((s) => s.id);
+  for (const id of ['za-no-lat', 'za-comma-lat', 'za-off-world']) {
+    assert.ok(!ids.includes(id), `${id} is dropped`);
+    assert.equal(warnings.filter((w) => w.includes(id)).length, 1, `${id} warns once`);
+  }
+  assert.ok(ids.includes('za-still'), 'its neighbour still loads');
+  // A catalog refresh does not repeat the warnings.
+  await get('/sources');
+  assert.equal(warnings.filter((w) => w.includes('za-no-lat')).length, 1);
+});
+
 test('a YouTube camera frame is the LIVE ON YOUTUBE card with no upstream or Street View fetch', async (t) => {
   // Without the Street View opt-out: the YouTube type alone keeps Google out.
   const { streetViewFallback: _optOut, ...youtubeOnly } = YOUTUBE;

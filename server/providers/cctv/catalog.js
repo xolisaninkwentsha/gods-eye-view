@@ -263,9 +263,23 @@ export function createCctvCatalog({ sourceRoot = process.cwd() } = {}) {
    * they describe, so a request served the old list during a background
    * refresh never pairs it with the new list's trim notes. */
   const _cctvTrimmedPacks = new WeakMap();
-  /** YouTube camera ids already reported for a bad video ID, so a catalog
-   * refresh does not repeat the warning. */
-  const warnedYoutubeIds = new Set();
+  /** Camera ids already reported as skipped (a bad YouTube video ID, or a
+   * hand-listed camera without a usable position), so a catalog refresh does
+   * not repeat the warning. */
+  const warnedSkippedIds = new Set();
+  const skipWithWarning = (id, why) => {
+    if (warnedSkippedIds.has(id)) return false;
+    warnedSkippedIds.add(id);
+    console.warn(`[CCTV] skipping camera ${id}: ${why}`);
+    return false;
+  };
+  /** Packs an operator writes by hand (CCTV_SOURCES_FILE / CCTV_SOURCES_JSON). */
+  const OPERATOR_PACKS = new Set(['file', 'env']);
+  const hasWorldPosition = (item) =>
+    Number.isFinite(item.lat) &&
+    Number.isFinite(item.lon) &&
+    Math.abs(item.lat) <= 90 &&
+    Math.abs(item.lon) <= 180;
 
   /**
    * Assemble and cache the merged CCTV source list.
@@ -355,16 +369,27 @@ export function createCctvCatalog({ sourceRoot = process.cwd() } = {}) {
         .filter((item) => item && typeof item === 'object')
         .map((item) => ({ ...normalizeSourceItem(item), pack: name }))
         .filter((item) => item.id)
-        .filter((item) => {
-          if (item.feedType !== 'youtube' || item.youtubeVideoId) return true;
-          if (!warnedYoutubeIds.has(item.id)) {
-            warnedYoutubeIds.add(item.id);
-            console.warn(
-              `[CCTV] skipping YouTube camera ${item.id}: youtubeVideoId must be one 11-character video ID`,
-            );
-          }
-          return false;
-        }),
+        .filter(
+          (item) =>
+            item.feedType !== 'youtube' ||
+            item.youtubeVideoId ||
+            skipWithWarning(
+              item.id,
+              'youtubeVideoId must be one 11-character video ID',
+            ),
+        )
+        // A hand-written list is checked here, so a typo in a coordinate is
+        // reported instead of the camera vanishing quietly in the browser.
+        // Built-in packs keep their own validation untouched.
+        .filter(
+          (item) =>
+            !OPERATOR_PACKS.has(name) ||
+            hasWorldPosition(item) ||
+            skipWithWarning(
+              item.id,
+              `lat/lon in the ${name} list must be numbers on the globe`,
+            ),
+        ),
       available: Number.isFinite(items.available)
         ? items.available
         : items.length,
