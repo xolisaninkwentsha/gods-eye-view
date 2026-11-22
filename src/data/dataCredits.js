@@ -497,6 +497,24 @@ export const DATA_CREDITS = [
       'camera list via the <a href="https://opendatahub.com/" target="_blank" rel="noopener">Open Data Hub</a> (NOI Techpark)',
   },
   {
+    // Fork-local pack (config/cctv_sources.south-africa.json). Kapstadt.de's
+    // embed condition is this sponsored link; Henley Air asks for
+    // acknowledgement. docs/SOUTH_AFRICA_CAMERAS.md lists each owner's terms.
+    key: 'za-cctv',
+    html:
+      'Webcams (South Africa): ' +
+      'Cape Town Webcam is sponsored by <a href="https://www.kapstadt.de" target="_blank" rel="noopener">www.Kapstadt.de</a> · ' +
+      '<a href="https://henleyair.tv/" target="_blank" rel="noopener">HenleyAir.tv</a> (Henley Air, Rand Airport) · ' +
+      '<a href="https://www.hoedspruitcivil.co.za/webcams" target="_blank" rel="noopener">Hoedspruit Flying Club</a> · ' +
+      '<a href="http://www.fasx.co.za/index.php/en/pilot-resources-en/club-weather-en" target="_blank" rel="noopener">Swellengrebel Flying Club</a> · ' +
+      '<a href="https://mosselbayaero.com/" target="_blank" rel="noopener">Mossel Bay Aero Club</a> · ' +
+      '<a href="http://www.hartrao.ac.za/" target="_blank" rel="noopener">NRF/SARAO, Hartebeesthoek Radio Astronomy Observatory</a> · ' +
+      '<a href="https://suthweather.saao.ac.za/" target="_blank" rel="noopener">South African Astronomical Observatory</a> · ' +
+      '<a href="https://monet.saao.ac.za/" target="_blank" rel="noopener">MONET telescope network</a> (Univ. Göttingen, McDonald Observatory, SAAO) · ' +
+      '<a href="https://www.cathedralpeak.co.za/webcams/" target="_blank" rel="noopener">Cathedral Peak Hotel</a> · ' +
+      '<a href="https://margate.co.za/beaches-lagoons/shelly-beach-web-cam/" target="_blank" rel="noopener">South Coast Web (margate.co.za)</a>',
+  },
+  {
     key: 'gbfs',
     html:
       'Bikeshare availability: GBFS operator feeds ' +

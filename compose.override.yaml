@@ -5,3 +5,13 @@
 services:
   gods-eye-view:
     restart: unless-stopped
+    # South African cameras (fork-local; see docs/SOUTH_AFRICA_CAMERAS.md).
+    # FORCE_AUSTIN keeps every built-in camera pack loading alongside the
+    # file, and the higher cap keeps them from being trimmed to make room.
+    # The extra CA is the public Sectigo intermediate that
+    # suthweather.saao.ac.za leaves out of its certificate chain.
+    environment:
+      - CCTV_SOURCES_FILE=config/cctv_sources.south-africa.json
+      - CCTV_FORCE_AUSTIN=1
+      - CCTV_MAX_SOURCES=7450
+      - NODE_EXTRA_CA_CERTS=/app/config/certs/sectigo-public-server-auth-ca-ov-r36.pem

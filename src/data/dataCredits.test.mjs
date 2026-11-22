@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   DATA_CREDITS,
   LIVEUAMAP_CREDIT,
@@ -345,6 +346,37 @@ test('the PR #1506 camera packs are credited with their sources and terms', () =
     html('mlit-river-cctv') || '',
     /href="https:\/\/www\.river\.go\.jp\//,
   );
+});
+
+test('the South African camera credit carries the Kapstadt.de sponsor link and every owner', () => {
+  const credit = DATA_CREDITS.find((entry) => entry.key === 'za-cctv');
+  assert.ok(credit, 'the South African webcams must be credited');
+  // Kapstadt.de's embed condition: the sponsored link stays with the image.
+  assert.ok(
+    credit.html.includes(
+      'Cape Town Webcam is sponsored by <a href="https://www.kapstadt.de" target="_blank" rel="noopener">www.Kapstadt.de</a>',
+    ),
+  );
+  // Henley Air asks that its feeds acknowledge the source.
+  assert.ok(
+    credit.html.includes(
+      '<a href="https://henleyair.tv/" target="_blank" rel="noopener">HenleyAir.tv</a>',
+    ),
+  );
+  // Every owner in the camera list is linked, so a camera added without its
+  // credit fails here.
+  const cameras = JSON.parse(
+    readFileSync(
+      new URL('../../config/cctv_sources.south-africa.json', import.meta.url),
+      'utf8',
+    ),
+  );
+  const origins = new Set(cameras.map((camera) => new URL(camera.sourceUrl).origin));
+  for (const origin of origins)
+    assert.ok(
+      credit.html.includes(`href="${origin}`),
+      `no credit link for ${origin}`,
+    );
 });
 
 test('Warsaw and Poznań credits carry the data date their licences ask for', () => {
