@@ -2177,3 +2177,42 @@ test('a rough fix is framed through the runner at a range that shows its error a
   ]);
   assert.match($('#omnibar-error').textContent, /Rough location \(±26 km\)/);
 });
+
+test('a location fix after the globe was taken does not fly', async (t) => {
+  const { $, pinia } = omnibarFixture(t);
+  const calls = [];
+  useOmnibarStore(pinia).connectRunner(async (name, args) => {
+    calls.push([name, args]);
+    return { ok: true };
+  });
+  let taken = false;
+  let watched = 0;
+  let stopped = 0;
+  useOmnibarStore(pinia).connect({
+    layers: () => [],
+    setLayer: () => {},
+    watchCamera: () => {
+      watched += 1;
+      return { taken: () => taken, stop: () => (stopped += 1) };
+    },
+  });
+  let answer;
+  stubBrowserLocation(t, {
+    getCurrentPosition(success) {
+      answer = () =>
+        success({ coords: { latitude: -33.9429, longitude: 18.6876, accuracy: 25801 } });
+    },
+  });
+  $('.omnibar-locate').click();
+  await settleAll();
+  assert.equal(watched, 1, 'the camera is watched from the click');
+  taken = true; // a drag on the globe, or GEV flying somewhere, meanwhile
+  answer();
+  await settleAll();
+  assert.deepEqual(calls, [], 'no flight');
+  assert.equal(
+    $('#omnibar-error').textContent.trim(),
+    'The view changed while finding your location. Click the button again to go there.',
+  );
+  assert.equal(stopped, 1, 'the watcher is let go');
+});

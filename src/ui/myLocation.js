@@ -247,6 +247,13 @@ export function locateFailureText(reason) {
   return t('Location not found');
 }
 
+/** Shown when the camera was taken while the browser worked: no flight. */
+export function viewChangedText() {
+  return t(
+    'The view changed while finding your location. Click the button again to go there.',
+  );
+}
+
 /** Shown while the browser's permission prompt waits for the viewer. */
 export function promptHintText() {
   return t("Choose Allow in the browser's location prompt");
@@ -299,8 +306,11 @@ export function flightFailureText(failure) {
  *   showError: (text: string) => void,
  *   showNotice: (text: string) => void,
  *   setBusy: (busy: boolean) => void}} options
- * @returns {{run: (options?: {isCurrent?: () => boolean}) => Promise<boolean>,
- *   busy: () => boolean}}
+ * @returns {{run: (options?: {isCurrent?: () => boolean,
+ *   cameraTaken?: () => boolean}) => Promise<boolean>, busy: () => boolean}}
+ *   `cameraTaken()` says whether anything else took the camera since the
+ *   click (a drag, GEV, a link); it is read once, as the fix arrives, so the
+ *   button's own flight never counts against itself.
  */
 export function createMyLocationAction({
   locate = locateOnce,
@@ -315,7 +325,7 @@ export function createMyLocationAction({
   let pending = false;
   return {
     busy: () => pending,
-    async run({ isCurrent = () => true } = {}) {
+    async run({ isCurrent = () => true, cameraTaken = () => false } = {}) {
       if (pending) return false;
       pending = true;
       setBusy(true);
@@ -344,6 +354,11 @@ export function createMyLocationAction({
         if (!isCurrent()) return false;
         if (!fix.ok) {
           showError(locateFailureText(fix.reason));
+          return false;
+        }
+        // Whoever took the camera while the browser worked keeps it.
+        if (cameraTaken()) {
+          showNotice(viewChangedText());
           return false;
         }
         const destination = chooseDestination(fix, loadSpot());

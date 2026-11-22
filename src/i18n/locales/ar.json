@@ -4863,5 +4863,6 @@
   "Rough location (±{km} km). Centre the map on your spot, then right-click the button to save it.": "موقع تقريبي (±{km} كم). ضع موقعك في منتصف الخريطة، ثم انقر بزر الماوس الأيمن على الزر لحفظه.",
   "Your spot could not be saved": "تعذّر حفظ موقعك",
   "The browser did not answer. Click the button to try again.": "لم يستجب المتصفح. انقر على الزر للمحاولة مرة أخرى.",
-  "Choose Allow in the browser's location prompt": "اختر «السماح» في طلب الموقع في المتصفح"
+  "Choose Allow in the browser's location prompt": "اختر «السماح» في طلب الموقع في المتصفح",
+  "The view changed while finding your location. Click the button again to go there.": "تغيّر العرض أثناء تحديد موقعك. انقر على الزر مرة أخرى للانتقال إليه."
 }

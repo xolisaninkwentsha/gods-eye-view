@@ -4439,5 +4439,6 @@
   "Rough location (±{km} km). Centre the map on your spot, then right-click the button to save it.": "Ungefährer Standort (±{km} km). Zentriere die Karte auf deinen Ort und klicke dann mit der rechten Maustaste auf die Schaltfläche, um ihn zu speichern.",
   "Your spot could not be saved": "Dein Ort konnte nicht gespeichert werden",
   "The browser did not answer. Click the button to try again.": "Der Browser hat nicht geantwortet. Klicke auf die Schaltfläche, um es erneut zu versuchen.",
-  "Choose Allow in the browser's location prompt": "Wähle „Zulassen“ in der Standortabfrage des Browsers"
+  "Choose Allow in the browser's location prompt": "Wähle „Zulassen“ in der Standortabfrage des Browsers",
+  "The view changed while finding your location. Click the button again to go there.": "Die Ansicht hat sich geändert, während dein Standort ermittelt wurde. Klicke erneut auf die Schaltfläche, um dorthin zu gelangen."
 }

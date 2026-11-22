@@ -4439,5 +4439,6 @@
   "Rough location (±{km} km). Centre the map on your spot, then right-click the button to save it.": "Ungefärlig position (±{km} km). Centrera kartan på din plats och högerklicka sedan på knappen för att spara den.",
   "Your spot could not be saved": "Din plats kunde inte sparas",
   "The browser did not answer. Click the button to try again.": "Webbläsaren svarade inte. Klicka på knappen för att försöka igen.",
-  "Choose Allow in the browser's location prompt": "Välj Tillåt i webbläsarens fråga om position"
+  "Choose Allow in the browser's location prompt": "Välj Tillåt i webbläsarens fråga om position",
+  "The view changed while finding your location. Click the button again to go there.": "Vyn ändrades medan din position togs fram. Klicka på knappen igen för att gå dit."
 }

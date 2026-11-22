@@ -7,7 +7,9 @@ import { markRaw, shallowRef } from 'vue';
  * enabled}`, and `setLayer(id, enabled)` turns one on or off as a user click
  * would. `creditPlaces()`, optional, credits the bundled Wikidata place
  * packs once a name from them is shown, and `creditSuggestions(shown)`,
- * optional, shows the OpenStreetMap credit while Photon's suggestions are. Place search runs through the
+ * optional, shows the OpenStreetMap credit while Photon's suggestions are.
+ * `watchCamera()`, optional, starts a `watchCameraOwner` watch
+ * (src/navigationPolicy.js): `{taken(), stop()}`. Place search runs through the
  * location controls and Ask GEV through the voice controls, so neither is
  * repeated here.
  */

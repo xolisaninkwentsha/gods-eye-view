@@ -82,6 +82,12 @@ connection, at ±26 km, and no code can make it more precise. Xolisani chose
   timeout starts only after permission, so the whole request is capped at
   45 s: then "The browser did not answer. Click the button to try again.",
   the button is usable again, and a late answer is ignored.
+- **Camera taken meanwhile:** from the click, `watchCameraOwner`
+  (`src/navigationPolicy.js`) watches for a drag or wheel on the globe and any
+  navigation the shell stamps (GEV, a link, a follow). If anything took the
+  camera before the fix arrives, the button does not fly and says "The view
+  changed while finding your location. Click the button again to go there."
+  A browser failure still shows; the button's own flight never counts.
 - **Messages** (failures, the rough-fix notice, the save confirmation) show in
   the search bar's line even while the GEV chat is open, since the button is
   pressed outside the field. They go with the next edit.

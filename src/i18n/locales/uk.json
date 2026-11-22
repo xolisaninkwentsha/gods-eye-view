@@ -4651,5 +4651,6 @@
   "Rough location (±{km} km). Centre the map on your spot, then right-click the button to save it.": "Приблизне місцезнаходження (±{km} км). Розмістіть своє місце в центрі карти, потім клацніть кнопку правою кнопкою миші, щоб зберегти його.",
   "Your spot could not be saved": "Не вдалося зберегти ваше місце",
   "The browser did not answer. Click the button to try again.": "Браузер не відповів. Натисніть кнопку, щоб спробувати ще раз.",
-  "Choose Allow in the browser's location prompt": "Виберіть «Дозволити» в запиті браузера на доступ до місцезнаходження"
+  "Choose Allow in the browser's location prompt": "Виберіть «Дозволити» в запиті браузера на доступ до місцезнаходження",
+  "The view changed while finding your location. Click the button again to go there.": "Вигляд змінився, поки визначалося ваше місцезнаходження. Натисніть кнопку ще раз, щоб перейти туди."
 }

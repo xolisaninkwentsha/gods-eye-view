@@ -530,3 +530,71 @@ test('a hint is not shown for a request already superseded', async () => {
   assert.deepEqual(run.notices, []);
   assert.deepEqual(run.errors, []);
 });
+
+const VIEW_CHANGED =
+  'The view changed while finding your location. Click the button again to go there.';
+
+test('a fix that arrives after the camera was taken does not fly, and says why', async () => {
+  for (const spot of [HOME, null]) {
+    const run = action(async () => ROUGH_FIX, spot);
+    assert.equal(await run.myLocation.run({ cameraTaken: () => true }), false);
+    assert.deepEqual(run.flights, [], 'no flight to the saved spot');
+    assert.deepEqual(run.framed, [], 'no framing of the rough fix');
+    assert.deepEqual(run.notices, [VIEW_CHANGED]);
+    assert.deepEqual(run.errors, []);
+    assert.deepEqual(run.busy, [true, false]);
+  }
+  // With the permission hint up, the notice replaces it.
+  const held = heldLocate(ROUGH_FIX);
+  const run = action(held.locate, HOME, undefined, async () => 'prompt');
+  const pending = run.myLocation.run({ cameraTaken: () => true });
+  await settle();
+  held.release();
+  assert.equal(await pending, false);
+  assert.deepEqual(run.notices, [HINT, VIEW_CHANGED]);
+});
+
+test('a browser failure still shows after the camera was taken', async () => {
+  const run = action(async () => ({ ok: false, reason: 'denied' }));
+  assert.equal(await run.myLocation.run({ cameraTaken: () => true }), false);
+  assert.deepEqual(run.errors, ['Location access was not allowed']);
+  assert.deepEqual(run.notices, []);
+});
+
+test('the camera is checked when the fix arrives', async () => {
+  const held = heldLocate(ROUGH_FIX);
+  const run = action(held.locate, HOME);
+  let taken = false;
+  const pending = run.myLocation.run({ cameraTaken: () => taken });
+  await settle();
+  taken = true; // the viewer drags the globe while the browser works
+  held.release();
+  assert.equal(await pending, false);
+  assert.deepEqual(run.flights, []);
+  assert.deepEqual(run.notices, [VIEW_CHANGED]);
+});
+
+test('its own flight does not count as taking the camera', async () => {
+  let taken = false;
+  // The button's own flight stamps navigation, which the watcher would count.
+  const run = action(async () => ROUGH_FIX, null, async () => {
+    taken = true;
+    return true;
+  });
+  assert.equal(await run.myLocation.run({ cameraTaken: () => taken }), true);
+  assert.equal(run.framed.length, 1);
+  assert.deepEqual(run.notices, [
+    'Rough location (±26 km). Centre the map on your spot, then right-click the button to save it.',
+  ]);
+});
+
+test('a request superseded by a search stays silent even if the camera was taken', async () => {
+  const run = action(async () => ROUGH_FIX, HOME);
+  assert.equal(
+    await run.myLocation.run({ isCurrent: () => false, cameraTaken: () => true }),
+    false,
+  );
+  assert.deepEqual(run.notices, []);
+  assert.deepEqual(run.errors, []);
+  assert.deepEqual(run.flights, []);
+});

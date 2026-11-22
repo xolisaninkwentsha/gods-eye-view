@@ -4333,5 +4333,6 @@
   "Rough location (±{km} km). Centre the map on your spot, then right-click the button to save it.": "大致位置（±{km} 公里）。将地图中心对准你的地点，然后右键点击该按钮保存。",
   "Your spot could not be saved": "无法保存你的地点",
   "The browser did not answer. Click the button to try again.": "浏览器没有响应。请点击该按钮重试。",
-  "Choose Allow in the browser's location prompt": "请在浏览器的位置请求中选择“允许”"
+  "Choose Allow in the browser's location prompt": "请在浏览器的位置请求中选择“允许”",
+  "The view changed while finding your location. Click the button again to go there.": "查找你的位置时视图已改变。请再次点击该按钮前往。"
 }

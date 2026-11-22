@@ -38,6 +38,7 @@ import {
 } from './cyberSonarControls.js';
 
 import { toDegrees, toRadians } from '../geo/index.js';
+import { watchCameraOwner } from '../navigationPolicy.js';
 // A viewer with no renderer bound gets its ports (camera, effects, globe)
 // once its owner has loaded the package's `./render/cesium/unbound` export.
 import { cameraOf, canvasOf, findCamera } from '../render/rendererOf.js';
@@ -205,6 +206,9 @@ export class StyleManager extends ShellFacade {
         shown
           ? showOsmCredit(this.viewer, 'omnibar')
           : hideOsmCredit(this.viewer, 'omnibar'),
+      // "Go to my location" stands down if anything takes the camera while
+      // the browser works out where the viewer is.
+      watchCamera: () => watchCameraOwner(this.viewer, this),
     });
     // Scrolling at a screen edge steps through that side's rail panels.
     this._removeRailEdgeScroll = installRailEdgeScroll();

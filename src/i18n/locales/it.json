@@ -4545,5 +4545,6 @@
   "Rough location (±{km} km). Centre the map on your spot, then right-click the button to save it.": "Posizione approssimativa (±{km} km). Centra la mappa sul tuo punto, poi fai clic destro sul pulsante per salvarlo.",
   "Your spot could not be saved": "Non è stato possibile salvare il tuo punto",
   "The browser did not answer. Click the button to try again.": "Il browser non ha risposto. Fai clic sul pulsante per riprovare.",
-  "Choose Allow in the browser's location prompt": "Scegli «Consenti» nella richiesta di posizione del browser"
+  "Choose Allow in the browser's location prompt": "Scegli «Consenti» nella richiesta di posizione del browser",
+  "The view changed while finding your location. Click the button again to go there.": "La vista è cambiata mentre si cercava la tua posizione. Fai di nuovo clic sul pulsante per andarci."
 }

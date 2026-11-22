@@ -433,7 +433,14 @@ function onLocate() {
   error.value = '';
   locationStore.controls?.editSearch();
   const mine = generation;
-  void myLocation.run({ isCurrent: () => mine === generation && !screenIsOwned() });
+  // A drag on the globe, GEV or a link taking the camera meanwhile keeps it.
+  const owner = controls.value?.watchCamera?.() ?? null;
+  void myLocation
+    .run({
+      isCurrent: () => mine === generation && !screenIsOwned(),
+      cameraTaken: () => owner?.taken() === true,
+    })
+    .finally(() => owner?.stop());
 }
 /** Right-click: save the ground under the middle of the screen as the viewer's spot. */
 function onSaveSpot() {
