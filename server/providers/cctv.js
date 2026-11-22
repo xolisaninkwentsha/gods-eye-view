@@ -22,6 +22,10 @@ import { createHlsPuller, HlsCapacityError } from './cctv/stream.js';
 import { isMlitRiverAdjustmentImage } from './cctv/worldCameras.js';
 import { ottawaAuthorizedFrameUrl } from './cctv/ottawa.js';
 import {
+  CAPE_GLIDING_SOURCE_KIND,
+  resolveCapeGlidingFrameUrl,
+} from './cctv/capeGliding.js';
+import {
   GOOGLE_DEFAULT_PER_MIN,
   googleServerApiKey,
 } from './places/google-key.js';
@@ -123,6 +127,9 @@ export function cctvProxy({ sourceRoot = process.cwd() } = {}) {
    * fetch backs off for a minute (capped at the floor) instead of a full
    * window.
    */
+  // `frameUrl` may be a function resolving the URL (a provider whose latest
+  // frame has to be looked up first); it runs only when a fetch is due, so the
+  // lookup obeys the same refresh floor. A null URL counts as a failed fetch.
   async function fetchThrottledFrame(source, cameraId, frameUrl) {
     const cached = getWorldFrameCache(cameraId);
     const rawRefreshMs = Number(source?.frameRefreshMs);
@@ -150,7 +157,10 @@ export function cctvProxy({ sourceRoot = process.cwd() } = {}) {
     if (!frameUrl) return stale;
     setNextAllowedAt(cameraId, now + refreshMs);
     let request;
-    request = fetchCctvImageFromUpstream(frameUrl)
+    request = Promise.resolve(
+      typeof frameUrl === 'function' ? frameUrl() : frameUrl,
+    )
+      .then((url) => (url ? fetchCctvImageFromUpstream(url) : null))
       .then((image) => {
         if (image?.ok) {
           storeWorldFrame(cameraId, image);
@@ -716,7 +726,11 @@ export function cctvProxy({ sourceRoot = process.cwd() } = {}) {
                 )
               : source?.sourceKind === 'txdot-its'
                 ? await fetchTxdotSnapshot(upstreamCandidate)
-                : source?.streetViewFallback === false
+                : source?.sourceKind === CAPE_GLIDING_SOURCE_KIND
+                  ? await fetchThrottledFrame(source, cameraId, () =>
+                      resolveCapeGlidingFrameUrl(source.url),
+                    )
+                  : source?.streetViewFallback === false
                   ? await fetchThrottledFrame(
                       source,
                       cameraId,

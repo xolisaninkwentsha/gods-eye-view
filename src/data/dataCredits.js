@@ -511,6 +511,7 @@ export const DATA_CREDITS = [
       '<a href="http://www.hartrao.ac.za/" target="_blank" rel="noopener">NRF/SARAO, Hartebeesthoek Radio Astronomy Observatory</a> · ' +
       '<a href="https://suthweather.saao.ac.za/" target="_blank" rel="noopener">South African Astronomical Observatory</a> · ' +
       '<a href="https://monet.saao.ac.za/" target="_blank" rel="noopener">MONET telescope network</a> (Univ. Göttingen, McDonald Observatory, SAAO) · ' +
+      '<a href="https://www.capegliding.co.za/webcams/" target="_blank" rel="noopener">Cape Gliding Club</a> (Worcester) · ' +
       '<a href="https://www.cathedralpeak.co.za/webcams/" target="_blank" rel="noopener">Cathedral Peak Hotel</a> · ' +
       '<a href="https://margate.co.za/beaches-lagoons/shelly-beach-web-cam/" target="_blank" rel="noopener">South Coast Web (margate.co.za)</a>',
   },
