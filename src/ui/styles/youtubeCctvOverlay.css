@@ -1,0 +1,34 @@
+/* YouTube live camera window: the Québec window's look (.qci-*), plus the
+   player box. The window stays put, so its header is not a drag handle. */
+.yci-header {
+  cursor: default;
+}
+.yci-credit {
+  display: block;
+  text-decoration: none;
+}
+.yci-credit:hover,
+.yci-open:hover {
+  text-decoration: underline;
+}
+.yci-player:empty {
+  display: none;
+}
+.yci-player iframe {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  background: #000;
+}
+.yci-open {
+  display: block;
+  margin: 0 10px 8px;
+  color: #82e9f7;
+  font: 11px/1.4 sans-serif;
+}
+.yci-status[hidden],
+.yci-panel button[hidden] {
+  display: none;
+}

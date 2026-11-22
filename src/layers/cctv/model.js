@@ -98,17 +98,36 @@ export function createModel({ state: layerState, services, parts, source }) {
     return feedType === 'mp4' || feedType === 'hls' || feedType === 'webm';
   }
 
+  /**
+   * A YouTube live camera: the youtube feed type with exactly one video ID.
+   * It plays in the browser's YouTube player after Play; the server never
+   * serves a frame for it.
+   */
+  function isYoutubeCamera(camera) {
+    return (
+      normalizeFeedType(camera?.feedType) === 'youtube' &&
+      /^[A-Za-z0-9_-]{11}$/.test(String(camera?.youtubeVideoId || ''))
+    );
+  }
+
   /** A browser-only source still counts as live-capable for map icon/LOD policy. */
   function isVideoFeedCamera(camera) {
     return (
       isVideoFeedType(normalizeFeedType(camera?.feedType)) ||
-      Boolean(camera?.browserMediaUrl)
+      Boolean(camera?.browserMediaUrl) ||
+      isYoutubeCamera(camera)
     );
   }
 
-  /** Québec source pages and browser-played MP4s use the DOM overlay path. */
+  /**
+   * Québec source pages, browser-played MP4s and YouTube live cameras use a
+   * DOM overlay: no server frame and no 3D projection.
+   */
   function isBrowserOverlayCamera(camera) {
-    return String(camera?.sourceKind || '').startsWith('quebec-');
+    return (
+      String(camera?.sourceKind || '').startsWith('quebec-') ||
+      isYoutubeCamera(camera)
+    );
   }
 
   /**
@@ -543,6 +562,7 @@ export function createModel({ state: layerState, services, parts, source }) {
     isVideoFeedType,
     isVideoFeedCamera,
     isBrowserOverlayCamera,
+    isYoutubeCamera,
     safeNumber,
     headingFromId,
     quantize,

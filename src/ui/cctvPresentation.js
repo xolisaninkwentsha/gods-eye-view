@@ -150,6 +150,29 @@ function metaText(state, enabled, activeCamera, catalogCount) {
   return t('Enable CCTV to load camera intersections');
 }
 
+/**
+ * Which floating window, if any, the active camera belongs in: Québec's
+ * browser-only sources or a YouTube live camera. Either one hides the panel's
+ * frame, which has no server image to show for them.
+ *
+ * @param {object|null} activeCamera
+ * @param {boolean} enabled - The layer is on.
+ * @returns {{quebec: object|null, youtube: object|null, hideFrame: boolean}}
+ */
+export function overlayCamerasFor(activeCamera, enabled) {
+  const quebec =
+    enabled && String(activeCamera?.sourceKind || '').startsWith('quebec-')
+      ? activeCamera
+      : null;
+  const youtube =
+    enabled &&
+    activeCamera?.feedType === 'youtube' &&
+    /^[A-Za-z0-9_-]{11}$/.test(String(activeCamera?.youtubeVideoId || ''))
+      ? activeCamera
+      : null;
+  return { quebec, youtube, hideFrame: Boolean(quebec || youtube) };
+}
+
 export function _renderCctvState(state) {
   if (this.destroyed) return;
   if (
@@ -178,12 +201,10 @@ export function _renderCctvState(state) {
   this._lastQuebecSelectionRevision = Number.isFinite(selectionRevision)
     ? selectionRevision
     : null;
-  const isQuebecCamera =
-    enabled && activeCamera?.sourceKind?.startsWith('quebec-');
-  this._quebecCctvOverlay?.setCamera(isQuebecCamera ? activeCamera : null, {
-    reselected,
-  });
-  if (this._cctvFrameWrap) this._cctvFrameWrap.hidden = Boolean(isQuebecCamera);
+  const overlays = overlayCamerasFor(activeCamera, enabled);
+  this._quebecCctvOverlay?.setCamera(overlays.quebec, { reselected });
+  this._youtubeCctvOverlay?.setCamera(overlays.youtube, { reselected });
+  if (this._cctvFrameWrap) this._cctvFrameWrap.hidden = overlays.hideFrame;
 
   // Auto-expand the panel when the active camera CHANGES to a new non-null
   // id while the layer is enabled. Covers click-on-globe, panel controls,
@@ -320,9 +341,11 @@ export function _renderCctvState(state) {
   }
 
   if (this._cctvFrame && !liveIntent) {
-    const nextSrc = enabled && !isQuebecCamera ? activeCamera?.frameUrl : null;
+    // A camera in a floating window (Québec, YouTube) has no server frame.
+    const nextSrc =
+      enabled && !overlays.hideFrame ? activeCamera?.frameUrl : null;
     const nextCameraId =
-      enabled && !isQuebecCamera ? activeCamera?.id || '' : '';
+      enabled && !overlays.hideFrame ? activeCamera?.id || '' : '';
     const cameraChanged = this._frame.cameraId !== nextCameraId;
     const frameLoading = this._frame.loading;
     // A same-camera refresh waits for the current image to settle. Replacing

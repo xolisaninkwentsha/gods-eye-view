@@ -26,6 +26,7 @@ import { useStatusStore } from './stores/status.js';
 import { applicationPinia } from './vueRuntime.js';
 import { onLocaleChange } from '../i18n/index.js';
 import { createQuebecCctvOverlay } from './quebecCctvOverlay.js';
+import { createYoutubeCctvOverlay } from './youtubeCctvOverlay.js';
 
 /**
  * Own camera-panel interaction and presentation; receive the camera port and
@@ -47,6 +48,7 @@ export class CctvControls {
     this.statusStore = statusStore;
     this.cctv = cctv;
     this._quebecCctvOverlay = createQuebecCctvOverlay(viewer);
+    this._youtubeCctvOverlay = viewer ? createYoutubeCctvOverlay() : null;
     this.actions = actions;
     this.destroyed = false;
     this.listeners = new AbortController();
@@ -166,6 +168,7 @@ export class CctvControls {
     this.destroyed = true;
     this._offLocale();
     this._quebecCctvOverlay?.dispose();
+    this._youtubeCctvOverlay?.dispose();
     this._cctvVideoSurface?.stop();
     this._videoVisibilityObserver?.disconnect();
     this._offPreviewCards?.();
