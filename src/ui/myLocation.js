@@ -27,6 +27,15 @@ const POSITION_OPTIONS = Object.freeze({
 /** GeolocationPositionError.PERMISSION_DENIED */
 const PERMISSION_DENIED = 1;
 
+/**
+ * The longest a request may wait for any answer. The browser's own timeout
+ * starts only once permission is given, so a permission prompt nobody answers
+ * would otherwise keep the button waiting forever; a granted request ends
+ * within its 30 s, so this only cuts off an unanswered prompt.
+ */
+const ANSWER_WITHIN_MS = 45_000;
+const NO_ANSWER = Symbol('noAnswer');
+
 /** Where the saved spot lives in this browser. */
 export const SPOT_STORAGE_KEY = 'gev:my-location-spot:v1';
 /** A fix less certain than this is rough: it is framed, or the spot used. */
@@ -41,16 +50,18 @@ const EARTH_RADIUS_M = 6_371_000;
 /**
  * Ask the browser for the viewer's position once.
  *
- * @param {{geolocation?: Geolocation, secure?: boolean}} [options] `secure`
- *   is the page's isSecureContext: browsers refuse location to an insecure
- *   page (the app opened over a LAN IP), which is "unavailable", not a
- *   refusal the viewer could change.
+ * @param {{geolocation?: Geolocation, secure?: boolean, answerWithinMs?: number}} [options]
+ *   `secure` is the page's isSecureContext: browsers refuse location to an
+ *   insecure page (the app opened over a LAN IP), which is "unavailable", not
+ *   a refusal the viewer could change. `answerWithinMs` bounds the whole wait,
+ *   permission prompt included; an answer after it is ignored.
  * @returns {Promise<{ok: true, latitude: number, longitude: number, accuracyM: number}
- *   | {ok: false, reason: 'unavailable'|'denied'|'notFound'}>}
+ *   | {ok: false, reason: 'unavailable'|'denied'|'notFound'|'noAnswer'}>}
  */
 export async function locateOnce({
   geolocation = globalThis.navigator?.geolocation,
   secure = globalThis.isSecureContext,
+  answerWithinMs = ANSWER_WITHIN_MS,
 } = {}) {
   if (
     secure === false ||
@@ -60,7 +71,18 @@ export async function locateOnce({
     return { ok: false, reason: 'unavailable' };
   try {
     const position = await new Promise((resolve, reject) => {
-      geolocation.getCurrentPosition(resolve, reject, { ...POSITION_OPTIONS });
+      const timer = setTimeout(() => reject(NO_ANSWER), answerWithinMs);
+      const answer = (settle) => (value) => {
+        clearTimeout(timer);
+        settle(value);
+      };
+      try {
+        geolocation.getCurrentPosition(answer(resolve), answer(reject), {
+          ...POSITION_OPTIONS,
+        });
+      } catch (error) {
+        answer(reject)(error);
+      }
     });
     const latitude = Number(position?.coords?.latitude);
     const longitude = Number(position?.coords?.longitude);
@@ -73,10 +95,31 @@ export async function locateOnce({
       accuracyM: Number(position?.coords?.accuracy),
     };
   } catch (error) {
+    if (error === NO_ANSWER) return { ok: false, reason: 'noAnswer' };
     return {
       ok: false,
       reason: error?.code === PERMISSION_DENIED ? 'denied' : 'notFound',
     };
+  }
+}
+
+/**
+ * Whether the browser will ask the viewer before answering: the Permissions
+ * API's state for location. Null when the browser cannot say.
+ *
+ * @param {{permissions?: Permissions}} [options]
+ * @returns {Promise<'granted'|'denied'|'prompt'|null>}
+ */
+export async function locationPermission({
+  permissions = globalThis.navigator?.permissions,
+} = {}) {
+  try {
+    const state = (await permissions?.query?.({ name: 'geolocation' }))?.state;
+    return state === 'granted' || state === 'denied' || state === 'prompt'
+      ? state
+      : null;
+  } catch {
+    return null;
   }
 }
 
@@ -199,7 +242,14 @@ export function saveSpot(point, { storage = safeLocalStorage() } = {}) {
 export function locateFailureText(reason) {
   if (reason === 'unavailable') return t('Browser location is unavailable');
   if (reason === 'denied') return t('Location access was not allowed');
+  if (reason === 'noAnswer')
+    return t('The browser did not answer. Click the button to try again.');
   return t('Location not found');
+}
+
+/** Shown while the browser's permission prompt waits for the viewer. */
+export function promptHintText() {
+  return t("Choose Allow in the browser's location prompt");
 }
 
 /** The notice for a rough fix, its accuracy in whole kilometres. */
@@ -237,9 +287,12 @@ export function flightFailureText(failure) {
 /**
  * The button's behaviour: one request at a time; then the saved spot, a
  * framed rough fix or a framed precise fix; otherwise the failure message.
- * A request superseded meanwhile (`isCurrent()` false) does nothing at all.
+ * While the browser's permission prompt waits, the line says so; a silent
+ * landing clears it again. A request superseded meanwhile (`isCurrent()`
+ * false) does nothing at all.
  *
  * @param {{locate?: typeof locateOnce,
+ *   permission?: typeof locationPermission,
  *   loadSpot?: () => ({lat: number, lon: number}|null),
  *   goTo: (place: {latitude: number, longitude: number}) => Promise<unknown>,
  *   frame: (place: {latitude: number, longitude: number}, rangeM: number) => Promise<unknown>,
@@ -251,6 +304,7 @@ export function flightFailureText(failure) {
  */
 export function createMyLocationAction({
   locate = locateOnce,
+  permission = locationPermission,
   loadSpot = loadSavedSpot,
   goTo,
   frame,
@@ -265,8 +319,28 @@ export function createMyLocationAction({
       if (pending) return false;
       pending = true;
       setBusy(true);
+      // Whether a hint about the browser's prompt is on the line, and whether
+      // the browser has answered (after which no hint may appear).
+      let hinted = false;
+      let answered = false;
+      const clearHint = () => {
+        if (hinted && isCurrent()) showNotice('');
+      };
       try {
-        const fix = await locate();
+        const located = locate();
+        // The permission check runs beside the request, never ahead of it.
+        void Promise.resolve()
+          .then(() => permission())
+          .then(
+            (state) => {
+              if (state !== 'prompt' || answered || !isCurrent()) return;
+              hinted = true;
+              showNotice(promptHintText());
+            },
+            () => {},
+          );
+        const fix = await located;
+        answered = true;
         if (!isCurrent()) return false;
         if (!fix.ok) {
           showError(locateFailureText(fix.reason));
@@ -282,10 +356,12 @@ export function createMyLocationAction({
           destination.kind === 'saved'
             ? await goTo(place)
             : await frame(place, destination.rangeM);
-        if (arrived === false) return false;
-        if (destination.kind === 'rough' && isCurrent())
+        if (arrived !== false && destination.kind === 'rough' && isCurrent()) {
           showNotice(roughNoticeText(destination.accuracyM));
-        return true;
+          return true;
+        }
+        clearHint();
+        return arrived !== false;
       } catch (failure) {
         // A refused flight says so, as a refused search-bar action does.
         if (isCurrent()) showError(flightFailureText(failure));

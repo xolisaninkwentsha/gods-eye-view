@@ -4649,5 +4649,7 @@
   "Location access was not allowed": "Доступ до місцезнаходження не дозволено",
   "Saved the centre of this view as your spot": "Центр цього вигляду збережено як ваше місце",
   "Rough location (±{km} km). Centre the map on your spot, then right-click the button to save it.": "Приблизне місцезнаходження (±{km} км). Розмістіть своє місце в центрі карти, потім клацніть кнопку правою кнопкою миші, щоб зберегти його.",
-  "Your spot could not be saved": "Не вдалося зберегти ваше місце"
+  "Your spot could not be saved": "Не вдалося зберегти ваше місце",
+  "The browser did not answer. Click the button to try again.": "Браузер не відповів. Натисніть кнопку, щоб спробувати ще раз.",
+  "Choose Allow in the browser's location prompt": "Виберіть «Дозволити» в запиті браузера на доступ до місцезнаходження"
 }

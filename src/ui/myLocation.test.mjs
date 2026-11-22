@@ -10,6 +10,8 @@ import {
   loadSavedSpot,
   locateFailureText,
   locateOnce,
+  locationPermission,
+  promptHintText,
   roughNoticeText,
   saveSpot,
   SPOT_STORAGE_KEY,
@@ -106,10 +108,76 @@ test('a geolocation that throws instead of answering is not found', async () => 
   });
 });
 
+test('a request nobody answers ends at its time limit', { timeout: 2000 }, async () => {
+  // Chrome's permission prompt left open: the browser never calls back, and
+  // its own timeout only starts once permission is given.
+  let answerLate;
+  const geolocation = {
+    getCurrentPosition(success) {
+      answerLate = () => success({ coords: CAPE_TOWN_ROUGH, timestamp: 0 });
+    },
+  };
+  const result = locateOnce({ geolocation, secure: true, answerWithinMs: 20 });
+  assert.deepEqual(await result, { ok: false, reason: 'noAnswer' });
+  answerLate(); // "Allow", long after: nothing changes, nothing throws
+  assert.deepEqual(await result, { ok: false, reason: 'noAnswer' });
+});
+
+test('an answer in time clears the time limit', async () => {
+  const cleared = [];
+  const realClear = globalThis.clearTimeout;
+  globalThis.clearTimeout = (id) => {
+    cleared.push(id);
+    return realClear(id);
+  };
+  try {
+    const result = await locateOnce({
+      geolocation: fakeGeolocation({ coords: CAPE_TOWN_ROUGH }),
+      secure: true,
+      answerWithinMs: 60_000,
+    });
+    assert.equal(result.ok, true);
+    assert.equal(cleared.length, 1, 'the 60 s timer was cancelled, not left running');
+  } finally {
+    globalThis.clearTimeout = realClear;
+  }
+});
+
 test('each failure reads as the search bar message', () => {
   assert.equal(locateFailureText('unavailable'), 'Browser location is unavailable');
   assert.equal(locateFailureText('denied'), 'Location access was not allowed');
   assert.equal(locateFailureText('notFound'), 'Location not found');
+  assert.equal(
+    locateFailureText('noAnswer'),
+    'The browser did not answer. Click the button to try again.',
+  );
+});
+
+test("locationPermission reads the browser's answer, or null", async () => {
+  const asks = [];
+  const answering = (state) => ({
+    query: async (descriptor) => {
+      asks.push(descriptor);
+      return { state };
+    },
+  });
+  assert.equal(await locationPermission({ permissions: answering('prompt') }), 'prompt');
+  assert.equal(await locationPermission({ permissions: answering('granted') }), 'granted');
+  assert.equal(await locationPermission({ permissions: answering('denied') }), 'denied');
+  assert.deepEqual(asks[0], { name: 'geolocation' });
+  assert.equal(await locationPermission({ permissions: answering('mystery') }), null);
+  assert.equal(await locationPermission({ permissions: undefined }), null);
+  assert.equal(
+    await locationPermission({
+      permissions: {
+        query: async () => {
+          throw new TypeError('geolocation is not a valid permission name');
+        },
+      },
+    }),
+    null,
+  );
+  assert.equal(await locationPermission({ permissions: { query: () => { throw new Error('sync'); } } }), null);
 });
 
 test('a precise fix is framed close in, by its accuracy', () => {
@@ -199,7 +267,7 @@ test('saving reads as the search bar message', () => {
  * the search bar's runner reports it: true when it arrives, false when it was
  * interrupted, or a throw when the app refused it.
  */
-function action(locate, spot = null, flight = async () => true) {
+function action(locate, spot = null, flight = async () => true, permission = async () => 'granted') {
   const flights = [];
   const framed = [];
   const errors = [];
@@ -207,6 +275,7 @@ function action(locate, spot = null, flight = async () => true) {
   const busy = [];
   const myLocation = createMyLocationAction({
     locate,
+    permission,
     loadSpot: () => spot,
     goTo: async (place) => {
       flights.push(place);
@@ -354,4 +423,110 @@ test('a refusal after a newer request stays silent', async () => {
   assert.equal(await run.myLocation.run({ isCurrent: () => current }), false);
   assert.deepEqual(run.errors, []);
   assert.deepEqual(run.busy, [true, false]);
+});
+
+const HINT = "Choose Allow in the browser's location prompt";
+
+/** A location request the test answers when it chooses. */
+function heldLocate(outcome) {
+  let release;
+  const locate = () =>
+    new Promise((resolve) => {
+      release = () => resolve(outcome);
+    });
+  return { locate, release: () => release() };
+}
+
+/** Let the action's awaited steps run. */
+const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+test("while the browser's prompt waits, the action says so", async () => {
+  assert.equal(promptHintText(), HINT);
+  // Then the saved spot: a silent landing clears the hint.
+  {
+    const held = heldLocate(ROUGH_FIX);
+    const run = action(held.locate, HOME, undefined, async () => 'prompt');
+    const pending = run.myLocation.run();
+    await settle();
+    assert.deepEqual(run.notices, [HINT], 'shown before the browser answers');
+    held.release();
+    assert.equal(await pending, true);
+    assert.deepEqual(run.notices, [HINT, ''], 'cleared on a silent landing');
+    assert.deepEqual(run.flights, [{ latitude: -33.9301, longitude: 18.4172 }]);
+  }
+  // A rough fix: its notice replaces the hint.
+  {
+    const held = heldLocate(ROUGH_FIX);
+    const run = action(held.locate, null, undefined, async () => 'prompt');
+    const pending = run.myLocation.run();
+    await settle();
+    held.release();
+    await pending;
+    assert.deepEqual(run.notices, [
+      HINT,
+      'Rough location (±26 km). Centre the map on your spot, then right-click the button to save it.',
+    ]);
+  }
+  // A refusal: its error replaces the hint.
+  {
+    const held = heldLocate({ ok: false, reason: 'denied' });
+    const run = action(held.locate, null, undefined, async () => 'prompt');
+    const pending = run.myLocation.run();
+    await settle();
+    held.release();
+    assert.equal(await pending, false);
+    assert.deepEqual(run.notices, [HINT]);
+    assert.deepEqual(run.errors, ['Location access was not allowed']);
+  }
+});
+
+test('no prompt, no hint', async () => {
+  for (const state of ['granted', null]) {
+    const held = heldLocate(ROUGH_FIX);
+    const run = action(held.locate, HOME, undefined, async () => state);
+    const pending = run.myLocation.run();
+    await settle();
+    assert.deepEqual(run.notices, [], `${state}: nothing shown while waiting`);
+    held.release();
+    await pending;
+    assert.deepEqual(run.notices, [], `${state}: nothing to clear either`);
+  }
+});
+
+test('a slow permission check never holds up the request', async () => {
+  let located = 0;
+  const run = action(
+    async () => {
+      located += 1;
+      return ROUGH_FIX;
+    },
+    HOME,
+    undefined,
+    () => new Promise(() => {}), // a check that never answers
+  );
+  const pending = run.myLocation.run();
+  await settle();
+  assert.equal(located, 1, 'the request started at once');
+  assert.equal(await Promise.race([pending, settle().then(() => 'stuck')]), true);
+});
+
+test('a request that runs out of time releases the button with its message', async () => {
+  const run = action(async () => ({ ok: false, reason: 'noAnswer' }), null, undefined, async () => 'prompt');
+  assert.equal(await run.myLocation.run(), false);
+  assert.deepEqual(run.errors, ['The browser did not answer. Click the button to try again.']);
+  assert.deepEqual(run.busy, [true, false]);
+  assert.equal(run.myLocation.busy(), false, 'clickable again');
+});
+
+test('a hint is not shown for a request already superseded', async () => {
+  const held = heldLocate(ROUGH_FIX);
+  const run = action(held.locate, HOME, undefined, async () => 'prompt');
+  let current = true;
+  const pending = run.myLocation.run({ isCurrent: () => current });
+  current = false; // a newer search before the permission check answered
+  await settle();
+  held.release();
+  assert.equal(await pending, false);
+  assert.deepEqual(run.notices, []);
+  assert.deepEqual(run.errors, []);
 });

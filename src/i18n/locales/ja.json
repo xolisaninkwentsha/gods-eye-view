@@ -4331,5 +4331,7 @@
   "Location access was not allowed": "位置情報へのアクセスが許可されませんでした",
   "Saved the centre of this view as your spot": "この表示の中心を自分の地点として保存しました",
   "Rough location (±{km} km). Centre the map on your spot, then right-click the button to save it.": "おおよその位置情報（±{km} km）。地図の中心を自分の地点に合わせてから、ボタンを右クリックして保存してください。",
-  "Your spot could not be saved": "地点を保存できませんでした"
+  "Your spot could not be saved": "地点を保存できませんでした",
+  "The browser did not answer. Click the button to try again.": "ブラウザーから応答がありませんでした。ボタンをクリックしてもう一度お試しください。",
+  "Choose Allow in the browser's location prompt": "ブラウザーの位置情報の確認で「許可」を選んでください"
 }

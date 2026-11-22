@@ -4331,5 +4331,7 @@
   "Location access was not allowed": "未允許訪問位置",
   "Saved the centre of this view as your spot": "已將此視圖的中心保存為你的地點",
   "Rough location (±{km} km). Centre the map on your spot, then right-click the button to save it.": "大致位置（±{km} 公里）。將地圖中心對準你的地點，然後右鍵點擊該按鈕保存。",
-  "Your spot could not be saved": "無法保存你的地點"
+  "Your spot could not be saved": "無法保存你的地點",
+  "The browser did not answer. Click the button to try again.": "瀏覽器沒有響應。請點擊該按鈕重試。",
+  "Choose Allow in the browser's location prompt": "請在瀏覽器的位置請求中選擇“允許”"
 }

@@ -76,6 +76,12 @@ connection, at ±26 km, and no code can make it more precise. Xolisani chose
   (`src/voice/actionSchemas.js`); without a runner it falls back to `goTo`.
 - **Stale answers:** a fix that arrives after a newer search, chip or typed
   edit is dropped: it neither flies nor shows a message.
+- **Permission prompt:** when the browser will ask first (Permissions API
+  state `prompt`), the line says "Choose Allow in the browser's location
+  prompt" while it waits; a silent landing clears it. The browser's 30 s
+  timeout starts only after permission, so the whole request is capped at
+  45 s: then "The browser did not answer. Click the button to try again.",
+  the button is usable again, and a late answer is ignored.
 - **Messages** (failures, the rough-fix notice, the save confirmation) show in
   the search bar's line even while the GEV chat is open, since the button is
   pressed outside the field. They go with the next edit.

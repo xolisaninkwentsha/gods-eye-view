@@ -4543,5 +4543,7 @@
   "Location access was not allowed": "הגישה למיקום לא הותרה",
   "Saved the centre of this view as your spot": "מרכז התצוגה הזו נשמר כמקום שלך",
   "Rough location (±{km} km). Centre the map on your spot, then right-click the button to save it.": "מיקום משוער (±{km} ק״מ). מרכז את המפה על המקום שלך, ואז לחץ לחיצה ימנית על הכפתור כדי לשמור אותו.",
-  "Your spot could not be saved": "לא ניתן היה לשמור את המקום שלך"
+  "Your spot could not be saved": "לא ניתן היה לשמור את המקום שלך",
+  "The browser did not answer. Click the button to try again.": "הדפדפן לא השיב. לחצו על הכפתור כדי לנסות שוב.",
+  "Choose Allow in the browser's location prompt": "בחרו \"לאפשר\" בבקשת המיקום של הדפדפן"
 }

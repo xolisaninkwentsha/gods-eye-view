@@ -4543,5 +4543,7 @@
   "Location access was not allowed": "O acesso à localização não foi permitido",
   "Saved the centre of this view as your spot": "O centro desta vista foi guardado como o seu local",
   "Rough location (±{km} km). Centre the map on your spot, then right-click the button to save it.": "Localização aproximada (±{km} km). Centre o mapa no seu local e depois clique com o botão direito no botão para o guardar.",
-  "Your spot could not be saved": "Não foi possível guardar o seu local"
+  "Your spot could not be saved": "Não foi possível guardar o seu local",
+  "The browser did not answer. Click the button to try again.": "O navegador não respondeu. Clique no botão para tentar novamente.",
+  "Choose Allow in the browser's location prompt": "Escolha «Permitir» no pedido de localização do navegador"
 }
