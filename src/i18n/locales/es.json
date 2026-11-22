@@ -4542,6 +4542,6 @@
   "Go to my location": "Ir a mi ubicación",
   "Location access was not allowed": "No se permitió el acceso a la ubicación",
   "Saved the centre of this view as your spot": "Se guardó el centro de esta vista como tu lugar",
-  "Rough location (±{km} km). Right-click the button to save your exact spot.": "Ubicación aproximada (±{km} km). Haz clic derecho en el botón para guardar tu lugar exacto.",
+  "Rough location (±{km} km). Centre the map on your spot, then right-click the button to save it.": "Ubicación aproximada (±{km} km). Centra el mapa en tu lugar y luego haz clic derecho en el botón para guardarlo.",
   "Your spot could not be saved": "No se pudo guardar tu lugar"
 }

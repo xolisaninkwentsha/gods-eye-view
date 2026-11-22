@@ -208,7 +208,7 @@ export function roughNoticeText(accuracyM) {
     ? Math.max(1, Math.round(accuracyM / 1000))
     : ROUGH_RANGE_M[1] / 1000;
   return t(
-    'Rough location (±{km} km). Right-click the button to save your exact spot.',
+    'Rough location (±{km} km). Centre the map on your spot, then right-click the button to save it.',
     { km },
   );
 }

@@ -4860,6 +4860,6 @@
   "Go to my location": "الانتقال إلى موقعي",
   "Location access was not allowed": "لم يُسمح بالوصول إلى الموقع",
   "Saved the centre of this view as your spot": "تم حفظ مركز هذا العرض كموقعك",
-  "Rough location (±{km} km). Right-click the button to save your exact spot.": "موقع تقريبي (±{km} كم). انقر بزر الماوس الأيمن على الزر لحفظ موقعك الدقيق.",
+  "Rough location (±{km} km). Centre the map on your spot, then right-click the button to save it.": "موقع تقريبي (±{km} كم). ضع موقعك في منتصف الخريطة، ثم انقر بزر الماوس الأيمن على الزر لحفظه.",
   "Your spot could not be saved": "تعذّر حفظ موقعك"
 }

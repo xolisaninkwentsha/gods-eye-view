@@ -64,8 +64,10 @@ connection, at ±26 km, and no code can make it more precise. Xolisani chose
   - if a saved spot lies within the fix's error range (distance ≤ accuracy +
     5 km), fly exactly to the saved spot;
   - otherwise frame the whole uncertainty area (range 2.5 × accuracy, clamped
-    to 5–250 km) and say "Rough location (±{km} km). Right-click the button
-    to save your exact spot."
+    to 5–250 km) and say "Rough location (±{km} km). Centre the map on your
+    spot, then right-click the button to save it." The view is then centred
+    on the rough fix, so the notice asks for the map to be moved first:
+    saving straight away would store the rough fix as an exact spot.
 - **A click with a precise fix** (Wi-Fi or GPS devices, accuracy 2 km or
   better): fly to it, framed by its accuracy too (range 2.5 × accuracy, clamped
   to 500 m–5 km), so a ±1 km fix is not shown as one confident street. Travel
@@ -78,7 +80,7 @@ connection, at ±26 km, and no code can make it more precise. Xolisani chose
   the search bar's line even while the GEV chat is open, since the button is
   pressed outside the field. They go with the next edit.
 - **New text:** "Saved the centre of this view as your spot", "Rough location
-  (±{km} km). Right-click the button to save your exact spot.", and "Your spot
-  could not be saved". Translated in every shipped locale.
+  (±{km} km). Centre the map on your spot, then right-click the button to save
+  it.", and "Your spot could not be saved". Translated in every shipped locale.
 - **Not built:** a way to delete the saved spot (right-click again replaces
   it), and any server-side storage.

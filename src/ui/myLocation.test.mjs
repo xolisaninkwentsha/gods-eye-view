@@ -154,11 +154,11 @@ test('a rough fix with no saved spot is framed, its range clamped to 5–250 km'
 test('the rough notice names the accuracy in whole kilometres', () => {
   assert.equal(
     roughNoticeText(25801),
-    'Rough location (±26 km). Right-click the button to save your exact spot.',
+    'Rough location (±26 km). Centre the map on your spot, then right-click the button to save it.',
   );
   assert.equal(
     roughNoticeText(Number.NaN),
-    'Rough location (±250 km). Right-click the button to save your exact spot.',
+    'Rough location (±250 km). Centre the map on your spot, then right-click the button to save it.',
   );
 });
 
@@ -234,7 +234,7 @@ test('a rough fix with no spot is framed and explained', async () => {
   assert.equal(await run.myLocation.run(), true);
   assert.deepEqual(run.framed, [[{ latitude: -33.9429, longitude: 18.6876 }, 64503]]);
   assert.deepEqual(run.notices, [
-    'Rough location (±26 km). Right-click the button to save your exact spot.',
+    'Rough location (±26 km). Centre the map on your spot, then right-click the button to save it.',
   ]);
   assert.deepEqual(run.flights, []);
 });

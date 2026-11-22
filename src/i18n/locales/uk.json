@@ -4648,6 +4648,6 @@
   "Go to my location": "До мого місцезнаходження",
   "Location access was not allowed": "Доступ до місцезнаходження не дозволено",
   "Saved the centre of this view as your spot": "Центр цього вигляду збережено як ваше місце",
-  "Rough location (±{km} km). Right-click the button to save your exact spot.": "Приблизне місцезнаходження (±{km} км). Клацніть кнопку правою кнопкою миші, щоб зберегти точне місце.",
+  "Rough location (±{km} km). Centre the map on your spot, then right-click the button to save it.": "Приблизне місцезнаходження (±{km} км). Розмістіть своє місце в центрі карти, потім клацніть кнопку правою кнопкою миші, щоб зберегти його.",
   "Your spot could not be saved": "Не вдалося зберегти ваше місце"
 }

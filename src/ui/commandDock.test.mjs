@@ -673,7 +673,7 @@ test('omnibar executes explicit commands and click selections, while guides and 
 test('omnibar uses the existing microphone and typed chat controls', async (t) => {
   const { $, type, option, voiceEvents } = omnibarFixture(t);
   await nextTick();
-  $('#gev-omnibar button').click();
+  $('#gev-omnibar .omnibar-mic').click();
   await type('What is here?');
   option('Ask').click();
   await nextTick();

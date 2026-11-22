@@ -4436,6 +4436,6 @@
   "Go to my location": "Gå till min position",
   "Location access was not allowed": "Åtkomst till positionen tilläts inte",
   "Saved the centre of this view as your spot": "Mitten av den här vyn sparades som din plats",
-  "Rough location (±{km} km). Right-click the button to save your exact spot.": "Ungefärlig position (±{km} km). Högerklicka på knappen för att spara din exakta plats.",
+  "Rough location (±{km} km). Centre the map on your spot, then right-click the button to save it.": "Ungefärlig position (±{km} km). Centrera kartan på din plats och högerklicka sedan på knappen för att spara den.",
   "Your spot could not be saved": "Din plats kunde inte sparas"
 }
