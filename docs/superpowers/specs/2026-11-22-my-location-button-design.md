@@ -28,14 +28,14 @@ Rejected:
   `my_location` Material icon (already in `index.html`'s `icon_names`) and the
   label "Go to my location".
 - **Click:** `navigator.geolocation.getCurrentPosition` with
-  `enableHighAccuracy: true`, a 10 s timeout and `maximumAge` of 60 s. Chrome
+  `enableHighAccuracy: true`, a 30 s timeout (a cold first fix can take longer than 10 s, seen live) and `maximumAge` of 60 s. Chrome
   asks permission the first time.
 - **Success:** the same flight as typing the coordinates. It frames about
   ±1.5 km and shows the usual searched-location pin.
 - **Failure, in the search bar's error line:**
   - no geolocation → "Browser location is unavailable" (existing text);
   - permission denied → "Location access was not allowed" (new);
-  - timeout or position unavailable → "Location not found" (existing).
+  - timeout (30 s) or position unavailable → "Location not found" (existing).
 - **New text:** "Go to my location" and "Location access was not allowed", in
   all shipped locales. `src/i18n/catalog.test.mjs` requires it.
 - **Not built:** follow-me tracking, an accuracy ring, storing the position.

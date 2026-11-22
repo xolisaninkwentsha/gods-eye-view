@@ -36,13 +36,15 @@ test('a fix resolves to its latitude and longitude', async () => {
   });
 });
 
-test('it asks once with a 10 s timeout and a fix no older than a minute', async () => {
+test('it asks once, allowing a cold first fix 30 s, for a fix no older than a minute', async () => {
+  // The first live click after the permission prompt timed out at 10 s;
+  // Chrome's network location can take that long cold.
   const geolocation = fakeGeolocation({ coords: CAPE_TOWN });
   await locateOnce({ geolocation });
   assert.equal(geolocation.calls.length, 1);
   assert.deepEqual(geolocation.calls[0], {
     enableHighAccuracy: true,
-    timeout: 10000,
+    timeout: 30000,
     maximumAge: 60000,
   });
 });

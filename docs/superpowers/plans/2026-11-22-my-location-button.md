@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - **Branch** `my-location` is cut from `main` after the South African cameras branch is merged. Commits are local; Xolisani pushes.
-- **Geolocation options:** `{ enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }`.
+- **Geolocation options:** `{ enableHighAccuracy: true, timeout: 30000, maximumAge: 60000 }`.
 - **The position** is never stored, logged or sent anywhere except through `goTo({ latitude, longitude })`.
 - **New UI text, exactly:** `'Go to my location'`, `'Location access was not allowed'`.
 - **Reused text:** `'Browser location is unavailable'` and `'Location not found'`.
@@ -23,7 +23,7 @@
 ## Review Focus
 
 1. **Permission denied, now or remembered from before.** Expect "Location access was not allowed" and no flight. Test in Task 1.
-2. **No answer within 10 s,** for example no Wi-Fi and slow network location. Expect "Location not found" and the button usable again. Test in Task 1.
+2. **No answer within 30 s,** for example no Wi-Fi and slow network location. Expect "Location not found" and the button usable again. Test in Task 1.
 3. **A double-click or impatient re-click.** Expect one request in flight and no second flight. Test in Task 1 (`goToMyLocation` ignores calls while busy).
 4. **A browser without geolocation,** or an insecure context if the app is ever opened over a LAN IP. Expect "Browser location is unavailable". Test in Task 1.
 5. **A fix arriving after the user typed a new search.** Expect the newer search to win. Covered by the search runner's own generation logic, since `goTo` goes through it; noted for the reviewer.
@@ -43,7 +43,7 @@
 
 - [ ] **Step 1: Write the failing tests,** with a fake `geolocation` whose `getCurrentPosition(success, failure, options)` records `options`:
   - `'a fix resolves to its latitude and longitude'`: `{coords:{latitude:-33.92,longitude:18.42,accuracy:1500}}` gives `{ok:true, latitude:-33.92, longitude:18.42}`.
-  - `'it asks once with a 10 s timeout and a fix no older than a minute'`: options deep-equal `{ enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }`.
+  - `'it asks once with a 10 s timeout and a fix no older than a minute'`: options deep-equal `{ enableHighAccuracy: true, timeout: 30000, maximumAge: 60000 }`.
   - `'no geolocation is unavailable; code 1 is denied; codes 2 and 3 are not found'`.
   - `'each failure reads as the search bar message'`: English strings as in Global Constraints.
   - `'the action flies to the fix through goTo and shows no error'`: `goTo` is called once with `{latitude:-33.92, longitude:18.42}`.

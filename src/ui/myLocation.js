@@ -8,10 +8,14 @@ import { t } from '../i18n/index.js';
  * Nothing is stored and nothing follows the viewer afterwards.
  */
 
-/** One fresh-enough fix: within 10 s, no older than a minute. */
+/**
+ * One fresh-enough fix, no older than a minute. A cold first fix from the
+ * browser's network location can take well over 10 s (the first live click
+ * timed out at 10 s), so it gets 30 s; once warm, it answers at once.
+ */
 const POSITION_OPTIONS = Object.freeze({
   enableHighAccuracy: true,
-  timeout: 10_000,
+  timeout: 30_000,
   maximumAge: 60_000,
 });
 
