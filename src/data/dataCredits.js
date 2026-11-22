@@ -513,7 +513,15 @@ export const DATA_CREDITS = [
       '<a href="https://monet.saao.ac.za/" target="_blank" rel="noopener">MONET telescope network</a> (Univ. Göttingen, McDonald Observatory, SAAO) · ' +
       '<a href="https://www.capegliding.co.za/webcams/" target="_blank" rel="noopener">Cape Gliding Club</a> (Worcester) · ' +
       '<a href="https://www.cathedralpeak.co.za/webcams/" target="_blank" rel="noopener">Cathedral Peak Hotel</a> · ' +
-      '<a href="https://margate.co.za/beaches-lagoons/shelly-beach-web-cam/" target="_blank" rel="noopener">South Coast Web (margate.co.za)</a>',
+      '<a href="https://margate.co.za/beaches-lagoons/shelly-beach-web-cam/" target="_blank" rel="noopener">South Coast Web (margate.co.za)</a> · ' +
+      '<a href="https://www.eikendal.com/" target="_blank" rel="noopener">Eikendal</a> and Somerset West, via <a href="https://www.capetown-webcam.com/" target="_blank" rel="noopener">Capetown-webcam.com</a> by Kapstadt.de · ' +
+      'live streams on YouTube from <a href="https://www.youtube.com/@VanillaISP" target="_blank" rel="noopener">Vanilla Internet</a>, ' +
+      '<a href="https://www.youtube.com/@flooringcoza" target="_blank" rel="noopener">FLOORING.CO.ZA</a>, ' +
+      '<a href="https://www.youtube.com/@MuizenbergWaveWatchers" target="_blank" rel="noopener">Muizenberg Wave Watchers</a>, ' +
+      '<a href="https://www.youtube.com/@TableMountainLiveStream" target="_blank" rel="noopener">Table Mountain Live Stream</a>, ' +
+      '<a href="https://www.youtube.com/@TCSLiveOnline" target="_blank" rel="noopener">TCS Live</a>, ' +
+      '<a href="https://www.youtube.com/@SAWebcams" target="_blank" rel="noopener">SA Webcams</a> and ' +
+      '<a href="https://www.youtube.com/@Africamvideos" target="_blank" rel="noopener">Africam</a>',
   },
   {
     key: 'gbfs',
