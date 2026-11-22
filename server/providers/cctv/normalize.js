@@ -623,6 +623,21 @@ export function cameraRegion(cameras) {
   return region;
 }
 
+/** A YouTube video ID: eleven URL-safe base64 characters. */
+const YOUTUBE_VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
+
+/**
+ * The video ID of a YouTube live camera, or '' when the value is not exactly
+ * one ID (a URL, a channel handle or anything longer is refused, never
+ * parsed), so the browser only ever receives an ID it can hand to the player.
+ *
+ * @param {unknown} value - Raw `youtubeVideoId` from a source record.
+ * @returns {string}
+ */
+export function normalizeYoutubeVideoId(value) {
+  return typeof value === 'string' && YOUTUBE_VIDEO_ID.test(value) ? value : '';
+}
+
 /**
  * Normalize a raw CCTV source item into a canonical shape with safe defaults.
  *
@@ -668,6 +683,9 @@ export function normalizeSourceItem(item) {
     // key-bearing Street View frame, and its upstream is asked at most once
     // per frameRefreshMs. Only a literal false opts out.
     streetViewFallback: item.streetViewFallback === false ? false : undefined,
+    // YouTube live cameras (feedType 'youtube') carry the video the browser
+    // plays after Play; the server never fetches YouTube.
+    youtubeVideoId: normalizeYoutubeVideoId(item.youtubeVideoId),
     // Optional CAL badge input (cctv-v2 design §3b/§9.2, additive-only per the
     // global constraints — nothing else in this file changes): hand-authored
     // file/env catalog entries may declare poseSource:'curated' so the panel

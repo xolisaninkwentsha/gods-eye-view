@@ -263,6 +263,9 @@ export function createCctvCatalog({ sourceRoot = process.cwd() } = {}) {
    * they describe, so a request served the old list during a background
    * refresh never pairs it with the new list's trim notes. */
   const _cctvTrimmedPacks = new WeakMap();
+  /** YouTube camera ids already reported for a bad video ID, so a catalog
+   * refresh does not repeat the warning. */
+  const warnedYoutubeIds = new Set();
 
   /**
    * Assemble and cache the merged CCTV source list.
@@ -351,7 +354,17 @@ export function createCctvCatalog({ sourceRoot = process.cwd() } = {}) {
       sources: items
         .filter((item) => item && typeof item === 'object')
         .map((item) => ({ ...normalizeSourceItem(item), pack: name }))
-        .filter((item) => item.id),
+        .filter((item) => item.id)
+        .filter((item) => {
+          if (item.feedType !== 'youtube' || item.youtubeVideoId) return true;
+          if (!warnedYoutubeIds.has(item.id)) {
+            warnedYoutubeIds.add(item.id);
+            console.warn(
+              `[CCTV] skipping YouTube camera ${item.id}: youtubeVideoId must be one 11-character video ID`,
+            );
+          }
+          return false;
+        }),
       available: Number.isFinite(items.available)
         ? items.available
         : items.length,

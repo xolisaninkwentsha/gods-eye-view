@@ -323,6 +323,10 @@ export function cctvProxy({ sourceRoot = process.cwd() } = {}) {
                 quebecVideo && source.sourceKind === 'quebec-511-browser'
                   ? quebec511VideoUrl(source.id)
                   : '',
+              youtubeVideoId:
+                normalizeFeedType(source.feedType) === 'youtube'
+                  ? source.youtubeVideoId || ''
+                  : '',
               accuracyM: source.accuracyM,
               positionSource: source.positionSource || '',
               poseSource: source.poseSource,
@@ -665,6 +669,26 @@ export function cctvProxy({ sourceRoot = process.cwd() } = {}) {
         );
         const fov = Number(url.searchParams.get('fov') || source?.fovDeg);
         const pitch = Number(url.searchParams.get('pitch') || source?.pitchDeg);
+
+        // A YouTube live camera plays in the browser's YouTube player after
+        // Play; the server never fetches YouTube or spends the Street View key
+        // on it, so its frame is always this card.
+        if (normalizeFeedType(source?.feedType) === 'youtube') {
+          res.writeHead(200, {
+            'Content-Type': 'image/svg+xml',
+            'Cache-Control': 'no-store',
+            'X-CCTV-Source': 'synthetic',
+          });
+          res.end(
+            buildSyntheticCctvSvg({
+              cameraId,
+              label,
+              city,
+              status: 'LIVE ON YOUTUBE — PRESS PLAY',
+            }),
+          );
+          return;
+        }
 
         // Only use server-registered upstream URLs — never accept client-supplied URLs
         // (prevents SSRF via ?upstream= query parameter)
