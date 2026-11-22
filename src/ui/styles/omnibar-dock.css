@@ -312,7 +312,7 @@ body:not(.mobile-shell):not(.cockpit-mode):not(.scene-playback-mode):not(
     .omnibar-field {
       background: transparent;
     }
-    :is(input, .omnibar-kbd, .omnibar-search-icon) {
+    :is(input, .omnibar-kbd, .omnibar-search-icon, .omnibar-locate) {
       visibility: hidden;
     }
     /* Suggestions give way to the waveform; an error stays in view. */

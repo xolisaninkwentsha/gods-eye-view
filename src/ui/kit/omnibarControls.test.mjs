@@ -27,6 +27,21 @@ test('the locate button is a kit button carrying the my_location glyph', () => {
   assert.match(locate, /<UiIcon name="my_location" :size="null" \/>/);
 });
 
+test('in dock voice mode the locate button gives way to the waveform with the field', () => {
+  const css = readFileSync(
+    new URL('../styles/omnibar-dock.css', import.meta.url),
+    'utf8',
+  );
+  // While GEV listens, the field's own parts hide so the waveform shows there.
+  const voice = css.match(
+    /&:has\(#gev-voice-control\[data-assistant-mode='voice'\]\) #gev-omnibar \{[\s\S]*?:is\(([^)]*)\) \{\s*visibility: hidden;/,
+  );
+  assert.ok(voice, 'the voice-mode rule that hides the field');
+  const hidden = voice[1].split(',').map((part) => part.trim());
+  for (const part of ['input', '.omnibar-kbd', '.omnibar-search-icon', '.omnibar-locate'])
+    assert.ok(hidden.includes(part), `${part} hides in voice mode`);
+});
+
 test('the Omnibar hand-writes no Material glyph; each is a UiIcon', () => {
   assert.deepEqual(template.match(/material-symbols-outlined/g) ?? [], []);
   const icons = template.match(/<UiIcon\b[^>]*>/g) ?? [];
