@@ -194,8 +194,12 @@ test('saving reads as the search bar message', () => {
   assert.equal(spotSavedText(false), 'Your spot could not be saved');
 });
 
-/** An action wired to recording doubles. */
-function action(locate, spot = null) {
+/**
+ * An action wired to recording doubles. `flight` is how each flight ends, as
+ * the search bar's runner reports it: true when it arrives, false when it was
+ * interrupted, or a throw when the app refused it.
+ */
+function action(locate, spot = null, flight = async () => true) {
   const flights = [];
   const framed = [];
   const errors = [];
@@ -206,11 +210,11 @@ function action(locate, spot = null) {
     loadSpot: () => spot,
     goTo: async (place) => {
       flights.push(place);
-      return true;
+      return flight();
     },
     frame: async (place, rangeM) => {
       framed.push([place, rangeM]);
-      return true;
+      return flight();
     },
     showError: (text) => errors.push(text),
     showNotice: (text) => notices.push(text),
@@ -305,4 +309,49 @@ test('a flight that fails clears the busy state', async () => {
   assert.equal(await myLocation.run(), false);
   assert.deepEqual(busy, [true, false]);
   assert.equal(myLocation.busy(), false);
+});
+
+/** A refusal as the search bar's runner throws it, with its reason for people when it gave one. */
+function refused(reason = '') {
+  return async () => {
+    throw Object.assign(new Error(reason), { reason });
+  };
+}
+
+test('a flight the app refuses says so, framed or to the saved spot', async () => {
+  for (const spot of [null, HOME]) {
+    const run = action(async () => ROUGH_FIX, spot, refused());
+    assert.equal(await run.myLocation.run(), false);
+    assert.equal(run.flights.length + run.framed.length, 1, 'it tried to fly');
+    assert.deepEqual(run.errors, ['Unable to complete this action. Please try again.']);
+    assert.deepEqual(run.notices, [], 'no rough notice over a refusal');
+    assert.deepEqual(run.busy, [true, false]);
+  }
+});
+
+test("a refused flight passes on the app's own reason", async () => {
+  const run = action(async () => ROUGH_FIX, null, refused('The camera is busy following a contact'));
+  assert.equal(await run.myLocation.run(), false);
+  assert.deepEqual(run.errors, [
+    'Unable to complete this action: The camera is busy following a contact',
+  ]);
+});
+
+test('an interrupted flight shows no rough notice', async () => {
+  const run = action(async () => ROUGH_FIX, null, async () => false);
+  assert.equal(await run.myLocation.run(), false);
+  assert.equal(run.framed.length, 1);
+  assert.deepEqual(run.notices, []);
+  assert.deepEqual(run.errors, [], 'the viewer stopped it; nothing went wrong');
+});
+
+test('a refusal after a newer request stays silent', async () => {
+  let current = true;
+  const run = action(async () => ROUGH_FIX, null, async () => {
+    current = false; // the user searched for somewhere else during the flight
+    throw Object.assign(new Error(''), { reason: '' });
+  });
+  assert.equal(await run.myLocation.run({ isCurrent: () => current }), false);
+  assert.deepEqual(run.errors, []);
+  assert.deepEqual(run.busy, [true, false]);
 });

@@ -221,6 +221,20 @@ export function spotSavedText(saved) {
 }
 
 /**
+ * The search bar's message for a refused flight: the runner's own reason for
+ * people when it gave one (the search bar's `ActionFailed.reason`), else the
+ * general one. The same words a refused chip or command shows.
+ * @param {unknown} failure what the flight threw
+ * @returns {string}
+ */
+export function flightFailureText(failure) {
+  const reason = /** @type {{reason?: unknown}} */ (failure ?? {}).reason;
+  return typeof reason === 'string' && reason
+    ? t('Unable to complete this action: {reason}', { reason })
+    : t('Unable to complete this action. Please try again.');
+}
+
+/**
  * The button's behaviour: one request at a time; then the saved spot, a
  * framed rough fix or a framed precise fix; otherwise the failure message.
  * A request superseded meanwhile (`isCurrent()` false) does nothing at all.
@@ -263,15 +277,18 @@ export function createMyLocationAction({
           latitude: destination.latitude,
           longitude: destination.longitude,
         };
-        if (destination.kind === 'saved') {
-          await goTo(place);
-          return true;
-        }
-        await frame(place, destination.rangeM);
+        // A flight resolves false when the viewer interrupted it: no notice then.
+        const arrived =
+          destination.kind === 'saved'
+            ? await goTo(place)
+            : await frame(place, destination.rangeM);
+        if (arrived === false) return false;
         if (destination.kind === 'rough' && isCurrent())
           showNotice(roughNoticeText(destination.accuracyM));
         return true;
-      } catch {
+      } catch (failure) {
+        // A refused flight says so, as a refused search-bar action does.
+        if (isCurrent()) showError(flightFailureText(failure));
         return false;
       } finally {
         pending = false;
