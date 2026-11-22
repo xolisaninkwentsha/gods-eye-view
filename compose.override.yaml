@@ -1,0 +1,7 @@
+# Local-only addition (not part of upstream): keep the app running.
+# Docker merges this file with compose.yaml automatically. With the Docker
+# service enabled at boot, the container starts with the PC and comes back
+# after a crash. `docker compose stop` keeps it stopped until the next `up`.
+services:
+  gods-eye-view:
+    restart: unless-stopped
