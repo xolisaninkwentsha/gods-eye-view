@@ -9,6 +9,7 @@ import { setLocale } from '../i18n/index.js';
 import { useDisplayStore } from './stores/display.js';
 import { useLocationStore } from './stores/location.js';
 import { useOmnibarStore } from './stores/omnibar.js';
+import { useEntityCardStore } from './stores/entityCard.js';
 import { useVoiceStore } from './stores/voice.js';
 import { createVoiceControl } from '../voice/control.js';
 import { useGlobeActionsStore } from './stores/globeActions.js';
@@ -2132,7 +2133,7 @@ test('a location fix that arrives after a newer search neither flies nor speaks'
   answer();
   await settleAll();
   assert.equal(calls.length, flightsBefore, 'the late fix did not fly');
-  assert.doesNotMatch($('#omnibar-error').textContent, /Rough location/);
+  assert.doesNotMatch($('.omnibar-results').textContent, /Rough location/);
 });
 
 test('a location failure shows even while the GEV chat is open', async (t) => {
@@ -2175,7 +2176,7 @@ test('a rough fix is framed through the runner at a range that shows its error a
   assert.deepEqual(calls, [
     ['fly_to_location', { latitude: -33.9429, longitude: 18.6876, rangeM: 64503 }],
   ]);
-  assert.match($('#omnibar-error').textContent, /Rough location \(±26 km\)/);
+  assert.match($('#omnibar-notice').textContent, /Rough location \(±26 km\)/);
 });
 
 test('a location fix after the globe was taken does not fly', async (t) => {
@@ -2211,8 +2212,89 @@ test('a location fix after the globe was taken does not fly', async (t) => {
   await settleAll();
   assert.deepEqual(calls, [], 'no flight');
   assert.equal(
-    $('#omnibar-error').textContent.trim(),
+    $('#omnibar-notice').textContent.trim(),
     'The view changed while finding your location. Click the button again to go there.',
   );
   assert.equal(stopped, 1, 'the watcher is let go');
+});
+
+/** The search field, and the message lines under it. */
+function locateLines($) {
+  return {
+    input: $('#gev-omnibar-input'),
+    error: $('#omnibar-error'),
+    notice: $('#omnibar-notice'),
+  };
+}
+
+test('a location notice is a polite status, not an error on the field', async (t) => {
+  const { $, pinia } = omnibarFixture(t);
+  useOmnibarStore(pinia).connectRunner(async () => ({ ok: true }));
+  globalThis.localStorage?.removeItem?.('gev:my-location-spot:v1');
+  stubBrowserLocation(t, {
+    getCurrentPosition(success) {
+      success({ coords: { latitude: -33.9429, longitude: 18.6876, accuracy: 25801 } });
+    },
+  });
+  $('.omnibar-locate').click();
+  await settleAll();
+  const { input, error, notice } = locateLines($);
+  assert.ok(notice, 'a separate notice line');
+  assert.equal(notice.getAttribute('role'), 'status');
+  assert.match(notice.textContent, /Rough location \(±26 km\)/);
+  assert.notEqual(notice.style.display, 'none', 'shown');
+  assert.equal(error.style.display, 'none', 'the alert line stays hidden');
+  assert.equal(input.hasAttribute('aria-invalid'), false, 'the field is not marked invalid');
+  assert.equal(input.getAttribute('aria-describedby'), 'omnibar-notice');
+});
+
+test('a location failure is still an alert that marks the field invalid', async (t) => {
+  const { $, pinia } = omnibarFixture(t);
+  useOmnibarStore(pinia).connectRunner(async () => ({ ok: true }));
+  stubBrowserLocation(t, {
+    getCurrentPosition(_success, failure) {
+      failure({ code: 1, message: 'denied' });
+    },
+  });
+  $('.omnibar-locate').click();
+  await settleAll();
+  const { input, error, notice } = locateLines($);
+  assert.equal(error.getAttribute('role'), 'alert');
+  assert.equal(error.textContent.trim(), 'Location access was not allowed');
+  assert.notEqual(error.style.display, 'none');
+  assert.equal(notice.style.display, 'none');
+  assert.equal(input.getAttribute('aria-invalid'), 'true');
+  assert.equal(input.getAttribute('aria-describedby'), 'omnibar-error');
+});
+
+test('right-click saves the spot and confirms it politely; a failed save is an error', async (t) => {
+  const { $, pinia } = omnibarFixture(t);
+  t.after(() => globalThis.localStorage?.removeItem?.('gev:my-location-spot:v1'));
+  let centre = { lat: -33.9301, lon: 18.4172 };
+  useEntityCardStore(pinia).connect({ centre: () => centre });
+  const rightClick = () => {
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+    $('.omnibar-locate').dispatchEvent(event);
+    return event;
+  };
+  const saved = rightClick();
+  await settleAll();
+  assert.equal(saved.defaultPrevented, true, "the browser's own menu does not open");
+  assert.deepEqual(JSON.parse(globalThis.localStorage.getItem('gev:my-location-spot:v1')), {
+    lat: -33.9301,
+    lon: 18.4172,
+  });
+  let { input, error, notice } = locateLines($);
+  assert.equal(notice.textContent.trim(), 'Saved the centre of this view as your spot');
+  assert.equal(error.style.display, 'none');
+  assert.equal(input.hasAttribute('aria-invalid'), false);
+  // Nothing under the middle of the screen: nothing to save.
+  centre = null;
+  rightClick();
+  await settleAll();
+  ({ input, error, notice } = locateLines($));
+  assert.equal(error.textContent.trim(), 'Your spot could not be saved');
+  assert.notEqual(error.style.display, 'none');
+  assert.equal(notice.style.display, 'none');
+  assert.equal(input.getAttribute('aria-invalid'), 'true');
 });

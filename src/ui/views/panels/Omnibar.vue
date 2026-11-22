@@ -398,17 +398,26 @@ async function goTo({ latitude, longitude }) {
 /**
  * "Go to my location" (src/ui/myLocation.js): one browser location request,
  * then the saved spot, a rough fix framed wide, or a precise fix framed close.
- * Its messages show in the error line even while the GEV chat is open, since
+ * Its messages show under the field even while the GEV chat is open, since
  * the button is pressed outside the field; they go with the next edit.
+ * Failures are alerts on the field; notices (a rough fix, the permission
+ * hint, a saved spot) are a polite status that leaves the field valid.
  */
 const locating = ref(false);
 const locateFeedback = ref(false);
+/** The notice now in `error`, so it reads as a status, not a failure. */
+const noticeText = ref('');
 watch(error, (text) => {
   if (!text) locateFeedback.value = false;
+  if (text !== noticeText.value) noticeText.value = '';
 });
 function showLocateMessage(text) {
   error.value = text;
   locateFeedback.value = true;
+}
+function showLocateNotice(text) {
+  noticeText.value = text;
+  showLocateMessage(text);
 }
 /** Fly to a point at `rangeM` metres when the runner can frame; else as a typed coordinate. */
 async function frameAt(place, rangeM) {
@@ -420,7 +429,7 @@ const myLocation = createMyLocationAction({
   goTo,
   frame: frameAt,
   showError: showLocateMessage,
-  showNotice: showLocateMessage,
+  showNotice: showLocateNotice,
   setBusy: (value) => {
     locating.value = value;
   },
@@ -445,7 +454,8 @@ function onLocate() {
 /** Right-click: save the ground under the middle of the screen as the viewer's spot. */
 function onSaveSpot() {
   const centre = entityCard.viewCentreNow();
-  showLocateMessage(spotSavedText(Boolean(centre) && saveSpot(centre)));
+  const saved = Boolean(centre) && saveSpot(centre);
+  (saved ? showLocateNotice : showLocateMessage)(spotSavedText(saved));
 }
 
 function chooseChip(chip, { viaKey = false } = {}) {
@@ -698,6 +708,10 @@ const privateNote = computed(() => focused.value && !dismissed.value && mayBePri
 // An error stays in view while voice is on, even with the voice panel open.
 const showFeedback = computed(() => feedback.value && (focused.value || !assistantOpen.value || voiceOn.value || locateFeedback.value));
 const showResults = computed(() => open.value || showFeedback.value || noCommand.value || privateNote.value);
+/** The message shown is a location notice: a status line, and the field stays valid. */
+const feedbackIsNotice = computed(() => Boolean(noticeText.value) && feedback.value === noticeText.value);
+const errorShown = computed(() => showFeedback.value && !feedbackIsNotice.value);
+const noticeShown = computed(() => showFeedback.value && feedbackIsNotice.value);
 
 function onInput(event) {
   // Text an input method is still composing is read when it is committed
@@ -1099,8 +1113,8 @@ watch(
         :aria-expanded="String(open)"
         :aria-activedescendant="open ? (inStrip ? `gev-omnibar-chip-${chipIndex}` : items[active] ? `gev-omnibar-item-${active}` : undefined) : undefined"
         :aria-busy="String(busy)"
-        :aria-invalid="showFeedback ? 'true' : undefined"
-        :aria-describedby="showFeedback ? 'omnibar-error' : undefined"
+        :aria-invalid="errorShown ? 'true' : undefined"
+        :aria-describedby="errorShown ? 'omnibar-error' : noticeShown ? 'omnibar-notice' : undefined"
         :aria-label="t('Search places, layers and things on the map, or ask GEV')"
         :placeholder="t('Search places, layers, flights… or ask GEV  ·  > for commands')"
         :value="query"
@@ -1119,7 +1133,8 @@ watch(
       </UiButton>
     </div>
     <div v-show="showResults" ref="results" class="omnibar-results" :class="{ 'has-feedback': showFeedback }">
-      <p id="omnibar-error" v-show="showFeedback" role="alert">{{ feedback }}</p>
+      <p id="omnibar-error" v-show="errorShown" role="alert">{{ errorShown ? feedback : '' }}</p>
+      <p id="omnibar-notice" v-show="noticeShown" role="status">{{ noticeShown ? feedback : '' }}</p>
     <ul v-if="open" id="gev-omnibar-list" class="omnibar-list" role="listbox" :aria-label="t('Suggestions')">
       <li v-if="strip" class="omnibar-strip" role="group" :aria-label="strip.title">
         <span class="omnibar-strip__title" aria-hidden="true">{{ strip.title }}</span>
