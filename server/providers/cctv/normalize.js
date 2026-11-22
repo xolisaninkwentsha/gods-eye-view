@@ -664,6 +664,10 @@ export function normalizeSourceItem(item) {
       item.code || String(item.name || '').toUpperCase() || item.id || '',
     ),
     sourceKind: String(item.sourceKind || item.kind || 'configured'),
+    // A source that sets streetViewFallback: false is never answered with the
+    // key-bearing Street View frame, and its upstream is asked at most once
+    // per frameRefreshMs. Only a literal false opts out.
+    streetViewFallback: item.streetViewFallback === false ? false : undefined,
     // Optional CAL badge input (cctv-v2 design §3b/§9.2, additive-only per the
     // global constraints — nothing else in this file changes): hand-authored
     // file/env catalog entries may declare poseSource:'curated' so the panel

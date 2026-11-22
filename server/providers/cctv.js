@@ -692,9 +692,15 @@ export function cctvProxy({ sourceRoot = process.cwd() } = {}) {
                 )
               : source?.sourceKind === 'txdot-its'
                 ? await fetchTxdotSnapshot(upstreamCandidate)
-                : await fetchCctvImageFromUpstream(upstreamCandidate, {
-                    allowMjpeg: source?.sourceKind === 'taiwan-highway-motc',
-                  });
+                : source?.streetViewFallback === false
+                  ? await fetchThrottledFrame(
+                      source,
+                      cameraId,
+                      upstreamCandidate,
+                    )
+                  : await fetchCctvImageFromUpstream(upstreamCandidate, {
+                      allowMjpeg: source?.sourceKind === 'taiwan-highway-motc',
+                    });
         if (
           source?.sourceKind === 'mlit-river' &&
           isMlitRiverAdjustmentImage(upstreamImage)
@@ -767,7 +773,7 @@ export function cctvProxy({ sourceRoot = process.cwd() } = {}) {
           (name) => req.headers?.[name] !== undefined,
         );
         const sv =
-          forwarded || !source
+          forwarded || !source || source.streetViewFallback === false
             ? null
             : await streetViewFallback(client, {
                 lat: source.lat,
