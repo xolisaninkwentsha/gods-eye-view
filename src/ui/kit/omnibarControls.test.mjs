@@ -15,13 +15,22 @@ const template = source.replace(/<(script|style)\b[\s\S]*?<\/\1\s*>/g, '');
 
 test('the Omnibar hand-writes no button; each is a UiButton', () => {
   assert.deepEqual(template.match(/<button\b/gi) ?? [], []);
-  assert.equal(template.match(/<UiButton\b/g)?.length, 2);
+  assert.equal(template.match(/<UiButton\b/g)?.length, 3);
+});
+
+test('the locate button is a kit button carrying the my_location glyph', () => {
+  const locate = template.match(
+    /<UiButton\b[^>]*class="omnibar-locate"[^>]*>[\s\S]*?<\/UiButton>/,
+  )?.[0];
+  assert.ok(locate, 'a UiButton with class omnibar-locate');
+  assert.match(locate, /:label="t\('Go to my location'\)"/);
+  assert.match(locate, /<UiIcon name="my_location" :size="null" \/>/);
 });
 
 test('the Omnibar hand-writes no Material glyph; each is a UiIcon', () => {
   assert.deepEqual(template.match(/material-symbols-outlined/g) ?? [], []);
   const icons = template.match(/<UiIcon\b[^>]*>/g) ?? [];
-  assert.equal(icons.length, 3);
+  assert.equal(icons.length, 4);
   // Without it the kit writes an 18px size that beats the Omnibar's own rules.
   for (const icon of icons) assert.match(icon, /:size="null"/);
 });

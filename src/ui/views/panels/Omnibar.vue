@@ -18,6 +18,7 @@ import { useOmnibarStore } from '../../stores/omnibar.js';
 import { useVoiceStore } from '../../stores/voice.js';
 import UiButton from '../../kit/UiButton.vue';
 import UiIcon from '../../kit/UiIcon.vue';
+import { createMyLocationAction } from '../../myLocation.js';
 
 // One field for places, layers and questions. Places run through the location
 // controls, layers through the shell's omnibar actions, and anything else can
@@ -392,6 +393,27 @@ async function goTo({ latitude, longitude }) {
   searchedFor.value = query.value;
   await location.search(`${latitude}, ${longitude}`);
   return true;
+}
+
+/**
+ * "Go to my location": one browser location request, then the same flight a
+ * typed coordinate takes (`goTo`), so the position reaches no server or
+ * place-name service. A failure shows in the search bar's error line.
+ */
+const locating = ref(false);
+const myLocation = createMyLocationAction({
+  goTo,
+  showError: (text) => {
+    error.value = text;
+  },
+  setBusy: (value) => {
+    locating.value = value;
+  },
+});
+function onLocate() {
+  if (screenIsOwned()) return;
+  error.value = '';
+  void myLocation.run();
 }
 
 function chooseChip(chip, { viaKey = false } = {}) {
@@ -1057,6 +1079,9 @@ watch(
         @blur="focused = false"
       />
       <kbd class="omnibar-kbd" aria-hidden="true">{{ shortcut }}</kbd>
+      <UiButton class="omnibar-locate" :disabled="locating" :label="t('Go to my location')" @click="onLocate">
+        <UiIcon name="my_location" :size="null" />
+      </UiButton>
       <UiButton class="omnibar-mic" :pressed="voiceOn" pressed-class="active" :disabled="!voice.controls" :label="t('Talk to GEV')" @click="onMic(true)">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" /></svg>
       </UiButton>
@@ -1173,6 +1198,9 @@ watch(
 button { color: inherit; background: transparent; border: 0; cursor: pointer; padding: 6px; }
 button:disabled { opacity: .4; cursor: default; }
 button:focus-visible { outline: 2px solid #7bd3ef; outline-offset: -2px; }
+/* The locate button wears the mic's look but stays when the command dock
+   hides the mic (omnibar-dock.css), so it is never lost on desktop. */
+.omnibar-locate,
 .omnibar-mic {
   display: grid;
   flex: none;
@@ -1185,6 +1213,7 @@ button:focus-visible { outline: 2px solid #7bd3ef; outline-offset: -2px; }
   border: 1px solid rgba(48, 194, 224, 0.4);
   border-radius: 8px;
 }
+.omnibar-locate:not(:disabled):is(:hover, :focus-visible),
 .omnibar-mic.active,
 .omnibar-mic:not(:disabled):is(:hover, :focus-visible) {
   color: #36dcff;
