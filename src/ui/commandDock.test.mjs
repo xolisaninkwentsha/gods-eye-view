@@ -10,6 +10,7 @@ import { useDisplayStore } from './stores/display.js';
 import { useLocationStore } from './stores/location.js';
 import { useOmnibarStore } from './stores/omnibar.js';
 import { useVoiceStore } from './stores/voice.js';
+import { createVoiceControl } from '../voice/control.js';
 import { useGlobeActionsStore } from './stores/globeActions.js';
 import { LocationControls } from './locationControls.js';
 import { LocationSearch } from './locationSearch.js';
@@ -2081,4 +2082,98 @@ test('bundled place names never default to an action', async (t) => {
     }
   assert.ok(sample.length > 1900, `${sample.length} names`);
   assert.deepEqual(wrong, []);
+});
+
+/** Give the page a browser location answered by `geolocation`, on a secure page. */
+function stubBrowserLocation(t, geolocation) {
+  const navigatorRef = globalThis.navigator;
+  const ownGeolocation = Object.getOwnPropertyDescriptor(navigatorRef, 'geolocation');
+  const ownSecure = Object.getOwnPropertyDescriptor(globalThis, 'isSecureContext');
+  Object.defineProperty(navigatorRef, 'geolocation', { value: geolocation, configurable: true });
+  Object.defineProperty(globalThis, 'isSecureContext', { value: true, configurable: true });
+  t.after(() => {
+    if (ownGeolocation) Object.defineProperty(navigatorRef, 'geolocation', ownGeolocation);
+    else delete navigatorRef.geolocation;
+    if (ownSecure) Object.defineProperty(globalThis, 'isSecureContext', ownSecure);
+    else delete globalThis.isSecureContext;
+  });
+}
+
+/** Let promise chains and Vue's render queue settle. */
+async function settleAll() {
+  for (let i = 0; i < 5; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await nextTick();
+  }
+}
+
+test('a location fix that arrives after a newer search neither flies nor speaks', async (t) => {
+  const { $, type, key, pinia } = omnibarFixture(t);
+  const calls = [];
+  useOmnibarStore(pinia).connectRunner(async (name, args) => {
+    calls.push([name, args]);
+    return { ok: true };
+  });
+  let answer;
+  stubBrowserLocation(t, {
+    getCurrentPosition(success) {
+      answer = () =>
+        success({ coords: { latitude: -33.9429, longitude: 18.6876, accuracy: 25801 } });
+    },
+  });
+  $('.omnibar-locate').click();
+  await settleAll();
+  // A command that flies through the runner, as the existing tests use.
+  await type('go to Austin and show flights');
+  await key('Enter');
+  await settleAll();
+  const flightsBefore = calls.length;
+  assert.ok(flightsBefore >= 1, 'the newer search flew');
+  answer();
+  await settleAll();
+  assert.equal(calls.length, flightsBefore, 'the late fix did not fly');
+  assert.doesNotMatch($('#omnibar-error').textContent, /Rough location/);
+});
+
+test('a location failure shows even while the GEV chat is open', async (t) => {
+  const { $, pinia } = omnibarFixture(t);
+  useOmnibarStore(pinia).connectRunner(async () => ({ ok: true }));
+  // A real voice control, so the dock renders a whole voice view, with its chat open.
+  const voice = createVoiceControl({ store: useVoiceStore(pinia) });
+  t.after(() => voice.remove());
+  voice.update('root', { chatOpen: true });
+  await settleAll();
+  assert.equal(useVoiceStore(pinia).view?.root?.chatOpen, true, 'the chat is open');
+  stubBrowserLocation(t, {
+    getCurrentPosition(_success, failure) {
+      failure({ code: 1, message: 'denied' });
+    },
+  });
+  $('.omnibar-locate').click();
+  await settleAll();
+  const line = $('#omnibar-error');
+  assert.equal(line.textContent.trim(), 'Location access was not allowed');
+  assert.notEqual(line.style.display, 'none', 'the line is shown');
+  assert.notEqual($('.omnibar-results').style.display, 'none', 'its panel is shown');
+});
+
+test('a rough fix is framed through the runner at a range that shows its error area', async (t) => {
+  const { $, pinia } = omnibarFixture(t);
+  const calls = [];
+  useOmnibarStore(pinia).connectRunner(async (name, args) => {
+    calls.push([name, args]);
+    return { ok: true };
+  });
+  globalThis.localStorage?.removeItem?.('gev:my-location-spot:v1');
+  stubBrowserLocation(t, {
+    getCurrentPosition(success) {
+      success({ coords: { latitude: -33.9429, longitude: 18.6876, accuracy: 25801 } });
+    },
+  });
+  $('.omnibar-locate').click();
+  await settleAll();
+  assert.deepEqual(calls, [
+    ['fly_to_location', { latitude: -33.9429, longitude: 18.6876, rangeM: 64503 }],
+  ]);
+  assert.match($('#omnibar-error').textContent, /Rough location \(±26 km\)/);
 });

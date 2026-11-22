@@ -43,7 +43,7 @@
 
 - [ ] **Step 1: Write the failing tests,** with a fake `geolocation` whose `getCurrentPosition(success, failure, options)` records `options`:
   - `'a fix resolves to its latitude and longitude'`: `{coords:{latitude:-33.92,longitude:18.42,accuracy:1500}}` gives `{ok:true, latitude:-33.92, longitude:18.42}`.
-  - `'it asks once with a 10 s timeout and a fix no older than a minute'`: options deep-equal `{ enableHighAccuracy: true, timeout: 30000, maximumAge: 60000 }`.
+  - `'it asks once, allowing a cold first fix 30 s, for a fix no older than a minute'`: options deep-equal `{ enableHighAccuracy: true, timeout: 30000, maximumAge: 60000 }`.
   - `'no geolocation is unavailable; code 1 is denied; codes 2 and 3 are not found'`.
   - `'each failure reads as the search bar message'`: English strings as in Global Constraints.
   - `'the action flies to the fix through goTo and shows no error'`: `goTo` is called once with `{latitude:-33.92, longitude:18.42}`.

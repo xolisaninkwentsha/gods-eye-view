@@ -160,6 +160,18 @@ export const useEntityCardStore = defineStore('gev-entity-card', () => {
   function setView(next) {
     view.value = next ? markRaw(next) : null;
   }
+  /**
+   * The ground under the middle of the screen right now, `{lat, lon}`, or
+   * null. Read live from the shell, unlike `view`, which is only refreshed
+   * while the Context panel or the search field is open.
+   */
+  function viewCentreNow() {
+    try {
+      return shell.value?.centre?.() ?? null;
+    } catch {
+      return null;
+    }
+  }
   /** Ask a flight's layer for its route, so the card can draw it. */
   function requestRoute(identity) {
     if (!identity?.id || !['flights'].includes(identity.layerId)) return;
@@ -479,6 +491,7 @@ export const useEntityCardStore = defineStore('gev-entity-card', () => {
     breakdown,
     view,
     setView,
+    viewCentreNow,
     matchesIn,
     sourceOf,
     canCockpit,

@@ -18,7 +18,7 @@ import { useOmnibarStore } from '../../stores/omnibar.js';
 import { useVoiceStore } from '../../stores/voice.js';
 import UiButton from '../../kit/UiButton.vue';
 import UiIcon from '../../kit/UiIcon.vue';
-import { createMyLocationAction } from '../../myLocation.js';
+import { createMyLocationAction, saveSpot, spotSavedText } from '../../myLocation.js';
 
 // One field for places, layers and questions. Places run through the location
 // controls, layers through the shell's omnibar actions, and anything else can
@@ -396,24 +396,49 @@ async function goTo({ latitude, longitude }) {
 }
 
 /**
- * "Go to my location": one browser location request, then the same flight a
- * typed coordinate takes (`goTo`), so the position reaches no server or
- * place-name service. A failure shows in the search bar's error line.
+ * "Go to my location" (src/ui/myLocation.js): one browser location request,
+ * then the saved spot, a rough fix framed wide, or a precise fix framed close.
+ * Its messages show in the error line even while the GEV chat is open, since
+ * the button is pressed outside the field; they go with the next edit.
  */
 const locating = ref(false);
+const locateFeedback = ref(false);
+watch(error, (text) => {
+  if (!text) locateFeedback.value = false;
+});
+function showLocateMessage(text) {
+  error.value = text;
+  locateFeedback.value = true;
+}
+/** Fly to a point at `rangeM` metres when the runner can frame; else as a typed coordinate. */
+async function frameAt(place, rangeM) {
+  if (runner.value)
+    return settled(await runner.value('fly_to_location', { ...place, rangeM }));
+  return goTo(place);
+}
 const myLocation = createMyLocationAction({
   goTo,
-  showError: (text) => {
-    error.value = text;
-  },
+  frame: frameAt,
+  showError: showLocateMessage,
+  showNotice: showLocateMessage,
   setBusy: (value) => {
     locating.value = value;
   },
 });
 function onLocate() {
   if (screenIsOwned()) return;
+  // A new request, like a chip: anything typed or searched after it wins.
+  generation++;
+  busy.value = false;
   error.value = '';
-  void myLocation.run();
+  locationStore.controls?.editSearch();
+  const mine = generation;
+  void myLocation.run({ isCurrent: () => mine === generation && !screenIsOwned() });
+}
+/** Right-click: save the ground under the middle of the screen as the viewer's spot. */
+function onSaveSpot() {
+  const centre = entityCard.viewCentreNow();
+  showLocateMessage(spotSavedText(Boolean(centre) && saveSpot(centre)));
 }
 
 function chooseChip(chip, { viaKey = false } = {}) {
@@ -664,7 +689,7 @@ const noCommand = computed(() => focused.value && !dismissed.value && query.valu
 // Text withheld as private says so, rather than showing nothing.
 const privateNote = computed(() => focused.value && !dismissed.value && mayBePrivate(query.value.trim()));
 // An error stays in view while voice is on, even with the voice panel open.
-const showFeedback = computed(() => feedback.value && (focused.value || !assistantOpen.value || voiceOn.value));
+const showFeedback = computed(() => feedback.value && (focused.value || !assistantOpen.value || voiceOn.value || locateFeedback.value));
 const showResults = computed(() => open.value || showFeedback.value || noCommand.value || privateNote.value);
 
 function onInput(event) {
@@ -1079,7 +1104,7 @@ watch(
         @blur="focused = false"
       />
       <kbd class="omnibar-kbd" aria-hidden="true">{{ shortcut }}</kbd>
-      <UiButton class="omnibar-locate" :disabled="locating" :label="t('Go to my location')" @click="onLocate">
+      <UiButton class="omnibar-locate" :disabled="locating" :label="t('Go to my location')" @click="onLocate" @contextmenu.prevent="onSaveSpot">
         <UiIcon name="my_location" :size="null" />
       </UiButton>
       <UiButton class="omnibar-mic" :pressed="voiceOn" pressed-class="active" :disabled="!voice.controls" :label="t('Talk to GEV')" @click="onMic(true)">

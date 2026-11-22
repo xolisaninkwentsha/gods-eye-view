@@ -10,11 +10,15 @@ rather than a saved home spot. It's for personal use on his own PC.
 ## Approach
 
 Use the browser's Geolocation API, and fly there through the search bar's
-existing coordinate route (`goTo` → `location.search("lat, lon")`). That route
-answers coordinates locally (`src/search/coordinateGeocoder.js`: "without
-asking anyone"), so the position never reaches the app's server or a place-name
-service. Only Chrome's own location service, Google's, sees anything, in order
-to work the position out.
+existing coordinate route, `goTo`. In the running app that is the action
+runner's `fly_to_location` with the coordinates (`flyToLandmark`, about 250 m
+range, no searched-location pin). Only without a runner does it fall back to
+`location.search("lat, lon")`, which answers coordinates locally
+(`src/search/coordinateGeocoder.js`: "without asking anyone"). Either way the
+position is never sent to the app's server or a place-name service as a
+position. Chrome's own location service, Google's, sees enough to work the
+position out, and the map tiles the flight then loads tell the tile providers
+which area is on screen, as any flight does.
 
 Rejected:
 
@@ -28,10 +32,13 @@ Rejected:
   `my_location` Material icon (already in `index.html`'s `icon_names`) and the
   label "Go to my location".
 - **Click:** `navigator.geolocation.getCurrentPosition` with
-  `enableHighAccuracy: true`, a 30 s timeout (a cold first fix can take longer than 10 s, seen live) and `maximumAge` of 60 s. Chrome
-  asks permission the first time.
-- **Success:** the same flight as typing the coordinates. It frames about
-  ±1.5 km and shows the usual searched-location pin.
+  `enableHighAccuracy: true`, a 30 s timeout and `maximumAge` of 60 s. The
+  first live click said "Location not found" with a 10 s timeout; a slow cold
+  first fix is the suspected cause, not a proven one. Chrome asks permission
+  the first time, and only on a secure page (localhost counts): elsewhere the
+  button says "Browser location is unavailable" without asking.
+- **Success:** the same flight as typing the coordinates through the runner
+  (see Approach), with no pin. The Addendum below replaces this framing.
 - **Failure, in the search bar's error line:**
   - no geolocation → "Browser location is unavailable" (existing text);
   - permission denied → "Location access was not allowed" (new);
@@ -59,8 +66,17 @@ connection, at ±26 km, and no code can make it more precise. Xolisani chose
   - otherwise frame the whole uncertainty area (range 2.5 × accuracy, clamped
     to 5–250 km) and say "Rough location (±{km} km). Right-click the button
     to save your exact spot."
-- **A click with a precise fix** (Wi-Fi or GPS devices): fly to it as before.
-  Travel away from home with such a device and the live fix wins.
+- **A click with a precise fix** (Wi-Fi or GPS devices, accuracy 2 km or
+  better): fly to it, framed by its accuracy too (range 2.5 × accuracy, clamped
+  to 500 m–5 km), so a ±1 km fix is not shown as one confident street. Travel
+  away from home with such a device and the live fix wins.
+- **Framing** goes through the runner's `fly_to_location` with `rangeM`
+  (`src/voice/actionSchemas.js`); without a runner it falls back to `goTo`.
+- **Stale answers:** a fix that arrives after a newer search, chip or typed
+  edit is dropped: it neither flies nor shows a message.
+- **Messages** (failures, the rough-fix notice, the save confirmation) show in
+  the search bar's line even while the GEV chat is open, since the button is
+  pressed outside the field. They go with the next edit.
 - **New text:** "Saved the centre of this view as your spot", "Rough location
   (±{km} km). Right-click the button to save your exact spot.", and "Your spot
   could not be saved". Translated in every shipped locale.

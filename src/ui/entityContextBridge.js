@@ -231,6 +231,18 @@ export function installEntityContext({
     canCockpit: (card) =>
       Boolean(omnibar.runner) && COCKPIT_LAYERS.has(card?.layerId),
     canFollow: (card) => FOLLOWABLE.has(card?.layerId),
+    // The ground under the middle of the screen now (as readView picks it),
+    // for the search bar's "save my spot"; the point under the camera when
+    // the middle shows no ground.
+    centre: () => {
+      const middle = pickWorld?.(viewer, 0.5, 0.5);
+      if (middle && Number.isFinite(middle.lat) && Number.isFinite(middle.lon))
+        return { lat: middle.lat, lon: middle.lon };
+      const pose = camera()?.pose();
+      return pose && Number.isFinite(pose.lat) && Number.isFinite(pose.lon)
+        ? { lat: pose.lat, lon: pose.lon }
+        : null;
+    },
     // Where the camera is, so a search prefers what is close by.
     here: () => {
       const pose = camera()?.pose();

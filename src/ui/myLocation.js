@@ -1,18 +1,23 @@
 import { t } from '../i18n/index.js';
 
 /**
- * "Go to my location": ask the browser for one position and fly there
- * through the search bar's coordinate route, which answers a coordinate
- * locally, so the position goes to no server and no place-name service.
- * Only the browser's own location service sees anything, to work it out.
- * Nothing is stored and nothing follows the viewer afterwards.
+ * "Go to my location": ask the browser for one position and fly there. On a
+ * device without Wi-Fi or GPS the browser's fix is only as good as the
+ * internet connection's location (tens of kilometres), so:
+ *
+ * - a saved spot (right-click the button) wins when the fix is rough and the
+ *   spot lies inside the fix's error range: exact at home, live elsewhere;
+ * - otherwise a rough fix is framed wide enough to show its whole error area,
+ *   with a notice, instead of landing on a confident but wrong street;
+ * - a precise fix is framed close in, by its accuracy.
+ *
+ * The lookup itself sends the position nowhere: the flight uses it, and the
+ * saved spot stays in this browser's storage.
  */
 
-/**
- * One fresh-enough fix, no older than a minute. A cold first fix from the
- * browser's network location can take well over 10 s (the first live click
- * timed out at 10 s), so it gets 30 s; once warm, it answers at once.
- */
+/** One fresh-enough fix, no older than a minute. The first live click timed
+ * out at 10 s — a cold network-location fix is suspected of taking that long
+ * — so it gets 30 s; once warm, the browser answers at once. */
 const POSITION_OPTIONS = Object.freeze({
   enableHighAccuracy: true,
   timeout: 30_000,
@@ -22,17 +27,36 @@ const POSITION_OPTIONS = Object.freeze({
 /** GeolocationPositionError.PERMISSION_DENIED */
 const PERMISSION_DENIED = 1;
 
+/** Where the saved spot lives in this browser. */
+export const SPOT_STORAGE_KEY = 'gev:my-location-spot:v1';
+/** A fix less certain than this is rough: it is framed, or the spot used. */
+export const ROUGH_FIX_M = 2_000;
+/** How far outside a rough fix's error radius a saved spot may still lie. */
+export const SAVED_SPOT_SLACK_M = 5_000;
+const FRAME_FACTOR = 2.5;
+const PRECISE_RANGE_M = Object.freeze([500, 5_000]);
+const ROUGH_RANGE_M = Object.freeze([5_000, 250_000]);
+const EARTH_RADIUS_M = 6_371_000;
+
 /**
  * Ask the browser for the viewer's position once.
  *
- * @param {{geolocation?: Geolocation}} [options]
- * @returns {Promise<{ok: true, latitude: number, longitude: number}
+ * @param {{geolocation?: Geolocation, secure?: boolean}} [options] `secure`
+ *   is the page's isSecureContext: browsers refuse location to an insecure
+ *   page (the app opened over a LAN IP), which is "unavailable", not a
+ *   refusal the viewer could change.
+ * @returns {Promise<{ok: true, latitude: number, longitude: number, accuracyM: number}
  *   | {ok: false, reason: 'unavailable'|'denied'|'notFound'}>}
  */
 export async function locateOnce({
   geolocation = globalThis.navigator?.geolocation,
+  secure = globalThis.isSecureContext,
 } = {}) {
-  if (!geolocation || typeof geolocation.getCurrentPosition !== 'function')
+  if (
+    secure === false ||
+    !geolocation ||
+    typeof geolocation.getCurrentPosition !== 'function'
+  )
     return { ok: false, reason: 'unavailable' };
   try {
     const position = await new Promise((resolve, reject) => {
@@ -42,12 +66,128 @@ export async function locateOnce({
     const longitude = Number(position?.coords?.longitude);
     if (!Number.isFinite(latitude) || !Number.isFinite(longitude))
       return { ok: false, reason: 'notFound' };
-    return { ok: true, latitude, longitude };
+    return {
+      ok: true,
+      latitude,
+      longitude,
+      accuracyM: Number(position?.coords?.accuracy),
+    };
   } catch (error) {
     return {
       ok: false,
       reason: error?.code === PERMISSION_DENIED ? 'denied' : 'notFound',
     };
+  }
+}
+
+/** Great-circle distance in metres. */
+function distanceM(a, b) {
+  const rad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * rad;
+  const dLon = (b.lon - a.lon) * rad;
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLon / 2) ** 2;
+  return 2 * EARTH_RADIUS_M * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+const clamp = (value, [low, high]) => Math.min(high, Math.max(low, value));
+
+/** A rough fix's range: wide enough to show the whole error area. */
+function roughRangeM(accuracyM) {
+  return Number.isFinite(accuracyM)
+    ? Math.round(clamp(FRAME_FACTOR * accuracyM, ROUGH_RANGE_M))
+    : ROUGH_RANGE_M[1];
+}
+
+/**
+ * Where a fix should take the camera.
+ *
+ * @param {{latitude: number, longitude: number, accuracyM: number}} fix
+ * @param {{lat: number, lon: number}|null} savedSpot
+ * @returns {{kind: 'saved'|'rough'|'precise', latitude: number,
+ *   longitude: number, accuracyM: number, rangeM?: number}}
+ */
+export function chooseDestination(fix, savedSpot) {
+  const { latitude, longitude, accuracyM } = fix;
+  const precise = Number.isFinite(accuracyM) && accuracyM <= ROUGH_FIX_M;
+  if (precise)
+    return {
+      kind: 'precise',
+      latitude,
+      longitude,
+      accuracyM,
+      rangeM: Math.round(clamp(FRAME_FACTOR * accuracyM, PRECISE_RANGE_M)),
+    };
+  if (
+    savedSpot &&
+    Number.isFinite(accuracyM) &&
+    distanceM({ lat: latitude, lon: longitude }, savedSpot) <=
+      accuracyM + SAVED_SPOT_SLACK_M
+  )
+    return {
+      kind: 'saved',
+      latitude: savedSpot.lat,
+      longitude: savedSpot.lon,
+      accuracyM,
+    };
+  return {
+    kind: 'rough',
+    latitude,
+    longitude,
+    accuracyM,
+    rangeM: roughRangeM(accuracyM),
+  };
+}
+
+/** Browser storage, or null where it is blocked. */
+function safeLocalStorage() {
+  try {
+    return globalThis.localStorage ?? null;
+  } catch {
+    return null;
+  }
+}
+
+const onGlobe = (point) =>
+  Number.isFinite(point?.lat) &&
+  Number.isFinite(point?.lon) &&
+  Math.abs(point.lat) <= 90 &&
+  Math.abs(point.lon) <= 180;
+
+/**
+ * The viewer's saved spot, or null (none, blocked, corrupt or off the globe).
+ * @param {{storage?: Storage|null}} [options]
+ * @returns {{lat: number, lon: number}|null}
+ */
+export function loadSavedSpot({ storage = safeLocalStorage() } = {}) {
+  try {
+    const raw = storage?.getItem(SPOT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const spot = { lat: Number(parsed?.lat), lon: Number(parsed?.lon) };
+    return onGlobe(spot) ? spot : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Save `point` as the viewer's spot in this browser.
+ * @param {{lat: number, lon: number}} point
+ * @param {{storage?: Storage|null}} [options]
+ * @returns {boolean} Whether it was saved.
+ */
+export function saveSpot(point, { storage = safeLocalStorage() } = {}) {
+  if (!storage || !onGlobe(point)) return false;
+  try {
+    storage.setItem(
+      SPOT_STORAGE_KEY,
+      JSON.stringify({ lat: point.lat, lon: point.lon }),
+    );
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -62,36 +202,74 @@ export function locateFailureText(reason) {
   return t('Location not found');
 }
 
+/** The notice for a rough fix, its accuracy in whole kilometres. */
+export function roughNoticeText(accuracyM) {
+  const km = Number.isFinite(accuracyM)
+    ? Math.max(1, Math.round(accuracyM / 1000))
+    : ROUGH_RANGE_M[1] / 1000;
+  return t(
+    'Rough location (±{km} km). Right-click the button to save your exact spot.',
+    { km },
+  );
+}
+
+/** The message after saving the spot. */
+export function spotSavedText(saved) {
+  return saved
+    ? t('Saved the centre of this view as your spot')
+    : t('Your spot could not be saved');
+}
+
 /**
- * The button's behaviour: one request at a time; on a fix, fly there with
- * `goTo`; otherwise show the failure in the search bar.
+ * The button's behaviour: one request at a time; then the saved spot, a
+ * framed rough fix or a framed precise fix; otherwise the failure message.
+ * A request superseded meanwhile (`isCurrent()` false) does nothing at all.
  *
  * @param {{locate?: typeof locateOnce,
+ *   loadSpot?: () => ({lat: number, lon: number}|null),
  *   goTo: (place: {latitude: number, longitude: number}) => Promise<unknown>,
+ *   frame: (place: {latitude: number, longitude: number}, rangeM: number) => Promise<unknown>,
  *   showError: (text: string) => void,
+ *   showNotice: (text: string) => void,
  *   setBusy: (busy: boolean) => void}} options
- * @returns {{run: () => Promise<boolean>, busy: () => boolean}}
+ * @returns {{run: (options?: {isCurrent?: () => boolean}) => Promise<boolean>,
+ *   busy: () => boolean}}
  */
 export function createMyLocationAction({
   locate = locateOnce,
+  loadSpot = loadSavedSpot,
   goTo,
+  frame,
   showError,
+  showNotice,
   setBusy,
 }) {
   let pending = false;
   return {
     busy: () => pending,
-    async run() {
+    async run({ isCurrent = () => true } = {}) {
       if (pending) return false;
       pending = true;
       setBusy(true);
       try {
         const fix = await locate();
+        if (!isCurrent()) return false;
         if (!fix.ok) {
           showError(locateFailureText(fix.reason));
           return false;
         }
-        await goTo({ latitude: fix.latitude, longitude: fix.longitude });
+        const destination = chooseDestination(fix, loadSpot());
+        const place = {
+          latitude: destination.latitude,
+          longitude: destination.longitude,
+        };
+        if (destination.kind === 'saved') {
+          await goTo(place);
+          return true;
+        }
+        await frame(place, destination.rangeM);
+        if (destination.kind === 'rough' && isCurrent())
+          showNotice(roughNoticeText(destination.accuracyM));
         return true;
       } catch {
         return false;
