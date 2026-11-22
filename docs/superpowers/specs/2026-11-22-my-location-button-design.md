@@ -40,3 +40,29 @@ Rejected:
   all shipped locales. `src/i18n/catalog.test.mjs` requires it.
 - **Not built:** follow-me tracking, an accuracy ring, storing the position.
 - **Known limit:** on a cabled desktop, Chrome's fix may be kilometres off.
+
+## Addendum: saved spot and honest fallback (2026-11-22)
+
+**Why:** the live check landed about 25 km from central Cape Town. This PC has
+no Wi-Fi or GPS (only `eno1`), so Chrome's fix is its estimate from the internet
+connection, at ±26 km, and no code can make it more precise. Xolisani chose
+"Saved spot + honest fallback".
+
+- **Save:** right-click the button to save the ground under the middle of the
+  screen as "my spot". The bridge's live pick is `pickWorld(viewer, 0.5, 0.5)`,
+  the same point the Context panel uses. It's stored only in this browser
+  (`localStorage` key `gev:my-location-spot:v1`, `{lat, lon}`), and a short
+  confirmation shows in the search bar line.
+- **A click with a rough fix** (accuracy worse than 2 km):
+  - if a saved spot lies within the fix's error range (distance ≤ accuracy +
+    5 km), fly exactly to the saved spot;
+  - otherwise frame the whole uncertainty area (range 2.5 × accuracy, clamped
+    to 5–250 km) and say "Rough location (±{km} km). Right-click the button
+    to save your exact spot."
+- **A click with a precise fix** (Wi-Fi or GPS devices): fly to it as before.
+  Travel away from home with such a device and the live fix wins.
+- **New text:** "Saved the centre of this view as your spot", "Rough location
+  (±{km} km). Right-click the button to save your exact spot.", and "Your spot
+  could not be saved". Translated in every shipped locale.
+- **Not built:** a way to delete the saved spot (right-click again replaces
+  it), and any server-side storage.

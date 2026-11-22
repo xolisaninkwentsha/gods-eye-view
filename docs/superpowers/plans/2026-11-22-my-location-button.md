@@ -72,3 +72,56 @@
 - [ ] **Step 1:** `docker compose up -d --wait` on the branch. In Chrome at `http://localhost:4173`, click the button. Xolisani allows the permission prompt; a browser permission bubble is his to answer. Expect a flight to his area and the searched-location pin. Take a screenshot.
 - [ ] **Step 2:** Run `npm test`, `npm run build`, `npm run test:track -- --url http://localhost:4173`. Expected: unit and build pass; test:track shows no new failures against the baseline.
 - [ ] **Step 3:** Final whole-branch review by a fresh reviewer, then finishing-a-development-branch.
+
+### Task 4: Saved spot and honest fallback (addendum)
+
+**Files:**
+- Modify: `src/ui/myLocation.js`
+  - `locateOnce` also returns `accuracyM`.
+  - Add `loadSavedSpot({ storage })`, `saveSpot(point, { storage })` and
+    `chooseDestination(fix, savedSpot) → { kind: 'saved'|'rough'|'precise', latitude, longitude, rangeM?, accuracyM }`.
+  - `createMyLocationAction` gains `frame(place, rangeM)` and `showNotice(text)`, and uses `chooseDestination`.
+- Modify: `src/ui/entityContextBridge.js`: add `centre()`, the live
+  `pickWorld(viewer, 0.5, 0.5)`, falling back to the pose.
+- Modify: `src/ui/stores/entityCard.js`: add `viewCentreNow()`, which calls
+  `shell.value?.centre?.()`.
+- Modify: `src/ui/views/panels/Omnibar.vue`:
+  - `@contextmenu.prevent` saves the spot;
+  - `frame` uses `runner('fly_to_location', { latitude, longitude, rangeM })`
+    when available, else `goTo`;
+  - notices go in the existing error line.
+- Modify: 12 locale files plus generated zh-Hant (3 new strings).
+- Test: `src/ui/myLocation.test.mjs`, and a store test for `viewCentreNow`.
+
+**Constants:**
+- `ROUGH_FIX_M = 2000`
+- `SAVED_SPOT_SLACK_M = 5000`
+- framing range `clamp(2.5 × accuracyM, 5000, 250000)`
+- storage key `gev:my-location-spot:v1`
+
+- [ ] **Step 1: Write the failing tests:**
+  - `chooseDestination`:
+    - a precise fix flies to the fix;
+    - a rough fix with a saved spot inside its range uses the saved spot;
+    - a rough fix with a saved spot far away frames the fix at the clamped range;
+    - a rough fix with no saved spot is framed.
+  - The range clamps at 5 km and at 250 km.
+  - `saveSpot`/`loadSavedSpot` round-trip; a throwing or corrupt storage gives null.
+  - The action:
+    - with a saved spot, flies there with no notice;
+    - with a rough fix and no spot, calls `frame` and shows the rough notice
+      with ±{km} filled;
+    - a precise fix calls `goTo`.
+  - The store: `viewCentreNow()` returns the connected shell's `centre()`, or
+    null when there's none.
+- [ ] **Step 2:** Run them. Expected: FAIL.
+- [ ] **Step 3:** Implement. Add the strings and translations, and run
+      `npm run i18n -- --zh-hant`.
+- [ ] **Step 4:** Run `node --import=./build/registerVue.js --test src/ui/myLocation.test.mjs src/ui/kit/omnibarControls.test.mjs src/i18n/catalog.test.mjs <store test>`.
+      Expected: PASS.
+- [ ] **Step 5:** Live check in Chrome:
+  - right-click saves the current view's centre;
+  - a click then lands on the saved spot;
+  - with the spot cleared (devtools storage), a click frames the ±26 km area
+    with the rough notice.
+- [ ] **Step 6:** Commit, then rerun the full checks and the final review over the whole branch.
