@@ -199,6 +199,8 @@ export function createPresentation({
       feedType: camera.feedType,
       sourceUrl: camera.sourceUrl || '',
       browserMediaUrl: camera.browserMediaUrl || '',
+      // A YouTube live camera's video, for the panel's YouTube window.
+      youtubeVideoId: camera.youtubeVideoId || '',
       accuracyM: Number.isFinite(camera.accuracyM) ? camera.accuracyM : null,
       positionSource: camera.positionSource || '',
       isVideo:

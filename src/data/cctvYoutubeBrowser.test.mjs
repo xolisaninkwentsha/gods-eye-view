@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createCatalog } from '../layers/cctv/catalog.js';
 import { createModel } from '../layers/cctv/model.js';
+import { createPresentation } from '../layers/cctv/presentation.js';
 
 /** The production browser model. */
 function browserModel() {
@@ -55,6 +56,41 @@ test('isYoutubeCamera needs the youtube feed type and a valid video ID', () => {
   );
   assert.equal(model.isYoutubeCamera({ ...youtube, feedType: 'image' }), false);
   assert.equal(model.isYoutubeCamera(null), false);
+});
+
+test('the active camera state the panel reads carries the YouTube video ID', () => {
+  const model = browserModel();
+  const camera = {
+    ...YOUTUBE_ROW,
+    rangeM: 700,
+    fovDeg: 74,
+    absoluteHeightM: 24,
+    mountHeightM: 24,
+  };
+  const record = { camera };
+  const presentation = createPresentation({
+    state: {
+      _records: [record],
+      _healthById: new Map(),
+      _showProjection: false,
+      _coverageMode: 'sector',
+    },
+    services: {},
+    parts: {
+      selection: { getActiveRecord: () => record },
+      model,
+      geometry: { coverageNeighborCount: () => 0 },
+      calibration: {
+        deriveCalBadge: () => 'raw-prior',
+        normalizeCalibration: () => null,
+      },
+      frames: { frameUrlFor: () => '', mediaUrlFor: () => '' },
+    },
+    source: {},
+  });
+  const state = presentation.getPublicCameraState(record);
+  assert.equal(state.feedType, 'youtube');
+  assert.equal(state.youtubeVideoId, 'Yql-FpQkDr8');
 });
 
 test('a YouTube camera takes the browser-overlay path and counts as live', () => {
