@@ -267,6 +267,7 @@ function recordingFs() {
   const impl = {};
   for (const name of [
     'readFile',
+    'readdir',
     'writeFile',
     'appendFile',
     'rename',
@@ -1014,6 +1015,10 @@ test('results are replaced by rename, never written in place', async (t) => {
   const written = new Set();
   for (const op of fsr.ops) {
     if (op.name === 'readFile' || op.name === 'mkdir') continue;
+    if (op.name === 'readdir') {
+      assert.equal(op.paths[0], cacheDir, 'lists only the cache directory');
+      continue;
+    }
     if (op.name === 'rename') {
       assert.ok(
         written.has(op.paths[0]),
@@ -1042,6 +1047,62 @@ test('results are replaced by rename, never written in place', async (t) => {
   ]);
   const saved = JSON.parse(await fs.promises.readFile(target, 'utf8'));
   assert.equal(saved.provinces.EC.lastModified, LM + DAY);
+});
+
+test('the first cache read deletes the temp files a killed write left, and nothing else', async (t) => {
+  t.mock.method(console, 'warn', () => {});
+  const fsr = recordingFs();
+  const { request, cacheDir } = await setup(t, { env: {}, fsImpl: fsr.impl });
+  const orphans = [
+    '.results.json.4242.0123456789ab.tmp',
+    '.boundaries-wards.json.1.abcdef012345.tmp',
+  ];
+  const decoys = [
+    'results.json',
+    'notes.tmp',
+    '.results.json.tmp',
+    '.results.json.4242.0123456789AB.tmp',
+    '.results.json.4242.0123456789a.tmp',
+    '.results.json.pid.0123456789ab.tmp',
+    'results.json.4242.0123456789ab.tmp',
+    '.results.json.4242.0123456789ab.tmp.bak',
+  ];
+  for (const name of [...orphans, ...decoys])
+    await fs.promises.writeFile(path.join(cacheDir, name), '{}');
+  // A directory with a temp file's name is not a file this provider wrote.
+  const dir = '.results.json.7.0123456789ab.tmp';
+  await fs.promises.mkdir(path.join(cacheDir, dir));
+
+  assert.equal((await request('/councils')).status, 200);
+  const left = await fs.promises.readdir(cacheDir);
+  for (const name of orphans) assert.ok(!left.includes(name), name);
+  for (const name of [...decoys, dir]) assert.ok(left.includes(name), name);
+  const pattern = /^\..+\.\d+\.[0-9a-f]{12}\.tmp$/;
+  for (const op of fsr.ops.filter((o) => o.name === 'rm'))
+    assert.match(path.basename(op.paths[0]), pattern, 'removes only temps');
+
+  // Once per provider: later requests do not list the directory again.
+  await request('/councils');
+  await request('/wards');
+  assert.equal(fsr.ops.filter((o) => o.name === 'readdir').length, 1);
+});
+
+test('a cache directory that cannot be listed or cleaned still answers', async (t) => {
+  t.mock.method(console, 'warn', () => {});
+  const denied = () =>
+    Promise.reject(Object.assign(new Error('denied'), { code: 'EACCES' }));
+  for (const fsImpl of [
+    { ...fs.promises, readdir: denied },
+    { ...fs.promises, rm: denied },
+    { ...fs.promises, readdir: undefined },
+  ]) {
+    const { request, cacheDir } = await setup(t, { env: {}, fsImpl });
+    const orphan = '.results.json.4242.0123456789ab.tmp';
+    await fs.promises.writeFile(path.join(cacheDir, orphan), '{}');
+    const res = await request('/councils');
+    assert.equal(res.status, 200);
+    assert.equal(res.body.areas.length, ALL_COUNCILS.length + 1);
+  }
 });
 
 test('a council with a mismatched seat check marks its wards unconfirmed', async (t) => {

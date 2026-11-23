@@ -20,7 +20,7 @@ import {
   provinceEntry,
   withRetriedSeats,
 } from './entries.js';
-import { readJsonFile, writeJsonAtomic } from './cache.js';
+import { readJsonFile, removeOrphanTemps, writeJsonAtomic } from './cache.js';
 
 const LEVELS = ['councils', 'wards'];
 const MINUTE = 60_000;
@@ -120,34 +120,44 @@ export function saElectionsProxy({
   const persistResults = () =>
     persist(RESULTS_FILE, () => ({ version: 1, provinces }));
 
+  // Before the first cache read, and so before any write, the temp files a process killed
+  // between write and rename left behind are deleted.
+  let tempSweep = null;
+  const sweepTemps = () =>
+    (tempSweep ??= removeOrphanTemps(fsImpl, cacheDir).then((removed) => {
+      if (removed) warn(`removed ${removed} leftover cache temp file(s)`);
+    }));
+
   function readBoundaryCache() {
-    boundaryCacheRead ??= Promise.all(
-      LEVELS.map(async (level) => {
-        const saved = await readJsonFile(
-          fsImpl,
-          cacheFile(boundaryFile(level)),
-        );
-        if (validBoundaries(saved))
-          boundaries[level] ??= {
-            fetchedAt: saved.fetchedAt,
-            areas: saved.areas,
-          };
-      }),
+    boundaryCacheRead ??= sweepTemps().then(() =>
+      Promise.all(
+        LEVELS.map(async (level) => {
+          const saved = await readJsonFile(
+            fsImpl,
+            cacheFile(boundaryFile(level)),
+          );
+          if (validBoundaries(saved))
+            boundaries[level] ??= {
+              fetchedAt: saved.fetchedAt,
+              areas: saved.areas,
+            };
+        }),
+      ),
     );
     return boundaryCacheRead;
   }
 
   function readResultsCache() {
-    resultsCacheRead ??= readJsonFile(fsImpl, cacheFile(RESULTS_FILE)).then(
-      (saved) => {
+    resultsCacheRead ??= sweepTemps()
+      .then(() => readJsonFile(fsImpl, cacheFile(RESULTS_FILE)))
+      .then((saved) => {
         if (saved?.version !== 1 || !isRecord(saved.provinces)) return;
         for (const code of IEC_PROVINCES) {
           const entry = cachedProvince(saved.provinces[code]);
           if (entry) provinces[code] ??= entry;
         }
         reindex();
-      },
-    );
+      });
     return resultsCacheRead;
   }
 

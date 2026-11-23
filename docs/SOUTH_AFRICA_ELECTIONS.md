@@ -51,6 +51,7 @@ IEC fetching runs only when `SA_ELECTIONS_RESULTS=1`. Without it the routes serv
 
 The derived results and the simplified boundaries live in `.gev-cache/sa-elections/`, which is gitignored and bind-mounted into the container, so it survives `docker compose down -v`. Refresh is request-driven: nothing runs until a layer asks.
 
+- **Writes:** each cache file is written to a temp file and renamed into place, so a crash leaves the previous file whole. Temp files that a killed process left behind are deleted on the first request after a restart.
 - **Boundaries:** refreshed weekly. A failed refresh keeps the last good copy.
 - **Results:** each province file is checked with a `HEAD` request (`Last-Modified`) at most once a day, and one hour after a failed check. Only provinces whose file changed are read again, along with their councils’ seat files.
 - **Seat files:** one that failed is retried the next day.
