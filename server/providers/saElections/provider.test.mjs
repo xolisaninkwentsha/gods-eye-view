@@ -542,14 +542,119 @@ test('a failed province keeps its previous results and marks the answer stale', 
   assert.ok(warn.mock.calls.some((c) => String(c.arguments[0]).includes('NC')));
 });
 
+const callTail = (c) => `${c.method} ${c.url.pathname.split('/').slice(-2).join('/')}`;
+
 test('a province that breaks off on the first run leaves only its own areas without results', async (t) => {
   t.mock.method(console, 'warn', () => {});
-  const { up, request } = await setup(t);
+  const { up, clock, request } = await setup(t);
   up.csvBreak.KN = true;
   await request('/councils');
   const councils = byId(await untilResults(request, 'stale'));
   assert.equal(councils.KN001.result, null);
   assert.ok(ALL_COUNCILS.filter((c) => c.code !== 'KN').every(({ catB }) => councils[catB].result !== null));
+
+  // The missing province is retried an hour after the failure, alone, and reads loading meanwhile.
+  const mark = up.calls.length;
+  clock.now += HOUR - 1;
+  await request('/councils');
+  await settle();
+  assert.equal(up.calls.length, mark, 'no retry within the hour');
+  up.csvBreak = {};
+  clock.now += 2;
+  assert.equal((await request('/councils')).body.results, 'loading');
+  assert.ok(byId(await untilResults(request, 'ok')).KN001.result);
+  await settle();
+  assert.deepEqual(up.calls.slice(mark).map(callTail).sort(), [
+    'GET Downloadable%20Party%20Results/KN.csv',
+    'GET KN/KN001.xls',
+    'HEAD Downloadable%20Party%20Results/KN.csv',
+  ]);
+});
+
+test('a cache missing some provinces fetches only those, and reads loading meanwhile', async (t) => {
+  const first = await setup(t);
+  await first.request('/councils');
+  await untilResults(first.request, 'ok');
+  const file = path.join(first.cacheDir, 'results.json');
+  const saved = JSON.parse(await fs.promises.readFile(file, 'utf8'));
+  delete saved.provinces.KN;
+  delete saved.provinces.WP;
+  await fs.promises.writeFile(file, JSON.stringify(saved));
+
+  // A restart an hour later, with KN's download held back.
+  const hold = deferred();
+  const up = upstream();
+  up.csvHold.KN = hold.promise;
+  const request = install({ fetchImpl: up.fetchImpl, now: () => T0 + HOUR, cacheDir: first.cacheDir, env: ON });
+  const res = await request('/councils');
+  assert.equal(res.body.results, 'loading');
+  assert.equal(byId(res).EC001.result.seatCheck, 'ok', 'cached provinces are served at once');
+  assert.equal(byId(res).KN001.result, null);
+  const partial = await until(async () => {
+    const r = await request('/councils');
+    return byId(r).WP001.result !== null && r;
+  }, 'WP filled in');
+  assert.equal(partial.body.results, 'loading');
+  hold.resolve();
+  assert.equal(byId(await untilResults(request, 'ok')).KN001.result.seatCheck, 'ok');
+  await settle();
+  assert.deepEqual(up.calls.map(callTail).sort(), [
+    'GET Downloadable%20Party%20Results/KN.csv',
+    'GET Downloadable%20Party%20Results/WP.csv',
+    'GET KN/KN001.xls',
+    'GET WP/WP001.xls',
+    'HEAD Downloadable%20Party%20Results/KN.csv',
+    'HEAD Downloadable%20Party%20Results/WP.csv',
+  ]);
+});
+
+test('a seat file that failed is fetched again on the next daily check', async (t) => {
+  t.mock.method(console, 'warn', () => {});
+  const { up, clock, request, cacheDir } = await setup(t);
+  up.seats.NC001 = 404;
+  up.seats.FS001 = 503;
+  await request('/councils');
+  const before = byId(await untilResults(request, 'ok'));
+  assert.equal(before.NC001.result.seatCheck, 'unchecked');
+  assert.equal(before.FS001.result.seatCheck, 'unchecked');
+
+  // Same Last-Modified everywhere. NC's file now reads cleanly; FS's disagrees with its wards.
+  const mark = up.calls.length;
+  delete up.seats.NC001;
+  up.seats.FS001 = seatXls([[DA, 3, 2, 1], [ANC, 1, 0, 1]]);
+  clock.now += DAY + 1;
+  await request('/councils');
+  const after = await until(async () => {
+    const res = await request('/councils');
+    const c = byId(res);
+    return c.NC001.result.seatCheck !== 'unchecked' && c.FS001.result.seatCheck !== 'unchecked' && res;
+  }, 'seat files retried');
+  await settle();
+  const councils = byId(after);
+  assert.equal(councils.NC001.result.seatCheck, 'ok');
+  assert.equal(councils.NC001.result.totalSeats, 4);
+  assert.deepEqual(councils.NC001.result.largest, { party: DA, seats: 2 });
+  assert.equal(councils.FS001.result.seatCheck, 'mismatch');
+  assert.equal(after.body.results, 'ok');
+  const wards = byId(await request('/wards'));
+  for (const id of COUNCILS.NC[0].wards) assert.equal(wards[id].result.confirmed, true, id);
+  for (const id of COUNCILS.FS[0].wards) assert.equal(wards[id].result.confirmed, false, id);
+  assert.equal(wards[COUNCILS.FS[0].wards[0]].result.winner.party, ANC);
+
+  const later = up.calls.slice(mark).filter((c) => c.url.hostname === IEC_HOST);
+  assert.equal(later.filter((c) => c.method === 'HEAD').length, 9);
+  assert.deepEqual(later.filter((c) => c.method === 'GET').map(callTail).sort(), ['GET FS/FS001.xls', 'GET NC/NC001.xls']);
+  const saved = JSON.parse(await fs.promises.readFile(path.join(cacheDir, 'results.json'), 'utf8'));
+  assert.equal(saved.provinces.NC.councils.NC001.seatCheck, 'ok');
+  assert.equal(saved.provinces.FS.wards[COUNCILS.FS[0].wards[0]].confirmed, false);
+
+  // Nothing is left to retry, so the next day's check is HEADs only.
+  const quiet = up.calls.length;
+  clock.now += DAY + 1;
+  await request('/councils');
+  await until(() => up.calls.slice(quiet).filter((c) => c.method === 'HEAD').length === 9, 'nine HEADs');
+  await settle();
+  assert.ok(up.calls.slice(quiet).every((c) => c.method === 'HEAD'));
 });
 
 test('with no results at all a failed run answers failed and retries after an hour', async (t) => {

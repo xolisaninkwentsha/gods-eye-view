@@ -8,7 +8,7 @@ import { admitSameSiteKeyless } from '../common/same-site.js';
 import { fetchBoundaries } from './boundaries.js';
 import { IEC_PROVINCES, headProvince, streamProvince, fetchSeatFile, isCouncilCode } from './iec.js';
 import { readSeatFile } from './seats.js';
-import { councilOutcome, wardOutcome, seatCheck } from './results.js';
+import { isRecord, cachedProvince, provinceEntry, withRetriedSeats } from './entries.js';
 import { readJsonFile, writeJsonAtomic } from './cache.js';
 
 const LEVELS = ['councils', 'wards'];
@@ -19,7 +19,6 @@ const WEEK = 7 * DAY;
 const RESULTS_FILE = 'results.json';
 const boundaryFile = (level) => `boundaries-${level}.json`;
 
-const isRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 const reason = (err) => `${err?.message || err}${err?.status ? ` (HTTP ${err.status})` : ''}`;
 const warn = (message) => console.warn(`[sa-elections] ${message}`);
 
@@ -53,48 +52,6 @@ const validBoundaries = (saved) =>
   Array.isArray(saved.areas) &&
   saved.areas.length > 0 &&
   saved.areas.every(validArea);
-const validProvince = (entry) =>
-  isRecord(entry) &&
-  (entry.lastModified === null || Number.isFinite(entry.lastModified)) &&
-  isRecord(entry.councils) &&
-  isRecord(entry.wards);
-
-/**
- * Plain-object outcomes for one province. A council whose seat file was read gets its seat
- * check; a mismatch marks every ward of that council unconfirmed.
- * @param {string} code
- * @param {import('./results.js').ProvinceTally} tally
- * @param {Map<string, import('./seats.js').SeatSheet>} seatsByCouncil
- * @param {number|null} lastModified
- */
-function provinceEntry(code, tally, seatsByCouncil, lastModified) {
-  const wards = {};
-  const wardsOf = new Map();
-  for (const [id, ward] of tally.wards) {
-    const result = wardOutcome(ward);
-    wards[id] = result;
-    if (!wardsOf.has(ward.catB)) wardsOf.set(ward.catB, []);
-    wardsOf.get(ward.catB).push(result);
-  }
-  const councils = {};
-  for (const [catB, council] of tally.councils) {
-    if (!isCouncilCode(catB)) {
-      warn(`${code}: skipped unexpected council code ${JSON.stringify(catB.slice(0, 40))}`);
-      continue;
-    }
-    const seats = seatsByCouncil.get(catB) ?? null;
-    const result = councilOutcome(council, seats);
-    if (seats) {
-      const wardResults = wardsOf.get(catB) ?? [];
-      result.seatCheck = seatCheck(wardResults, seats);
-      if (result.seatCheck === 'mismatch') for (const ward of wardResults) ward.confirmed = false;
-      const unmatched = seats.parties.filter((p) => !council.prVotes.has(p.party)).map((p) => p.party);
-      if (unmatched.length) warn(`${code}/${catB}: seat-file parties with no PR votes: ${unmatched.join('; ')}`);
-    }
-    councils[catB] = result;
-  }
-  return { lastModified, councils, wards };
-}
 
 /**
  * Vite plugin for /api/sa-elections. `now` drives every refresh decision; `fsImpl` does every
@@ -122,7 +79,7 @@ export function saElectionsProxy({
   let byCouncil = new Map();
   let byWard = new Map();
   let resultsCacheRead = null;
-  let resultsFromCache = false;
+  /** @type {{ fillsGaps: boolean }|null} the run in progress */
   let run = null;
   /** @type {{ at: number, ok: boolean }|null} */
   let lastRun = null;
@@ -151,9 +108,8 @@ export function saElectionsProxy({
     resultsCacheRead ??= readJsonFile(fsImpl, cacheFile(RESULTS_FILE)).then((saved) => {
       if (saved?.version !== 1 || !isRecord(saved.provinces)) return;
       for (const code of IEC_PROVINCES) {
-        if (!validProvince(saved.provinces[code])) continue;
-        provinces[code] ??= saved.provinces[code];
-        resultsFromCache = true;
+        const entry = cachedProvince(saved.provinces[code]);
+        if (entry) provinces[code] ??= entry;
       }
       reindex();
     });
@@ -202,14 +158,9 @@ export function saElectionsProxy({
     return held;
   }
 
-  /** HEAD the province file; download and re-derive it only when it is new or changed. */
-  async function refreshProvince(code) {
-    const lastModified = await headProvince(code, { fetchImpl });
-    const previous = provinces[code];
-    if (previous && (lastModified === null || lastModified === previous.lastModified)) return;
-    const tally = await streamProvince(code, { fetchImpl });
+  /** Reads the councils' seat files, 4 at a time across all provinces; failures are logged, not thrown. */
+  async function readSeats(code, councilCodes) {
     const seats = new Map();
-    const councilCodes = [...tally.councils.keys()].filter(isCouncilCode);
     await Promise.all(
       councilCodes.map((catB) =>
         seatSlots(async () => {
@@ -221,19 +172,59 @@ export function saElectionsProxy({
         }),
       ),
     );
+    return seats;
+  }
+
+  /** Fetches only the seat files that failed before, and re-derives the councils that now read. */
+  async function retrySeats(code, entry) {
+    const seats = await readSeats(code, Object.keys(entry.seatRetry ?? {}));
+    if (seats.size === 0) return;
+    provinces[code] = withRetriedSeats(code, entry, seats);
+    reindex();
+    persistResults();
+  }
+
+  /**
+   * HEAD the province file. A new or changed file is downloaded and re-derived with all its
+   * seat files; an unchanged one only retries the seat files that failed before.
+   */
+  async function refreshProvince(code) {
+    const lastModified = await headProvince(code, { fetchImpl });
+    const previous = provinces[code];
+    if (previous && (lastModified === null || lastModified === previous.lastModified)) {
+      await retrySeats(code, previous);
+      return;
+    }
+    const tally = await streamProvince(code, { fetchImpl });
+    const seats = await readSeats(code, [...tally.councils.keys()].filter(isCouncilCode));
     provinces[code] = provinceEntry(code, tally, seats, lastModified);
     reindex();
     persistResults();
   }
 
-  /** Starts a results check when one is due: never run, a day after a good one, an hour after a failed one. */
+  /**
+   * The run due now, if any. Provinces missing from the results (first run, a partial cache, a
+   * failed download) are fetched on their own and read `loading`. With all nine present, the
+   * full check comes a day after a good run. Either way a failed run waits an hour.
+   */
+  function dueRun() {
+    const since = lastRun ? now() - lastRun.at : Infinity;
+    if (lastRun && !lastRun.ok && since < HOUR) return null;
+    const missing = IEC_PROVINCES.filter((code) => !provinces[code]);
+    if (missing.length) return { codes: missing, fillsGaps: true };
+    if (!lastRun || since >= (lastRun.ok ? DAY : HOUR)) return { codes: IEC_PROVINCES, fillsGaps: false };
+    return null;
+  }
+
   function maybeStartRun() {
     if (run || !switchOn()) return;
-    if (lastRun && now() - lastRun.at < (lastRun.ok ? DAY : HOUR)) return;
-    run = (async () => {
+    const due = dueRun();
+    if (!due) return;
+    run = { fillsGaps: due.fillsGaps };
+    (async () => {
       let ok = true;
       await Promise.all(
-        IEC_PROVINCES.map((code) =>
+        due.codes.map((code) =>
           provinceSlots(() =>
             refreshProvince(code).catch((err) => {
               ok = false;
@@ -255,13 +246,13 @@ export function saElectionsProxy({
       });
   }
 
-  // `loading` until a completed set exists: one read from the cache, or a finished check. The
-  // first check's provinces are served as they land, but it stays `loading` until it ends.
+  // A run filling missing provinces reads `loading` until it ends (provinces it has finished are
+  // already served). Otherwise: nothing at all is `failed`, all nine after a good run is `ok`.
   function resultsStatus() {
     if (!switchOn()) return 'off';
-    if (!lastRun && !resultsFromCache) return 'loading';
+    if (run?.fillsGaps) return 'loading';
     const present = IEC_PROVINCES.filter((code) => provinces[code]).length;
-    if (present === 0) return run ? 'loading' : 'failed';
+    if (present === 0) return lastRun?.ok === false ? 'failed' : 'loading';
     const ok = present === IEC_PROVINCES.length && (lastRun?.ok ?? true);
     return ok ? 'ok' : 'stale';
   }
