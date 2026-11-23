@@ -21,6 +21,11 @@ const REQUIRED = [
   'TotalValidVotes',
 ];
 export const INDEPENDENT = 'INDEPENDENT';
+// Far above any province (KwaZulu-Natal has under 1,000 wards and under 50 councils), so a
+// hostile file cannot fill memory with areas inside the 80 MiB download cap.
+const MAX_WARDS = 5000;
+const MAX_COUNCILS = 200;
+const tooManyAreas = () => new Error('csv_too_many_areas');
 
 /**
  * RFC 4180 records from an async iterable of lines (line terminators already removed). Works one
@@ -82,6 +87,7 @@ const add = (map, key, n) => map.set(key, (map.get(key) ?? 0) + n);
 /**
  * Sums a province CSV into per-ward and per-council tallies. District council (DC) rows are
  * ignored. Registered voters count once per voting district, spoilt once per district and ballot.
+ * More than 5,000 wards or 200 councils throws `csv_too_many_areas`.
  * @param {AsyncIterable<string[]>} records
  * @returns {Promise<ProvinceTally>}
  */
@@ -109,11 +115,13 @@ export async function aggregateProvince(records) {
 
     let council = tally.councils.get(catB);
     if (!council) {
+      if (tally.councils.size >= MAX_COUNCILS) throw tooManyAreas();
       council = { prVotes: new Map(), registered: 0, wardCast: 0, prCast: 0 };
       tally.councils.set(catB, council);
     }
     let ward = tally.wards.get(wardId);
     if (!ward) {
+      if (tally.wards.size >= MAX_WARDS) throw tooManyAreas();
       ward = {
         catB,
         wardNo: Number(wardId.slice(-3)),

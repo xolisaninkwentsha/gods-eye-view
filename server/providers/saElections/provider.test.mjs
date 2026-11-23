@@ -565,6 +565,36 @@ test('streamProvince gives up when the caller aborts, and on a bad header', asyn
   );
 });
 
+test('streamProvince stops at a province with too many wards and cancels the download', async () => {
+  let cancelled = false;
+  let sent = 0;
+  const encoder = new TextEncoder();
+  const body = new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(`${HEADER}\n`));
+    },
+    pull(controller) {
+      if (sent >= 20_000) return controller.close();
+      const ward = 30_000_000 + sent;
+      sent += 1;
+      controller.enqueue(
+        encoder.encode(
+          `GP,GP001 - TOWN,Ward ${ward},1,S,1,Ward,0,${ANC},1,x\n`,
+        ),
+      );
+    },
+    cancel() {
+      cancelled = true;
+    },
+  });
+  await assert.rejects(
+    streamProvince('GP', { fetchImpl: async () => new Response(body) }),
+    { message: 'csv_too_many_areas' },
+  );
+  assert.equal(cancelled, true);
+  assert.ok(sent < 6000, `sent ${sent} wards`);
+});
+
 test('fetchSeatFile reads at most 1 MiB', async () => {
   const bytes = seatXls();
   const seen = [];

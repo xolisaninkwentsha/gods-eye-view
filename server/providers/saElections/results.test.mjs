@@ -242,6 +242,27 @@ test('party names are normalized so CSV names join with seat-file names', async 
   assert.deepEqual([...wards.get('30601001').votes.keys()], ['FF PLUS FF+']);
 });
 
+test('a province lists at most 5,000 wards and 200 councils', async () => {
+  const wardRows = (n) =>
+    Array.from({ length: n }, (_, i) =>
+      row(String(30_000_000 + i), '1', 1, 'Ward', 0, 'ANC', 1),
+    );
+  assert.equal((await tallyOf(wardRows(5000))).wards.size, 5000);
+  await assert.rejects(tallyOf(wardRows(5001)), {
+    message: 'csv_too_many_areas',
+  });
+  const councilRows = (n) =>
+    Array.from(
+      { length: n },
+      (_, i) =>
+        `XX,ZZ${String(i).padStart(3, '0')} - TOWN,Ward ${40_000_000 + i},1,Station,1,PR,0,ANC,1,2026-11-04`,
+    );
+  assert.equal((await tallyOf(councilRows(200))).councils.size, 200);
+  await assert.rejects(tallyOf(councilRows(201)), {
+    message: 'csv_too_many_areas',
+  });
+});
+
 test('a missing header column fails loudly', async () => {
   const bad =
     'Province,Municipality,Ward,VotingDistrict,RegisteredVoters,BallotType,SpoiltVotes,PartyName\nXX,ZZ001 - A,Ward 1,1,1,Ward,0,ANC';
