@@ -61,7 +61,10 @@ export function parseSeatSheet(rows) {
   const nameCol = header.findIndex((c) => text(c) === 'Party Name');
   if (wardCol < 0 || prCol < 0 || nameCol < 0) throw unreadable();
 
-  const parties = [];
+  // Rows whose names normalize alike ("X" and "X (PF)") are one party: their seats are summed,
+  // in the order each party first appears.
+  /** @type {Map<string, PartySeats>} */
+  const byParty = new Map();
   let closed = false;
   for (const row of rows.slice(headerAt + 1)) {
     const name = text(row[nameCol]);
@@ -73,15 +76,20 @@ export function parseSeatSheet(rows) {
     const seats = toNumber(row[totalCol]);
     if (seats === null) throw unreadable();
     if (seats === 0) continue;
-    parties.push({
-      party: normalizePartyName(name),
-      seats,
-      wardSeats: toNumber(row[wardCol]) ?? 0,
-      prSeats: toNumber(row[prCol]) ?? 0,
-    });
+    const party = normalizePartyName(name);
+    const entry = byParty.get(party) ?? {
+      party,
+      seats: 0,
+      wardSeats: 0,
+      prSeats: 0,
+    };
+    entry.seats += seats;
+    entry.wardSeats += toNumber(row[wardCol]) ?? 0;
+    entry.prSeats += toNumber(row[prCol]) ?? 0;
+    byParty.set(party, entry);
   }
   if (!closed) throw unreadable();
-  return { totalSeats, independentWardSeats, parties };
+  return { totalSeats, independentWardSeats, parties: [...byParty.values()] };
 }
 
 /**

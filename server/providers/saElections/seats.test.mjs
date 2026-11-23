@@ -79,6 +79,22 @@ test('parses totals and the per-party seat table', () => {
   assert.deepEqual(parseSeatSheet([...quotaBlock, [], ...seatTable]), expected);
 });
 
+test('rows that name the same party are summed into one entry', () => {
+  const rows = [
+    ...quotaBlock,
+    seatTable[0],
+    [null, null, 'DEMOCRATIC ALLIANCE', 100, 60, 40],
+    [null, null, 'ACTIONSA', 2, 1, 1],
+    [null, null, 'ACTIONSA (PF)', '3', 0, 3],
+    [null, null, 'DEMOCRATIC  ALLIANCE', 10, 5, 5],
+    [null, null, 'Total Party Seats', 115, 66, 49],
+  ];
+  assert.deepEqual(parseSeatSheet(rows).parties, [
+    { party: 'DEMOCRATIC ALLIANCE', seats: 110, wardSeats: 65, prSeats: 45 },
+    { party: 'ACTIONSA', seats: 5, wardSeats: 1, prSeats: 4 },
+  ]);
+});
+
 test('reads the independent ward councillor count', () => {
   const rows = [...quotaBlock, ...seatTable].map((r) =>
     String(r[0]).startsWith('Independent Ward')
