@@ -41,10 +41,14 @@ test('normalizes rows and drops malformed areas', () => {
   );
   assert.equal(out.status, 'ok');
   assert.equal(out.resultsAsOf, 5);
-  assert.deepEqual(out.rows.map((r) => r.stableId), ['JHB']);
+  assert.deepEqual(
+    out.rows.map((r) => r.stableId),
+    ['JHB'],
+  );
   assert.equal(out.rows[0].id, 'JHB');
   assert.equal(
-    normalizeSaElectionsPayload({ results: 'weird', areas: [] }, 'wards').status,
+    normalizeSaElectionsPayload({ results: 'weird', areas: [] }, 'wards')
+      .status,
     'failed',
   );
   assert.deepEqual(normalizeSaElectionsPayload(null, 'wards').rows, []);
@@ -59,21 +63,32 @@ test('a council with no majority is faint; with no seats it is outline only', ()
   const base = { parties: [], totalSeats: 100, turnout: 0.5, seatCheck: 'ok' };
   assert.deepEqual(
     saAreaColor(
-      { result: { ...base, largest: { party: anc, seats: 60 }, majority: true } },
+      {
+        result: { ...base, largest: { party: anc, seats: 60 }, majority: true },
+      },
       'councils',
     ),
     { color: partyStyle(anc).color, strength: 'strong' },
   );
   assert.deepEqual(
     saAreaColor(
-      { result: { ...base, largest: { party: anc, seats: 40 }, majority: false } },
+      {
+        result: {
+          ...base,
+          largest: { party: anc, seats: 40 },
+          majority: false,
+        },
+      },
       'councils',
     ),
     { color: partyStyle(anc).color, strength: 'faint' },
   );
   const none = { color: null, strength: null };
   assert.deepEqual(
-    saAreaColor({ result: { ...base, largest: null, majority: null } }, 'councils'),
+    saAreaColor(
+      { result: { ...base, largest: null, majority: null } },
+      'councils',
+    ),
     none,
   );
   assert.deepEqual(saAreaColor({ result: null }, 'councils'), none);

@@ -11,10 +11,16 @@ const unreadable = () => new Error('seat_sheet_unreadable');
 
 const toNumber = (cell) => {
   if (typeof cell === 'number') return Number.isFinite(cell) ? cell : null;
-  if (typeof cell === 'string' && cell.trim() !== '' && Number.isFinite(Number(cell))) return Number(cell);
+  if (
+    typeof cell === 'string' &&
+    cell.trim() !== '' &&
+    Number.isFinite(Number(cell))
+  )
+    return Number(cell);
   return null;
 };
-const text = (cell) => (typeof cell === 'string' ? cell.replace(/\s+/g, ' ').trim() : '');
+const text = (cell) =>
+  typeof cell === 'string' ? cell.replace(/\s+/g, ' ').trim() : '';
 
 /** First number on the first row whose first text cell starts with `label`. */
 function labelledNumber(rows, label) {
@@ -34,10 +40,19 @@ function labelledNumber(rows, label) {
  * @returns {SeatSheet}
  */
 export function parseSeatSheet(rows) {
-  const totalSeats = labelledNumber(rows, 'Total Seats Available in Municipality');
-  const independentWardSeats = labelledNumber(rows, 'Independent Ward Councillors Elected');
-  const headerAt = rows.findIndex((row) => row.some((c) => text(c) === 'Total Party Seats (x)'));
-  if (totalSeats === null || independentWardSeats === null || headerAt < 0) throw unreadable();
+  const totalSeats = labelledNumber(
+    rows,
+    'Total Seats Available in Municipality',
+  );
+  const independentWardSeats = labelledNumber(
+    rows,
+    'Independent Ward Councillors Elected',
+  );
+  const headerAt = rows.findIndex((row) =>
+    row.some((c) => text(c) === 'Total Party Seats (x)'),
+  );
+  if (totalSeats === null || independentWardSeats === null || headerAt < 0)
+    throw unreadable();
 
   const header = rows[headerAt];
   const totalCol = header.findIndex((c) => text(c) === 'Total Party Seats (x)');

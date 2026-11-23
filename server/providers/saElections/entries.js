@@ -8,14 +8,17 @@ import { councilOutcome, wardOutcome, seatCheck } from './results.js';
  * @typedef {{ lastModified: number|null, councils: Record<string, object>, wards: Record<string, object>, seatRetry?: Record<string, SeatRetry> }} ProvinceEntry
  */
 
-export const isRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+export const isRecord = (value) =>
+  value !== null && typeof value === 'object' && !Array.isArray(value);
 const warn = (message) => console.warn(`[sa-elections] ${message}`);
 const count = (n) => Number.isFinite(n) && n >= 0;
 
 const validRetry = (item) =>
   isRecord(item) &&
   Array.isArray(item.prVotes) &&
-  item.prVotes.every((p) => Array.isArray(p) && typeof p[0] === 'string' && count(p[1])) &&
+  item.prVotes.every(
+    (p) => Array.isArray(p) && typeof p[0] === 'string' && count(p[1]),
+  ) &&
   count(item.registered) &&
   count(item.wardCast) &&
   count(item.prCast) &&
@@ -23,20 +26,28 @@ const validRetry = (item) =>
   item.wards.every((id) => typeof id === 'string');
 
 /** `seatRetry` is kept only while some council still lacks its seat file. */
-const withRetry = (entry, seatRetry) => (Object.keys(seatRetry).length ? { ...entry, seatRetry } : entry);
+const withRetry = (entry, seatRetry) =>
+  Object.keys(seatRetry).length ? { ...entry, seatRetry } : entry;
 
 /**
  * A province entry read back from the cache, or null. Malformed seat-retry items are dropped.
  * @returns {ProvinceEntry|null}
  */
 export function cachedProvince(entry) {
-  if (!isRecord(entry) || !isRecord(entry.councils) || !isRecord(entry.wards)) return null;
-  if (entry.lastModified !== null && !Number.isFinite(entry.lastModified)) return null;
+  if (!isRecord(entry) || !isRecord(entry.councils) || !isRecord(entry.wards))
+    return null;
+  if (entry.lastModified !== null && !Number.isFinite(entry.lastModified))
+    return null;
   const retry = isRecord(entry.seatRetry)
-    ? Object.entries(entry.seatRetry).filter(([catB, item]) => isCouncilCode(catB) && validRetry(item))
+    ? Object.entries(entry.seatRetry).filter(
+        ([catB, item]) => isCouncilCode(catB) && validRetry(item),
+      )
     : [];
   const { lastModified, councils, wards } = entry;
-  return withRetry({ lastModified, councils, wards }, Object.fromEntries(retry));
+  return withRetry(
+    { lastModified, councils, wards },
+    Object.fromEntries(retry),
+  );
 }
 
 /**
@@ -50,9 +61,15 @@ function councilResult(where, council, seats, wardResults) {
   const result = councilOutcome(council, seats);
   if (!seats) return result;
   result.seatCheck = seatCheck(wardResults, seats);
-  if (result.seatCheck === 'mismatch') for (const ward of wardResults) ward.confirmed = false;
-  const unmatched = seats.parties.filter((p) => !council.prVotes.has(p.party)).map((p) => p.party);
-  if (unmatched.length) warn(`${where}: seat-file parties with no PR votes: ${unmatched.join('; ')}`);
+  if (result.seatCheck === 'mismatch')
+    for (const ward of wardResults) ward.confirmed = false;
+  const unmatched = seats.parties
+    .filter((p) => !council.prVotes.has(p.party))
+    .map((p) => p.party);
+  if (unmatched.length)
+    warn(
+      `${where}: seat-file parties with no PR votes: ${unmatched.join('; ')}`,
+    );
   return result;
 }
 
@@ -70,7 +87,8 @@ export function provinceEntry(code, tally, seatsByCouncil, lastModified) {
   for (const [id, ward] of tally.wards) {
     const result = wardOutcome(ward);
     wards[id] = result;
-    if (!wardsOf.has(ward.catB)) wardsOf.set(ward.catB, { ids: [], results: [] });
+    if (!wardsOf.has(ward.catB))
+      wardsOf.set(ward.catB, { ids: [], results: [] });
     wardsOf.get(ward.catB).ids.push(id);
     wardsOf.get(ward.catB).results.push(result);
   }
@@ -78,15 +96,28 @@ export function provinceEntry(code, tally, seatsByCouncil, lastModified) {
   const seatRetry = {};
   for (const [catB, council] of tally.councils) {
     if (!isCouncilCode(catB)) {
-      warn(`${code}: skipped unexpected council code ${JSON.stringify(catB.slice(0, 40))}`);
+      warn(
+        `${code}: skipped unexpected council code ${JSON.stringify(catB.slice(0, 40))}`,
+      );
       continue;
     }
     const seats = seatsByCouncil.get(catB) ?? null;
     const own = wardsOf.get(catB) ?? { ids: [], results: [] };
-    councils[catB] = councilResult(`${code}/${catB}`, council, seats, own.results);
+    councils[catB] = councilResult(
+      `${code}/${catB}`,
+      council,
+      seats,
+      own.results,
+    );
     if (!seats) {
       const { registered, wardCast, prCast } = council;
-      seatRetry[catB] = { prVotes: [...council.prVotes], registered, wardCast, prCast, wards: own.ids };
+      seatRetry[catB] = {
+        prVotes: [...council.prVotes],
+        registered,
+        wardCast,
+        prCast,
+        wards: own.ids,
+      };
     }
   }
   return withRetry({ lastModified, councils, wards }, seatRetry);
@@ -108,12 +139,26 @@ export function withRetriedSeats(code, entry, seatsByCouncil) {
     const saved = seatRetry[catB];
     if (!saved) continue;
     const { registered, wardCast, prCast } = saved;
-    const council = { prVotes: new Map(saved.prVotes), registered, wardCast, prCast };
+    const council = {
+      prVotes: new Map(saved.prVotes),
+      registered,
+      wardCast,
+      prCast,
+    };
     // An unchecked council's wards were never marked down, so `confirmed` restarts from "has a winner".
     const own = saved.wards.filter((id) => isRecord(wards[id]));
-    for (const id of own) wards[id] = { ...wards[id], confirmed: wards[id].winner != null };
-    councils[catB] = councilResult(`${code}/${catB}`, council, seats, own.map((id) => wards[id]));
+    for (const id of own)
+      wards[id] = { ...wards[id], confirmed: wards[id].winner != null };
+    councils[catB] = councilResult(
+      `${code}/${catB}`,
+      council,
+      seats,
+      own.map((id) => wards[id]),
+    );
     delete seatRetry[catB];
   }
-  return withRetry({ lastModified: entry.lastModified, councils, wards }, seatRetry);
+  return withRetry(
+    { lastModified: entry.lastModified, councils, wards },
+    seatRetry,
+  );
 }

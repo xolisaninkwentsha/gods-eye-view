@@ -44,9 +44,19 @@ const COUNCILS = Object.fromEntries(
 );
 const ALL_COUNCILS = Object.values(COUNCILS).flat();
 const VOTES = {
-  ward1: [[ANC, 60], [DA, 40]],
-  ward2: [[DA, 70], [EFF, 30]],
-  pr: [[ANC, 100], [DA, 110], [EFF, 30]],
+  ward1: [
+    [ANC, 60],
+    [DA, 40],
+  ],
+  ward2: [
+    [DA, 70],
+    [EFF, 30],
+  ],
+  pr: [
+    [ANC, 100],
+    [DA, 110],
+    [EFF, 30],
+  ],
 };
 
 /** A province CSV: BOM, CRLF or LF by province, no final line terminator. */
@@ -56,17 +66,40 @@ function provinceCsv(code, votes = {}) {
   for (const { catB, wards } of COUNCILS[code]) {
     const v = { ...VOTES, ...votes[catB] };
     const row = (ward, ballot, party, n) =>
-      [code, `${catB} - TOWN ${catB}`, `Ward ${ward}`, `${ward}1`, '"Saal, Ëlandsfontein"', 100, ballot, 1, party, n, '2026/11/07'].join(',');
-    for (const [party, n] of v.ward1) lines.push(row(wards[0], 'Ward', party, n));
-    for (const [party, n] of v.ward2) lines.push(row(wards[1], 'Ward', party, n));
-    v.pr.forEach(([party, n], i) => lines.push(row(wards[i % 2], 'PR', party, n)));
+      [
+        code,
+        `${catB} - TOWN ${catB}`,
+        `Ward ${ward}`,
+        `${ward}1`,
+        '"Saal, Ëlandsfontein"',
+        100,
+        ballot,
+        1,
+        party,
+        n,
+        '2026/11/07',
+      ].join(',');
+    for (const [party, n] of v.ward1)
+      lines.push(row(wards[0], 'Ward', party, n));
+    for (const [party, n] of v.ward2)
+      lines.push(row(wards[1], 'Ward', party, n));
+    v.pr.forEach(([party, n], i) =>
+      lines.push(row(wards[i % 2], 'PR', party, n)),
+    );
     lines.push(row(wards[0], 'DC 40%', ANC, 999));
   }
   return `﻿${lines.join(eol)}`;
 }
 
 /** A seat workbook laid out like the IEC's; parties are [name, seats, ward seats, PR seats]. */
-function seatXls(parties = [[DA, 2, 1, 1], [ANC, 1, 1, 0], [EFF, 1, 0, 1]], independents = 0) {
+function seatXls(
+  parties = [
+    [DA, 2, 1, 1],
+    [ANC, 1, 1, 0],
+    [EFF, 1, 0, 1],
+  ],
+  independents = 0,
+) {
   const total = parties.reduce((sum, p) => sum + p[1], 0);
   return buildXls([
     [
@@ -74,14 +107,33 @@ function seatXls(parties = [[DA, 2, 1, 1], [ANC, 1, 1, 0], [EFF, 1, 0, 1]], inde
       ['Total Seats Available in Municipality - (B)', null, null, total],
       ['Independent Ward Councillors Elected - (C)', null, null, independents],
       [],
-      [null, 'Party Name', 'Total Party Seats (x)', 'Ward Seats (y)', 'PR List Seats (x-y)'],
-      ...parties.map(([name, seats, ward, pr]) => [null, name, seats, ward, pr]),
+      [
+        null,
+        'Party Name',
+        'Total Party Seats (x)',
+        'Ward Seats (y)',
+        'PR List Seats (x-y)',
+      ],
+      ...parties.map(([name, seats, ward, pr]) => [
+        null,
+        name,
+        seats,
+        ward,
+        pr,
+      ]),
       [null, 'Total Party Seats', total, null, null],
     ],
   ]);
 }
 
-const square = [[[28, -26], [28.1, -26], [28.1, -26.1], [28, -26]]];
+const square = [
+  [
+    [28, -26],
+    [28.1, -26],
+    [28.1, -26.1],
+    [28, -26],
+  ],
+];
 function boundaryPage(level) {
   const geometry = { type: 'Polygon', coordinates: square };
   const features =
@@ -89,13 +141,24 @@ function boundaryPage(level) {
       ? ALL_COUNCILS.flatMap(({ catB, wards }) =>
           wards.map((id, i) => ({
             type: 'Feature',
-            properties: { WardID: Number(id), CAT_B: catB, WardNo: i + 1, MUNICNAME: `Town ${catB}`, Province: 'Test' },
+            properties: {
+              WardID: Number(id),
+              CAT_B: catB,
+              WardNo: i + 1,
+              MUNICNAME: `Town ${catB}`,
+              Province: 'Test',
+            },
             geometry,
           })),
         )
       : [...ALL_COUNCILS.map(({ catB }) => catB), 'ZZ999'].map((catB) => ({
           type: 'Feature',
-          properties: { CAT_B: catB, MUNICNAME: `Town ${catB}`, PROVINCE: 'Test', CATEGORY: 'B' },
+          properties: {
+            CAT_B: catB,
+            MUNICNAME: `Town ${catB}`,
+            PROVINCE: 'Test',
+            CATEGORY: 'B',
+          },
           geometry,
         }));
   return { type: 'FeatureCollection', features };
@@ -153,28 +216,46 @@ function upstream({ gate } = {}) {
     assert.equal(init.headers?.['User-Agent'], UA);
     assert.ok(init.signal instanceof AbortSignal);
     if (url.hostname === MDB_HOST) {
-      if (up.mdbStatus !== 200) return new Response('down', { status: up.mdbStatus });
-      return Response.json(boundaryPage(url.pathname.includes('Wards') ? 'wards' : 'councils'));
+      if (up.mdbStatus !== 200)
+        return new Response('down', { status: up.mdbStatus });
+      return Response.json(
+        boundaryPage(url.pathname.includes('Wards') ? 'wards' : 'councils'),
+      );
     }
     assert.equal(url.hostname, IEC_HOST);
     if (gate) await gate;
-    const csv = /^\/home\/LGEPublicReports\/1887\/Downloadable%20Party%20Results\/([A-Z]{2})\.csv$/.exec(url.pathname);
+    const csv =
+      /^\/home\/LGEPublicReports\/1887\/Downloadable%20Party%20Results\/([A-Z]{2})\.csv$/.exec(
+        url.pathname,
+      );
     if (csv) {
       const code = csv[1];
-      const headers = { 'Last-Modified': new Date(up.lastModified[code]).toUTCString() };
+      const headers = {
+        'Last-Modified': new Date(up.lastModified[code]).toUTCString(),
+      };
       if (method === 'HEAD') return new Response(null, { headers });
       if (up.csvHold[code]) await up.csvHold[code];
-      if (up.csvStatus[code]) return new Response('nope', { status: up.csvStatus[code] });
+      if (up.csvStatus[code])
+        return new Response('nope', { status: up.csvStatus[code] });
       const bytes = new TextEncoder().encode(provinceCsv(code, up.votes));
-      return new Response(tracked('csv', bytes, 97, up.csvBreak[code]), { headers });
+      return new Response(tracked('csv', bytes, 97, up.csvBreak[code]), {
+        headers,
+      });
     }
-    const seat = /^\/home\/LGEPublicReports\/1887\/Seat%20Calculation%20Detail\/([A-Z]{2})\/([A-Z0-9]+)\.xls$/.exec(url.pathname);
+    const seat =
+      /^\/home\/LGEPublicReports\/1887\/Seat%20Calculation%20Detail\/([A-Z]{2})\/([A-Z0-9]+)\.xls$/.exec(
+        url.pathname,
+      );
     assert.ok(seat, `unexpected IEC path ${url.pathname}`);
     assert.equal(method, 'GET');
     const [, code, catB] = seat;
-    assert.ok(COUNCILS[code].some((c) => c.catB === catB), `${catB} is not a council of ${code}`);
+    assert.ok(
+      COUNCILS[code].some((c) => c.catB === catB),
+      `${catB} is not a council of ${code}`,
+    );
     const answer = up.seats[catB] ?? seatXls();
-    if (typeof answer === 'number') return new Response('missing', { status: answer });
+    if (typeof answer === 'number')
+      return new Response('missing', { status: answer });
     return new Response(tracked('seat', answer, 512));
   };
   return up;
@@ -184,9 +265,23 @@ function upstream({ gate } = {}) {
 function recordingFs() {
   const ops = [];
   const impl = {};
-  for (const name of ['readFile', 'writeFile', 'appendFile', 'rename', 'mkdir', 'rm', 'unlink', 'open', 'copyFile', 'truncate']) {
+  for (const name of [
+    'readFile',
+    'writeFile',
+    'appendFile',
+    'rename',
+    'mkdir',
+    'rm',
+    'unlink',
+    'open',
+    'copyFile',
+    'truncate',
+  ]) {
     impl[name] = (...args) => {
-      ops.push({ name, paths: name === 'rename' ? args.slice(0, 2) : [args[0]] });
+      ops.push({
+        name,
+        paths: name === 'rename' ? args.slice(0, 2) : [args[0]],
+      });
       return fs.promises[name](...args);
     };
   }
@@ -208,7 +303,10 @@ function install(options) {
       },
     });
   }
-  return async (url = '/councils', { method = 'GET', peer, headers = {}, hook = 'configureServer' } = {}) => {
+  return async (
+    url = '/councils',
+    { method = 'GET', peer, headers = {}, hook = 'configureServer' } = {},
+  ) => {
     peers += 1;
     const res = {
       headers: {},
@@ -225,7 +323,10 @@ function install(options) {
       },
     };
     const remoteAddress = peer ?? `10.9.${(peers >> 8) & 255}.${peers & 255}`;
-    await handlers[hook]({ url, method, headers, socket: { remoteAddress } }, res);
+    await handlers[hook](
+      { url, method, headers, socket: { remoteAddress } },
+      res,
+    );
     return res;
   };
 }
@@ -260,7 +361,9 @@ const untilResults = (request, status, url = '/councils') =>
   }, `results ${status}`);
 
 async function setup(t, { env = ON, gate, fsImpl } = {}) {
-  const cacheDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'gev-sa-elections-'));
+  const cacheDir = await fs.promises.mkdtemp(
+    path.join(os.tmpdir(), 'gev-sa-elections-'),
+  );
   t.after(() => fs.promises.rm(cacheDir, { recursive: true, force: true }));
   const up = upstream({ gate });
   const clock = { now: T0 };
@@ -277,7 +380,17 @@ async function setup(t, { env = ON, gate, fsImpl } = {}) {
 // ---------------------------------------------------------------- iec.js
 
 test('IEC URLs follow the published patterns with spaces encoded', () => {
-  assert.deepEqual(IEC_PROVINCES, ['EC', 'FS', 'GP', 'KN', 'NP', 'MP', 'NW', 'NC', 'WP']);
+  assert.deepEqual(IEC_PROVINCES, [
+    'EC',
+    'FS',
+    'GP',
+    'KN',
+    'NP',
+    'MP',
+    'NW',
+    'NC',
+    'WP',
+  ]);
   assert.equal(
     provinceCsvUrl('WP'),
     'https://results.elections.org.za/home/LGEPublicReports/1887/Downloadable%20Party%20Results/WP.csv',
@@ -297,14 +410,21 @@ test('headProvince returns Last-Modified in milliseconds, or null without one', 
   const lastModified = await headProvince('NC', {
     fetchImpl: async (url, init) => {
       seen.push([url, init.method, init.redirect, init.headers['User-Agent']]);
-      return new Response(null, { headers: { 'Last-Modified': new Date(LM).toUTCString() } });
+      return new Response(null, {
+        headers: { 'Last-Modified': new Date(LM).toUTCString() },
+      });
     },
   });
   assert.equal(lastModified, LM);
   assert.deepEqual(seen, [[provinceCsvUrl('NC'), 'HEAD', 'error', UA]]);
-  assert.equal(await headProvince('NC', { fetchImpl: async () => new Response(null) }), null);
+  assert.equal(
+    await headProvince('NC', { fetchImpl: async () => new Response(null) }),
+    null,
+  );
   await assert.rejects(
-    headProvince('NC', { fetchImpl: async () => new Response(null, { status: 404 }) }),
+    headProvince('NC', {
+      fetchImpl: async () => new Response(null, { status: 404 }),
+    }),
     /upstream_unavailable/,
   );
 });
@@ -312,14 +432,31 @@ test('headProvince returns Last-Modified in milliseconds, or null without one', 
 test('streamProvince parses a body split mid-line, mid-CRLF and mid-character', async () => {
   for (const eol of ['\r\n', '\n']) {
     const row = (ballot, party, votes) =>
-      ['WP', 'WP001 - TOWN', 'Ward 18001001', '1', '"Saal, Kaap"', 100, ballot, 1, party, votes, 'x'].join(',');
+      [
+        'WP',
+        'WP001 - TOWN',
+        'Ward 18001001',
+        '1',
+        '"Saal, Kaap"',
+        100,
+        ballot,
+        1,
+        party,
+        votes,
+        'x',
+      ].join(',');
     const text = `﻿${[HEADER, row('Ward', '"PARTI ÉÈ, KAAP"', 5), row('Ward', DA, 7), row('PR', DA, 9)].join(eol)}`;
     const bytes = new TextEncoder().encode(text);
     const calls = [];
     // One byte per chunk: every split point, including inside "\r\n" and inside "É".
     const tally = await streamProvince('WP', {
       fetchImpl: async (url, init) => {
-        calls.push([url, init.method ?? 'GET', init.redirect, init.headers['User-Agent']]);
+        calls.push([
+          url,
+          init.method ?? 'GET',
+          init.redirect,
+          init.headers['User-Agent'],
+        ]);
         let at = 0;
         return new Response(
           new ReadableStream({
@@ -333,15 +470,27 @@ test('streamProvince parses a body split mid-line, mid-CRLF and mid-character', 
     });
     assert.deepEqual(calls, [[provinceCsvUrl('WP'), 'GET', 'error', UA]]);
     const ward = tally.wards.get('18001001');
-    assert.deepEqual([...ward.votes], [['PARTI ÉÈ, KAAP', 5], [DA, 7]]);
+    assert.deepEqual(
+      [...ward.votes],
+      [
+        ['PARTI ÉÈ, KAAP', 5],
+        [DA, 7],
+      ],
+    );
     assert.equal(ward.registered, 100);
-    assert.deepEqual([...tally.councils.get('WP001').prVotes], [[DA, 9]], JSON.stringify(eol));
+    assert.deepEqual(
+      [...tally.councils.get('WP001').prVotes],
+      [[DA, 9]],
+      JSON.stringify(eol),
+    );
   }
 });
 
 test('streamProvince stops past 80 MiB and cancels the download', async () => {
   const MIB = 1024 * 1024;
-  const filler = new TextEncoder().encode(`${'x'.repeat(64 * 1024 - 1)}\n`.repeat(16));
+  const filler = new TextEncoder().encode(
+    `${'x'.repeat(64 * 1024 - 1)}\n`.repeat(16),
+  );
   assert.equal(filler.byteLength, MIB);
   let sent = 0;
   let cancelled = false;
@@ -358,9 +507,12 @@ test('streamProvince stops past 80 MiB and cancels the download', async () => {
       cancelled = true;
     },
   });
-  await assert.rejects(streamProvince('GP', { fetchImpl: async () => new Response(body) }), {
-    code: 'RESPONSE_TOO_LARGE',
-  });
+  await assert.rejects(
+    streamProvince('GP', { fetchImpl: async () => new Response(body) }),
+    {
+      code: 'RESPONSE_TOO_LARGE',
+    },
+  );
   assert.equal(cancelled, true);
   assert.ok(sent < 90, `read ${sent} MiB`);
   let declaredCancelled = false;
@@ -372,7 +524,10 @@ test('streamProvince stops past 80 MiB and cancels the download', async () => {
     }),
     { headers: { 'Content-Length': String(80 * MIB + 1) } },
   );
-  await assert.rejects(streamProvince('GP', { fetchImpl: async () => declared }), { code: 'RESPONSE_TOO_LARGE' });
+  await assert.rejects(
+    streamProvince('GP', { fetchImpl: async () => declared }),
+    { code: 'RESPONSE_TOO_LARGE' },
+  );
   assert.equal(declaredCancelled, true);
 });
 
@@ -389,16 +544,23 @@ test('streamProvince gives up when the caller aborts, and on a bad header', asyn
     },
   });
   await assert.rejects(
-    streamProvince('EC', { fetchImpl: async () => new Response(endless), signal: controller.signal }),
+    streamProvince('EC', {
+      fetchImpl: async () => new Response(endless),
+      signal: controller.signal,
+    }),
     { name: 'AbortError' },
   );
   assert.equal(cancelled, true);
   await assert.rejects(
-    streamProvince('EC', { fetchImpl: async () => new Response('not,the,header\n1,2,3\n') }),
+    streamProvince('EC', {
+      fetchImpl: async () => new Response('not,the,header\n1,2,3\n'),
+    }),
     /csv_header/,
   );
   await assert.rejects(
-    streamProvince('EC', { fetchImpl: async () => new Response('gone', { status: 404 }) }),
+    streamProvince('EC', {
+      fetchImpl: async () => new Response('gone', { status: 404 }),
+    }),
     /upstream_unavailable/,
   );
 });
@@ -415,7 +577,9 @@ test('fetchSeatFile reads at most 1 MiB', async () => {
   assert.deepEqual(new Uint8Array(got), new Uint8Array(bytes));
   assert.deepEqual(seen, [[seatFileUrl('WP', 'WP001'), 'error', UA]]);
   await assert.rejects(
-    fetchSeatFile('WP', 'WP001', { fetchImpl: async () => new Response(new Uint8Array(1024 * 1024 + 1)) }),
+    fetchSeatFile('WP', 'WP001', {
+      fetchImpl: async () => new Response(new Uint8Array(1024 * 1024 + 1)),
+    }),
     { code: 'RESPONSE_TOO_LARGE' },
   );
 });
@@ -432,11 +596,17 @@ test('with the switch off it serves boundaries only and never calls the IEC', as
     assert.equal(res.body.results, 'off');
     assert.equal(res.body.resultsAsOf, null);
     assert.equal(res.body.boundariesAsOf, T0);
-    assert.equal(res.body.areas.length, level === 'wards' ? ALL_COUNCILS.length * 2 : ALL_COUNCILS.length + 1);
+    assert.equal(
+      res.body.areas.length,
+      level === 'wards' ? ALL_COUNCILS.length * 2 : ALL_COUNCILS.length + 1,
+    );
     assert.ok(res.body.areas.every((a) => a.result === null));
   }
   await settle();
-  assert.equal(up.calls.filter((c) => c.url.href.includes('elections.org.za')).length, 0);
+  assert.equal(
+    up.calls.filter((c) => c.url.href.includes('elections.org.za')).length,
+    0,
+  );
   assert.equal(up.calls.length, 2);
 });
 
@@ -474,11 +644,21 @@ test('first request answers loading, then ok with council and ward results joine
   assert.equal(wp.seatCheck, 'ok');
   assert.deepEqual(
     wp.parties.map((p) => [p.party, p.seats]),
-    [[DA, 2], [ANC, 1], [EFF, 1]],
+    [
+      [DA, 2],
+      [ANC, 1],
+      [EFF, 1],
+    ],
   );
   assert.equal(councils.WP001.name, 'Town WP001');
-  assert.equal(councils.ZZ999.result, null, 'an area the IEC does not list has no result');
-  assert.ok(ALL_COUNCILS.every(({ catB }) => councils[catB].result?.seatCheck === 'ok'));
+  assert.equal(
+    councils.ZZ999.result,
+    null,
+    'an area the IEC does not list has no result',
+  );
+  assert.ok(
+    ALL_COUNCILS.every(({ catB }) => councils[catB].result?.seatCheck === 'ok'),
+  );
 
   const wards = byId(await request('/wards'));
   const [w1, w2] = COUNCILS.WP[0].wards;
@@ -495,13 +675,21 @@ test('first request answers loading, then ok with council and ward results joine
   const gets = iecCalls(up.calls).filter((c) => c.method === 'GET');
   assert.equal(gets.filter((c) => c.url.pathname.endsWith('.csv')).length, 9);
   assert.deepEqual(
-    gets.filter((c) => c.url.pathname.endsWith('.xls')).map((c) => c.url.pathname.split('/').slice(-2).join('/')).sort(),
+    gets
+      .filter((c) => c.url.pathname.endsWith('.xls'))
+      .map((c) => c.url.pathname.split('/').slice(-2).join('/'))
+      .sort(),
     ALL_COUNCILS.map(({ code, catB }) => `${code}/${catB}.xls`).sort(),
   );
 
-  const saved = JSON.parse(await fs.promises.readFile(path.join(cacheDir, 'results.json'), 'utf8'));
+  const saved = JSON.parse(
+    await fs.promises.readFile(path.join(cacheDir, 'results.json'), 'utf8'),
+  );
   assert.equal(saved.version, 1);
-  assert.deepEqual(Object.keys(saved.provinces).sort(), [...IEC_PROVINCES].sort());
+  assert.deepEqual(
+    Object.keys(saved.provinces).sort(),
+    [...IEC_PROVINCES].sort(),
+  );
   assert.equal(saved.provinces.WP.lastModified, LM);
   assert.equal(saved.provinces.WP.councils.WP001.seatCheck, 'ok');
   assert.equal(saved.provinces.WP.wards[w1].winner.party, ANC);
@@ -542,7 +730,8 @@ test('a failed province keeps its previous results and marks the answer stale', 
   assert.ok(warn.mock.calls.some((c) => String(c.arguments[0]).includes('NC')));
 });
 
-const callTail = (c) => `${c.method} ${c.url.pathname.split('/').slice(-2).join('/')}`;
+const callTail = (c) =>
+  `${c.method} ${c.url.pathname.split('/').slice(-2).join('/')}`;
 
 test('a province that breaks off on the first run leaves only its own areas without results', async (t) => {
   t.mock.method(console, 'warn', () => {});
@@ -551,7 +740,11 @@ test('a province that breaks off on the first run leaves only its own areas with
   await request('/councils');
   const councils = byId(await untilResults(request, 'stale'));
   assert.equal(councils.KN001.result, null);
-  assert.ok(ALL_COUNCILS.filter((c) => c.code !== 'KN').every(({ catB }) => councils[catB].result !== null));
+  assert.ok(
+    ALL_COUNCILS.filter((c) => c.code !== 'KN').every(
+      ({ catB }) => councils[catB].result !== null,
+    ),
+  );
 
   // The missing province is retried an hour after the failure, alone, and reads loading meanwhile.
   const mark = up.calls.length;
@@ -585,10 +778,19 @@ test('a cache missing some provinces fetches only those, and reads loading meanw
   const hold = deferred();
   const up = upstream();
   up.csvHold.KN = hold.promise;
-  const request = install({ fetchImpl: up.fetchImpl, now: () => T0 + HOUR, cacheDir: first.cacheDir, env: ON });
+  const request = install({
+    fetchImpl: up.fetchImpl,
+    now: () => T0 + HOUR,
+    cacheDir: first.cacheDir,
+    env: ON,
+  });
   const res = await request('/councils');
   assert.equal(res.body.results, 'loading');
-  assert.equal(byId(res).EC001.result.seatCheck, 'ok', 'cached provinces are served at once');
+  assert.equal(
+    byId(res).EC001.result.seatCheck,
+    'ok',
+    'cached provinces are served at once',
+  );
   assert.equal(byId(res).KN001.result, null);
   const partial = await until(async () => {
     const r = await request('/councils');
@@ -596,7 +798,10 @@ test('a cache missing some provinces fetches only those, and reads loading meanw
   }, 'WP filled in');
   assert.equal(partial.body.results, 'loading');
   hold.resolve();
-  assert.equal(byId(await untilResults(request, 'ok')).KN001.result.seatCheck, 'ok');
+  assert.equal(
+    byId(await untilResults(request, 'ok')).KN001.result.seatCheck,
+    'ok',
+  );
   await settle();
   assert.deepEqual(up.calls.map(callTail).sort(), [
     'GET Downloadable%20Party%20Results/KN.csv',
@@ -621,13 +826,20 @@ test('a seat file that failed is fetched again on the next daily check', async (
   // Same Last-Modified everywhere. NC's file now reads cleanly; FS's disagrees with its wards.
   const mark = up.calls.length;
   delete up.seats.NC001;
-  up.seats.FS001 = seatXls([[DA, 3, 2, 1], [ANC, 1, 0, 1]]);
+  up.seats.FS001 = seatXls([
+    [DA, 3, 2, 1],
+    [ANC, 1, 0, 1],
+  ]);
   clock.now += DAY + 1;
   await request('/councils');
   const after = await until(async () => {
     const res = await request('/councils');
     const c = byId(res);
-    return c.NC001.result.seatCheck !== 'unchecked' && c.FS001.result.seatCheck !== 'unchecked' && res;
+    return (
+      c.NC001.result.seatCheck !== 'unchecked' &&
+      c.FS001.result.seatCheck !== 'unchecked' &&
+      res
+    );
   }, 'seat files retried');
   await settle();
   const councils = byId(after);
@@ -637,22 +849,38 @@ test('a seat file that failed is fetched again on the next daily check', async (
   assert.equal(councils.FS001.result.seatCheck, 'mismatch');
   assert.equal(after.body.results, 'ok');
   const wards = byId(await request('/wards'));
-  for (const id of COUNCILS.NC[0].wards) assert.equal(wards[id].result.confirmed, true, id);
-  for (const id of COUNCILS.FS[0].wards) assert.equal(wards[id].result.confirmed, false, id);
+  for (const id of COUNCILS.NC[0].wards)
+    assert.equal(wards[id].result.confirmed, true, id);
+  for (const id of COUNCILS.FS[0].wards)
+    assert.equal(wards[id].result.confirmed, false, id);
   assert.equal(wards[COUNCILS.FS[0].wards[0]].result.winner.party, ANC);
 
   const later = up.calls.slice(mark).filter((c) => c.url.hostname === IEC_HOST);
   assert.equal(later.filter((c) => c.method === 'HEAD').length, 9);
-  assert.deepEqual(later.filter((c) => c.method === 'GET').map(callTail).sort(), ['GET FS/FS001.xls', 'GET NC/NC001.xls']);
-  const saved = JSON.parse(await fs.promises.readFile(path.join(cacheDir, 'results.json'), 'utf8'));
+  assert.deepEqual(
+    later
+      .filter((c) => c.method === 'GET')
+      .map(callTail)
+      .sort(),
+    ['GET FS/FS001.xls', 'GET NC/NC001.xls'],
+  );
+  const saved = JSON.parse(
+    await fs.promises.readFile(path.join(cacheDir, 'results.json'), 'utf8'),
+  );
   assert.equal(saved.provinces.NC.councils.NC001.seatCheck, 'ok');
-  assert.equal(saved.provinces.FS.wards[COUNCILS.FS[0].wards[0]].confirmed, false);
+  assert.equal(
+    saved.provinces.FS.wards[COUNCILS.FS[0].wards[0]].confirmed,
+    false,
+  );
 
   // Nothing is left to retry, so the next day's check is HEADs only.
   const quiet = up.calls.length;
   clock.now += DAY + 1;
   await request('/councils');
-  await until(() => up.calls.slice(quiet).filter((c) => c.method === 'HEAD').length === 9, 'nine HEADs');
+  await until(
+    () => up.calls.slice(quiet).filter((c) => c.method === 'HEAD').length === 9,
+    'nine HEADs',
+  );
   await settle();
   assert.ok(up.calls.slice(quiet).every((c) => c.method === 'HEAD'));
 });
@@ -691,11 +919,16 @@ test('an unchanged Last-Modified does not download again', async (t) => {
 
   clock.now += 2;
   await request('/councils');
-  await until(() => up.calls.slice(mark).filter((c) => c.method === 'HEAD').length === 9, 'nine HEADs');
+  await until(
+    () => up.calls.slice(mark).filter((c) => c.method === 'HEAD').length === 9,
+    'nine HEADs',
+  );
   await settle();
   const later = up.calls.slice(mark);
   assert.equal(later.length, 9);
-  assert.ok(later.every((c) => c.method === 'HEAD' && c.url.hostname === IEC_HOST));
+  assert.ok(
+    later.every((c) => c.method === 'HEAD' && c.url.hostname === IEC_HOST),
+  );
   assert.equal((await request('/councils')).body.results, 'ok');
 });
 
@@ -708,7 +941,12 @@ test('a changed Last-Modified re-reads only that province', async (t) => {
   const [e1] = COUNCILS.EC[0].wards;
 
   up.lastModified.WP = LM + DAY;
-  up.votes.WP001 = { ward1: [[ANC, 80], [DA, 20]] };
+  up.votes.WP001 = {
+    ward1: [
+      [ANC, 80],
+      [DA, 20],
+    ],
+  };
   clock.now += DAY + 1;
   await request('/wards');
   const updated = await until(async () => {
@@ -721,7 +959,9 @@ test('a changed Last-Modified re-reads only that province', async (t) => {
   const later = up.calls.slice(mark);
   assert.equal(later.filter((c) => c.method === 'HEAD').length, 9);
   assert.deepEqual(
-    later.filter((c) => c.method === 'GET').map((c) => c.url.pathname.split('/').slice(-2).join('/')),
+    later
+      .filter((c) => c.method === 'GET')
+      .map((c) => c.url.pathname.split('/').slice(-2).join('/')),
     ['Downloadable%20Party%20Results/WP.csv', 'WP/WP001.xls'],
   );
 });
@@ -734,7 +974,10 @@ test('results are replaced by rename, never written in place', async (t) => {
   up.lastModified.EC = LM + DAY;
   clock.now += DAY + 1;
   await request('/councils');
-  await until(async () => (await request('/councils')).body.resultsAsOf === LM + DAY, 'EC re-read');
+  await until(
+    async () => (await request('/councils')).body.resultsAsOf === LM + DAY,
+    'EC re-read',
+  );
   await settle();
 
   const target = path.join(cacheDir, 'results.json');
@@ -742,7 +985,10 @@ test('results are replaced by rename, never written in place', async (t) => {
   for (const op of fsr.ops) {
     if (op.name === 'readFile' || op.name === 'mkdir') continue;
     if (op.name === 'rename') {
-      assert.ok(written.has(op.paths[0]), `renames only a temp file it wrote: ${op.paths[0]}`);
+      assert.ok(
+        written.has(op.paths[0]),
+        `renames only a temp file it wrote: ${op.paths[0]}`,
+      );
       assert.equal(path.dirname(op.paths[1]), cacheDir);
       continue;
     }
@@ -753,9 +999,17 @@ test('results are replaced by rename, never written in place', async (t) => {
     assert.notEqual(file, target);
     written.add(file);
   }
-  const intoResults = fsr.ops.filter((op) => op.name === 'rename' && op.paths[1] === target);
-  assert.ok(intoResults.length >= 2, `results.json renamed into place ${intoResults.length} times`);
-  assert.deepEqual((await fs.promises.readdir(cacheDir)).sort(), ['boundaries-councils.json', 'results.json']);
+  const intoResults = fsr.ops.filter(
+    (op) => op.name === 'rename' && op.paths[1] === target,
+  );
+  assert.ok(
+    intoResults.length >= 2,
+    `results.json renamed into place ${intoResults.length} times`,
+  );
+  assert.deepEqual((await fs.promises.readdir(cacheDir)).sort(), [
+    'boundaries-councils.json',
+    'results.json',
+  ]);
   const saved = JSON.parse(await fs.promises.readFile(target, 'utf8'));
   assert.equal(saved.provinces.EC.lastModified, LM + DAY);
 });
@@ -763,7 +1017,10 @@ test('results are replaced by rename, never written in place', async (t) => {
 test('a council with a mismatched seat check marks its wards unconfirmed', async (t) => {
   const { up, request } = await setup(t);
   // The votes give ANC one ward and DA one; this seat file says DA won both.
-  up.seats.WP001 = seatXls([[DA, 3, 2, 1], [ANC, 1, 0, 1]]);
+  up.seats.WP001 = seatXls([
+    [DA, 3, 2, 1],
+    [ANC, 1, 0, 1],
+  ]);
   await request('/councils');
   const councils = byId(await untilResults(request, 'ok'));
   assert.equal(councils.WP001.result.seatCheck, 'mismatch');
@@ -772,8 +1029,13 @@ test('a council with a mismatched seat check marks its wards unconfirmed', async
   const [w1, w2] = COUNCILS.WP[0].wards;
   assert.equal(wards[w1].result.confirmed, false);
   assert.equal(wards[w2].result.confirmed, false);
-  assert.equal(wards[w1].result.winner.party, ANC, 'the vote-based winner still stands');
-  for (const id of COUNCILS.EC[0].wards) assert.equal(wards[id].result.confirmed, true);
+  assert.equal(
+    wards[w1].result.winner.party,
+    ANC,
+    'the vote-based winner still stands',
+  );
+  for (const id of COUNCILS.EC[0].wards)
+    assert.equal(wards[id].result.confirmed, true);
 });
 
 test('a seat file that cannot be read leaves only that council unchecked', async (t) => {
@@ -800,7 +1062,12 @@ test('a restart serves the cached copy and only checks Last-Modified', async (t)
   await untilResults(first.request, 'ok');
 
   const up = upstream();
-  const request = install({ fetchImpl: up.fetchImpl, now: () => T0 + HOUR, cacheDir: first.cacheDir, env: ON });
+  const request = install({
+    fetchImpl: up.fetchImpl,
+    now: () => T0 + HOUR,
+    cacheDir: first.cacheDir,
+    env: ON,
+  });
   const res = await request('/councils');
   assert.equal(res.body.results, 'ok');
   assert.equal(res.body.boundariesAsOf, T0);
@@ -813,7 +1080,10 @@ test('a restart serves the cached copy and only checks Last-Modified', async (t)
 
 test('an unreadable or empty cache file counts as absent', async (t) => {
   const { up, request, cacheDir } = await setup(t);
-  await fs.promises.writeFile(path.join(cacheDir, 'results.json'), '{"version":1,"provinces":');
+  await fs.promises.writeFile(
+    path.join(cacheDir, 'results.json'),
+    '{"version":1,"provinces":',
+  );
   await fs.promises.writeFile(
     path.join(cacheDir, 'boundaries-councils.json'),
     JSON.stringify({ version: 1, fetchedAt: T0, areas: [] }),
@@ -861,8 +1131,16 @@ test('boundaries are refreshed after a week, and a failed refresh keeps the last
   up.mdbStatus = 200;
   clock.now += HOUR;
   await request('/councils');
-  await until(async () => (await request('/councils')).body.boundariesAsOf === clock.now, 'refreshed');
-  const saved = JSON.parse(await fs.promises.readFile(path.join(cacheDir, 'boundaries-councils.json'), 'utf8'));
+  await until(
+    async () => (await request('/councils')).body.boundariesAsOf === clock.now,
+    'refreshed',
+  );
+  const saved = JSON.parse(
+    await fs.promises.readFile(
+      path.join(cacheDir, 'boundaries-councils.json'),
+      'utf8',
+    ),
+  );
   assert.equal(saved.fetchedAt, clock.now);
 });
 
@@ -875,14 +1153,22 @@ test('refuses unknown paths, other methods and rate-limited clients', async (t) 
   for (const url of ['/', '/nope', '/councils/extra', '/wards/../councils'])
     assert.equal((await request(url)).status, 404, url);
   const crossSite = await request('/councils', {
-    headers: { host: 'localhost:5173', origin: 'https://evil.example', 'sec-fetch-site': 'cross-site' },
+    headers: {
+      host: 'localhost:5173',
+      origin: 'https://evil.example',
+      'sec-fetch-site': 'cross-site',
+    },
   });
   assert.equal(crossSite.status, 403);
   assert.equal(up.calls.length, 0, 'refusals reach no upstream');
   assert.deepEqual(fsr.ops, [], 'refusals touch no file');
 
   let last;
-  for (let i = 0; i < 61; i++) last = await request('/councils', { peer: '10.0.0.9', hook: 'configurePreviewServer' });
+  for (let i = 0; i < 61; i++)
+    last = await request('/councils', {
+      peer: '10.0.0.9',
+      hook: 'configurePreviewServer',
+    });
   assert.equal(last.status, 429);
   assert.equal(last.headers['Retry-After'], '60');
   assert.equal(last.body.error, 'rate_limited');

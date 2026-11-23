@@ -5,7 +5,17 @@ import { csvRecords, aggregateProvince } from './results.js';
 
 /** @typedef {import('./results.js').ProvinceTally} ProvinceTally */
 
-export const IEC_PROVINCES = Object.freeze(['EC', 'FS', 'GP', 'KN', 'NP', 'MP', 'NW', 'NC', 'WP']);
+export const IEC_PROVINCES = Object.freeze([
+  'EC',
+  'FS',
+  'GP',
+  'KN',
+  'NP',
+  'MP',
+  'NW',
+  'NC',
+  'WP',
+]);
 
 const IEC_EVENT = 'https://results.elections.org.za/home/LGEPublicReports/1887';
 const USER_AGENT = 'GodsEyeView (sa-elections)';
@@ -19,7 +29,8 @@ const SEAT_TIMEOUT_MS = 60_000;
 const HEAD_TIMEOUT_MS = 30_000;
 
 const defaultFetch = (...args) => globalThis.fetch(...args);
-const tooLarge = () => Object.assign(new Error('results_too_large'), { code: 'RESPONSE_TOO_LARGE' });
+const tooLarge = () =>
+  Object.assign(new Error('results_too_large'), { code: 'RESPONSE_TOO_LARGE' });
 
 /**
  * MDB/IEC council codes (CPT, NC061, KZN212). Council codes come from CSV text, so anything
@@ -27,7 +38,9 @@ const tooLarge = () => Object.assign(new Error('results_too_large'), { code: 'RE
  * @param {unknown} code
  */
 export const isCouncilCode = (code) =>
-  typeof code === 'string' && /^[A-Z]{2,3}\d{0,3}$/.test(code) && !/^DC\d/.test(code);
+  typeof code === 'string' &&
+  /^[A-Z]{2,3}\d{0,3}$/.test(code) &&
+  !/^DC\d/.test(code);
 
 function province(code) {
   if (!IEC_PROVINCES.includes(code)) throw new Error('unknown_province');
@@ -58,7 +71,9 @@ async function iecFetch(url, { fetchImpl, signal, method = 'GET' }) {
   });
   if (!response.ok) {
     await response.body?.cancel().catch(() => {});
-    throw Object.assign(new Error('upstream_unavailable'), { status: response.status });
+    throw Object.assign(new Error('upstream_unavailable'), {
+      status: response.status,
+    });
   }
   return response;
 }
@@ -68,7 +83,10 @@ async function iecFetch(url, { fetchImpl, signal, method = 'GET' }) {
  * @param {string} code
  * @returns {Promise<number|null>}
  */
-export async function headProvince(code, { fetchImpl = defaultFetch, signal } = {}) {
+export async function headProvince(
+  code,
+  { fetchImpl = defaultFetch, signal } = {},
+) {
   const response = await iecFetch(provinceCsvUrl(code), {
     fetchImpl,
     signal: withTimeout(signal, HEAD_TIMEOUT_MS),
@@ -85,8 +103,15 @@ async function* splitLines(text) {
   for await (const chunk of text) {
     const buffer = carry + chunk;
     let start = 0;
-    for (let at = buffer.indexOf('\n'); at >= 0; at = buffer.indexOf('\n', start)) {
-      yield buffer.slice(start, at > start && buffer.charCodeAt(at - 1) === 13 ? at - 1 : at);
+    for (
+      let at = buffer.indexOf('\n');
+      at >= 0;
+      at = buffer.indexOf('\n', start)
+    ) {
+      yield buffer.slice(
+        start,
+        at > start && buffer.charCodeAt(at - 1) === 13 ? at - 1 : at,
+      );
       start = at + 1;
     }
     carry = buffer.slice(start);
@@ -103,11 +128,20 @@ async function* splitLines(text) {
  * @param {string} code
  * @returns {Promise<ProvinceTally>}
  */
-export async function streamProvince(code, { fetchImpl = defaultFetch, signal } = {}) {
+export async function streamProvince(
+  code,
+  { fetchImpl = defaultFetch, signal } = {},
+) {
   const combined = withTimeout(signal, CSV_TIMEOUT_MS);
-  const response = await iecFetch(provinceCsvUrl(code), { fetchImpl, signal: combined });
+  const response = await iecFetch(provinceCsvUrl(code), {
+    fetchImpl,
+    signal: combined,
+  });
   const declared = Number(response.headers.get('content-length'));
-  if (!response.body || (Number.isFinite(declared) && declared > CSV_CAP_BYTES)) {
+  if (
+    !response.body ||
+    (Number.isFinite(declared) && declared > CSV_CAP_BYTES)
+  ) {
     await response.body?.cancel().catch(() => {});
     throw response.body ? tooLarge() : new Error('upstream_unavailable');
   }
@@ -119,7 +153,9 @@ export async function streamProvince(code, { fetchImpl = defaultFetch, signal } 
       else controller.enqueue(chunk);
     },
   });
-  const text = response.body.pipeThrough(counted, { signal: combined }).pipeThrough(new TextDecoderStream());
+  const text = response.body
+    .pipeThrough(counted, { signal: combined })
+    .pipeThrough(new TextDecoderStream());
   return aggregateProvince(csvRecords(splitLines(text)));
 }
 
@@ -129,8 +165,15 @@ export async function streamProvince(code, { fetchImpl = defaultFetch, signal } 
  * @param {string} catB council code
  * @returns {Promise<Uint8Array>}
  */
-export async function fetchSeatFile(code, catB, { fetchImpl = defaultFetch, signal } = {}) {
+export async function fetchSeatFile(
+  code,
+  catB,
+  { fetchImpl = defaultFetch, signal } = {},
+) {
   const combined = withTimeout(signal, SEAT_TIMEOUT_MS);
-  const response = await iecFetch(seatFileUrl(code, catB), { fetchImpl, signal: combined });
+  const response = await iecFetch(seatFileUrl(code, catB), {
+    fetchImpl,
+    signal: combined,
+  });
   return readResponseBytesCapped(response, SEAT_CAP_BYTES, combined);
 }

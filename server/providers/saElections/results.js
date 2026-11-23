@@ -11,7 +11,14 @@ import { normalizePartyName } from '../../../src/layers/saElections/parties.js';
  */
 
 const REQUIRED = [
-  'Municipality', 'Ward', 'VotingDistrict', 'RegisteredVoters', 'BallotType', 'SpoiltVotes', 'PartyName', 'TotalValidVotes',
+  'Municipality',
+  'Ward',
+  'VotingDistrict',
+  'RegisteredVoters',
+  'BallotType',
+  'SpoiltVotes',
+  'PartyName',
+  'TotalValidVotes',
 ];
 export const INDEPENDENT = 'INDEPENDENT';
 
@@ -37,7 +44,10 @@ export async function* csvRecords(lines) {
       const ch = line[i];
       if (inQuotes) {
         if (ch !== '"') field += ch;
-        else if (line[i + 1] === '"') { field += '"'; i++; } else inQuotes = false;
+        else if (line[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else inQuotes = false;
       } else if (ch === '"' && field === '') {
         inQuotes = true;
       } else if (ch === ',') {
@@ -47,7 +57,10 @@ export async function* csvRecords(lines) {
         field += ch;
       }
     }
-    if (inQuotes) { field += '\n'; continue; }
+    if (inQuotes) {
+      field += '\n';
+      continue;
+    }
     record.push(field);
     yield record;
     record = [];
@@ -101,7 +114,14 @@ export async function aggregateProvince(records) {
     }
     let ward = tally.wards.get(wardId);
     if (!ward) {
-      ward = { catB, wardNo: Number(wardId.slice(-3)), votes: new Map(), registered: 0, wardCast: 0, prCast: 0 };
+      ward = {
+        catB,
+        wardNo: Number(wardId.slice(-3)),
+        votes: new Map(),
+        registered: 0,
+        wardCast: 0,
+        prCast: 0,
+      };
       tally.wards.set(wardId, ward);
     }
 
@@ -131,7 +151,8 @@ export async function aggregateProvince(records) {
   return tally;
 }
 
-const turnoutOf = (t) => (t.registered > 0 ? Math.max(t.wardCast, t.prCast) / t.registered : null);
+const turnoutOf = (t) =>
+  t.registered > 0 ? Math.max(t.wardCast, t.prCast) / t.registered : null;
 
 /**
  * Ward winner from ward-ballot votes. `share` and `margin` are 0-1 fractions of the ward's valid
@@ -141,13 +162,23 @@ const turnoutOf = (t) => (t.registered > 0 ? Math.max(t.wardCast, t.prCast) / t.
  * @returns {WardResult}
  */
 export function wardOutcome(ward) {
-  const ranked = [...ward.votes].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1));
+  const ranked = [...ward.votes].sort(
+    (a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1),
+  );
   let total = 0;
   for (const [, v] of ward.votes) total += v;
-  const place = ([party, votes]) => ({ party, votes, share: total > 0 ? votes / total : 0 });
+  const place = ([party, votes]) => ({
+    party,
+    votes,
+    share: total > 0 ? votes / total : 0,
+  });
   const first = ranked[0] ? place(ranked[0]) : null;
   const second = ranked[1] ? place(ranked[1]) : null;
-  const tie = first !== null && first.votes > 0 && second !== null && second.votes === first.votes;
+  const tie =
+    first !== null &&
+    first.votes > 0 &&
+    second !== null &&
+    second.votes === first.votes;
   const decided = first !== null && first.votes > 0 && !tie;
   return {
     winner: decided ? first : null,
@@ -172,13 +203,17 @@ export function seatCheck(wardResults, seats) {
     if (r.winner === null) return 'mismatch';
     add(wins, r.winner.party, 1);
   }
-  if ((wins.get(INDEPENDENT) ?? 0) !== seats.independentWardSeats) return 'mismatch';
+  if ((wins.get(INDEPENDENT) ?? 0) !== seats.independentWardSeats)
+    return 'mismatch';
   const expected = new Map();
-  for (const p of seats.parties) if (p.party !== INDEPENDENT && p.wardSeats > 0) expected.set(p.party, p.wardSeats);
+  for (const p of seats.parties)
+    if (p.party !== INDEPENDENT && p.wardSeats > 0)
+      expected.set(p.party, p.wardSeats);
   for (const [party, n] of wins) {
     if (party !== INDEPENDENT && expected.get(party) !== n) return 'mismatch';
   }
-  for (const [party, n] of expected) if ((wins.get(party) ?? 0) !== n) return 'mismatch';
+  for (const [party, n] of expected)
+    if ((wins.get(party) ?? 0) !== n) return 'mismatch';
   return 'ok';
 }
 
@@ -199,12 +234,30 @@ export function councilOutcome(council, seats) {
 
   if (!seats) {
     const parties = [...council.prVotes]
-      .map(([party, prVotes]) => ({ party, seats: null, wardSeats: null, prSeats: null, prVotes, prShare: shareOf(prVotes) }))
+      .map(([party, prVotes]) => ({
+        party,
+        seats: null,
+        wardSeats: null,
+        prSeats: null,
+        prVotes,
+        prShare: shareOf(prVotes),
+      }))
       .sort((a, b) => b.prVotes - a.prVotes);
-    return { largest: null, totalSeats: null, majority: null, parties, turnout, seatCheck: 'unchecked' };
+    return {
+      largest: null,
+      totalSeats: null,
+      majority: null,
+      parties,
+      turnout,
+      seatCheck: 'unchecked',
+    };
   }
   const parties = seats.parties
-    .map((p) => ({ ...p, prVotes: prVotesOf(p.party), prShare: shareOf(prVotesOf(p.party)) }))
+    .map((p) => ({
+      ...p,
+      prVotes: prVotesOf(p.party),
+      prShare: shareOf(prVotesOf(p.party)),
+    }))
     .sort((a, b) => b.seats - a.seats || b.prVotes - a.prVotes);
   const top = parties[0] ?? null;
   return {

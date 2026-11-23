@@ -6,9 +6,20 @@ import path from 'node:path';
 import { makeRateLimiter, clientKey } from '../common/rate-limit.js';
 import { admitSameSiteKeyless } from '../common/same-site.js';
 import { fetchBoundaries } from './boundaries.js';
-import { IEC_PROVINCES, headProvince, streamProvince, fetchSeatFile, isCouncilCode } from './iec.js';
+import {
+  IEC_PROVINCES,
+  headProvince,
+  streamProvince,
+  fetchSeatFile,
+  isCouncilCode,
+} from './iec.js';
 import { readSeatFile } from './seats.js';
-import { isRecord, cachedProvince, provinceEntry, withRetriedSeats } from './entries.js';
+import {
+  isRecord,
+  cachedProvince,
+  provinceEntry,
+  withRetriedSeats,
+} from './entries.js';
 import { readJsonFile, writeJsonAtomic } from './cache.js';
 
 const LEVELS = ['councils', 'wards'];
@@ -19,7 +30,8 @@ const WEEK = 7 * DAY;
 const RESULTS_FILE = 'results.json';
 const boundaryFile = (level) => `boundaries-${level}.json`;
 
-const reason = (err) => `${err?.message || err}${err?.status ? ` (HTTP ${err.status})` : ''}`;
+const reason = (err) =>
+  `${err?.message || err}${err?.status ? ` (HTTP ${err.status})` : ''}`;
 const warn = (message) => console.warn(`[sa-elections] ${message}`);
 
 /** Runs at most `max` of the given tasks at once. */
@@ -45,7 +57,8 @@ function limiter(max) {
     });
 }
 
-const validArea = (area) => isRecord(area) && typeof area.id === 'string' && Array.isArray(area.polygons);
+const validArea = (area) =>
+  isRecord(area) && typeof area.id === 'string' && Array.isArray(area.polygons);
 const validBoundaries = (saved) =>
   saved?.version === 1 &&
   Number.isFinite(saved.fetchedAt) &&
@@ -64,7 +77,12 @@ export function saElectionsProxy({
   env = process.env,
   fsImpl = fs.promises,
 } = {}) {
-  const allow = makeRateLimiter({ windowMs: 60_000, max: 60, globalMax: 600, now });
+  const allow = makeRateLimiter({
+    windowMs: 60_000,
+    max: 60,
+    globalMax: 600,
+    now,
+  });
   const switchOn = () => env.SA_ELECTIONS_RESULTS === '1';
   const cacheFile = (name) => path.join(cacheDir, name);
 
@@ -89,30 +107,47 @@ export function saElectionsProxy({
   // One chain for every cache write, so results.json renames land in order, newest last.
   let writes = Promise.resolve();
   const persist = (name, value) => {
-    writes = writes.then(() => writeJsonAtomic(fsImpl, cacheDir, name, typeof value === 'function' ? value() : value));
+    writes = writes.then(() =>
+      writeJsonAtomic(
+        fsImpl,
+        cacheDir,
+        name,
+        typeof value === 'function' ? value() : value,
+      ),
+    );
     return writes;
   };
-  const persistResults = () => persist(RESULTS_FILE, () => ({ version: 1, provinces }));
+  const persistResults = () =>
+    persist(RESULTS_FILE, () => ({ version: 1, provinces }));
 
   function readBoundaryCache() {
     boundaryCacheRead ??= Promise.all(
       LEVELS.map(async (level) => {
-        const saved = await readJsonFile(fsImpl, cacheFile(boundaryFile(level)));
-        if (validBoundaries(saved)) boundaries[level] ??= { fetchedAt: saved.fetchedAt, areas: saved.areas };
+        const saved = await readJsonFile(
+          fsImpl,
+          cacheFile(boundaryFile(level)),
+        );
+        if (validBoundaries(saved))
+          boundaries[level] ??= {
+            fetchedAt: saved.fetchedAt,
+            areas: saved.areas,
+          };
       }),
     );
     return boundaryCacheRead;
   }
 
   function readResultsCache() {
-    resultsCacheRead ??= readJsonFile(fsImpl, cacheFile(RESULTS_FILE)).then((saved) => {
-      if (saved?.version !== 1 || !isRecord(saved.provinces)) return;
-      for (const code of IEC_PROVINCES) {
-        const entry = cachedProvince(saved.provinces[code]);
-        if (entry) provinces[code] ??= entry;
-      }
-      reindex();
-    });
+    resultsCacheRead ??= readJsonFile(fsImpl, cacheFile(RESULTS_FILE)).then(
+      (saved) => {
+        if (saved?.version !== 1 || !isRecord(saved.provinces)) return;
+        for (const code of IEC_PROVINCES) {
+          const entry = cachedProvince(saved.provinces[code]);
+          if (entry) provinces[code] ??= entry;
+        }
+        reindex();
+      },
+    );
     return resultsCacheRead;
   }
 
@@ -122,8 +157,10 @@ export function saElectionsProxy({
     for (const code of IEC_PROVINCES) {
       const entry = provinces[code];
       if (!entry) continue;
-      for (const [id, result] of Object.entries(entry.councils)) byCouncil.set(id, result);
-      for (const [id, result] of Object.entries(entry.wards)) byWard.set(id, result);
+      for (const [id, result] of Object.entries(entry.councils))
+        byCouncil.set(id, result);
+      for (const [id, result] of Object.entries(entry.wards))
+        byWard.set(id, result);
     }
   }
 
@@ -131,7 +168,10 @@ export function saElectionsProxy({
     boundaryLoads[level] ??= fetchBoundaries(level, { fetchImpl })
       .then((areas) => {
         boundaries[level] = { fetchedAt: now(), areas };
-        return persist(boundaryFile(level), { version: 1, ...boundaries[level] });
+        return persist(boundaryFile(level), {
+          version: 1,
+          ...boundaries[level],
+        });
       })
       .catch((err) => {
         boundaryFailedAt[level] = now();
@@ -148,11 +188,15 @@ export function saElectionsProxy({
   async function currentBoundaries(level) {
     const held = boundaries[level];
     if (!held) {
-      if (!boundaryLoads[level] && now() - boundaryFailedAt[level] < MINUTE) throw new Error('boundaries_unavailable');
+      if (!boundaryLoads[level] && now() - boundaryFailedAt[level] < MINUTE)
+        throw new Error('boundaries_unavailable');
       await refreshBoundaries(level);
       return boundaries[level];
     }
-    if (now() - held.fetchedAt > WEEK && now() - boundaryFailedAt[level] >= HOUR) {
+    if (
+      now() - held.fetchedAt > WEEK &&
+      now() - boundaryFailedAt[level] >= HOUR
+    ) {
       refreshBoundaries(level).catch(() => {});
     }
     return held;
@@ -165,7 +209,10 @@ export function saElectionsProxy({
       councilCodes.map((catB) =>
         seatSlots(async () => {
           try {
-            seats.set(catB, readSeatFile(await fetchSeatFile(code, catB, { fetchImpl })));
+            seats.set(
+              catB,
+              readSeatFile(await fetchSeatFile(code, catB, { fetchImpl })),
+            );
           } catch (err) {
             warn(`seat file ${code}/${catB} not read: ${reason(err)}`);
           }
@@ -191,12 +238,18 @@ export function saElectionsProxy({
   async function refreshProvince(code) {
     const lastModified = await headProvince(code, { fetchImpl });
     const previous = provinces[code];
-    if (previous && (lastModified === null || lastModified === previous.lastModified)) {
+    if (
+      previous &&
+      (lastModified === null || lastModified === previous.lastModified)
+    ) {
       await retrySeats(code, previous);
       return;
     }
     const tally = await streamProvince(code, { fetchImpl });
-    const seats = await readSeats(code, [...tally.councils.keys()].filter(isCouncilCode));
+    const seats = await readSeats(
+      code,
+      [...tally.councils.keys()].filter(isCouncilCode),
+    );
     provinces[code] = provinceEntry(code, tally, seats, lastModified);
     reindex();
     persistResults();
@@ -212,7 +265,8 @@ export function saElectionsProxy({
     if (lastRun && !lastRun.ok && since < HOUR) return null;
     const missing = IEC_PROVINCES.filter((code) => !provinces[code]);
     if (missing.length) return { codes: missing, fillsGaps: true };
-    if (!lastRun || since >= (lastRun.ok ? DAY : HOUR)) return { codes: IEC_PROVINCES, fillsGaps: false };
+    if (!lastRun || since >= (lastRun.ok ? DAY : HOUR))
+      return { codes: IEC_PROVINCES, fillsGaps: false };
     return null;
   }
 
@@ -267,13 +321,17 @@ export function saElectionsProxy({
   }
 
   function payload(level, held, status) {
-    const index = status === 'off' ? null : level === 'councils' ? byCouncil : byWard;
+    const index =
+      status === 'off' ? null : level === 'councils' ? byCouncil : byWard;
     return {
       level,
       results: status,
       resultsAsOf: status === 'off' ? null : resultsAsOf(),
       boundariesAsOf: held.fetchedAt,
-      areas: held.areas.map((area) => ({ ...area, result: index?.get(area.id) ?? null })),
+      areas: held.areas.map((area) => ({
+        ...area,
+        result: index?.get(area.id) ?? null,
+      })),
     };
   }
 
@@ -304,7 +362,8 @@ export function saElectionsProxy({
       }
       const held = await currentBoundaries(level);
       const status = resultsStatus();
-      const stale = status === 'stale' || boundaryFailedAt[level] > held.fetchedAt;
+      const stale =
+        status === 'stale' || boundaryFailedAt[level] > held.fetchedAt;
       json(200, payload(level, held, status), stale);
     } catch {
       json(502, { error: 'sa_elections_unavailable' });

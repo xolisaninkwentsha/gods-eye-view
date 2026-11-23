@@ -49,12 +49,17 @@ export function buildSaCouncilCard(row, status) {
   const why = statusDetails(status);
   if (why) return entry(id, title, why, accent);
   const result = row.result;
-  if (!result?.largest) return entry(id, title, [t('Seat count unavailable')], accent);
+  if (!result?.largest)
+    return entry(id, title, [t('Seat count unavailable')], accent);
 
   const { party, seats } = result.largest;
   const short = partyStyle(party).short;
   const details = [
-    t('{party} · {seats} of {total} seats', { party: short, seats, total: result.totalSeats }),
+    t('{party} · {seats} of {total} seats', {
+      party: short,
+      seats,
+      total: result.totalSeats,
+    }),
     result.majority ? t('Majority') : t('No majority'),
   ];
   const parties = Array.isArray(result.parties) ? result.parties : [];
@@ -65,9 +70,12 @@ export function buildSaCouncilCard(row, status) {
   if (top.length) details.push(top.join(' · '));
   const lead = parties.find((p) => p.party === party);
   if (Number.isFinite(lead?.prShare)) {
-    details.push(t('{party} PR vote {share}', { party: short, share: pct(lead.prShare) }));
+    details.push(
+      t('{party} PR vote {share}', { party: short, share: pct(lead.prShare) }),
+    );
   }
-  if (Number.isFinite(result.turnout)) details.push(t('Turnout {share}', { share: pct(result.turnout) }));
+  if (Number.isFinite(result.turnout))
+    details.push(t('Turnout {share}', { share: pct(result.turnout) }));
   return entry(id, title, details, accent);
 }
 
@@ -81,7 +89,9 @@ export function buildSaWardCard(row, status) {
   if (!result) return entry(id, title, [t('No result for this ward')], accent);
   if (result.tie || !result.winner) return entry(id, title, [t('Tie')], accent);
 
-  const details = [`${partyStyle(result.winner.party).short} ${pct(result.winner.share)}`];
+  const details = [
+    `${partyStyle(result.winner.party).short} ${pct(result.winner.share)}`,
+  ];
   if (result.runnerUp) {
     details.push(
       t('Runner-up {party} {share}', {
@@ -91,9 +101,15 @@ export function buildSaWardCard(row, status) {
     );
   }
   if (Number.isFinite(result.margin)) {
-    details.push(t('Margin {points} points', { points: formatNumber(result.margin * 100, ONE_DIGIT) }));
+    details.push(
+      t('Margin {points} points', {
+        points: formatNumber(result.margin * 100, ONE_DIGIT),
+      }),
+    );
   }
-  if (Number.isFinite(result.turnout)) details.push(t('Turnout {share}', { share: pct(result.turnout) }));
-  if (!result.confirmed) details.push(t('Unconfirmed: does not match the IEC seat count'));
+  if (Number.isFinite(result.turnout))
+    details.push(t('Turnout {share}', { share: pct(result.turnout) }));
+  if (!result.confirmed)
+    details.push(t('Unconfirmed: does not match the IEC seat count'));
   return entry(id, title, details, accent);
 }

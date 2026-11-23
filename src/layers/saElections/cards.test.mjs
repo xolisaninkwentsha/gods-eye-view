@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildSaCouncilCard, buildSaWardCard, saAnchorDegrees } from './cards.js';
+import {
+  buildSaCouncilCard,
+  buildSaWardCard,
+  saAnchorDegrees,
+} from './cards.js';
 
 const ANC = 'AFRICAN NATIONAL CONGRESS';
 const DA = 'DEMOCRATIC ALLIANCE';
@@ -75,7 +79,10 @@ test('ward card shows winner, runner-up, margin and turnout, and flags unconfirm
     'Unconfirmed: does not match the IEC seat count',
   );
   const tie = buildSaWardCard(
-    { ...ward, result: { ...ward.result, winner: null, tie: true, confirmed: false } },
+    {
+      ...ward,
+      result: { ...ward.result, winner: null, tie: true, confirmed: false },
+    },
     'ok',
   );
   assert.deepEqual(tie.details, ['Tie']);
@@ -83,19 +90,38 @@ test('ward card shows winner, runner-up, margin and turnout, and flags unconfirm
 });
 
 test('cards say why when results are off, loading or failed', () => {
-  assert.deepEqual(buildSaCouncilCard(council, 'off').details, ['Results are off']);
+  assert.deepEqual(buildSaCouncilCard(council, 'off').details, [
+    'Results are off',
+  ]);
   assert.deepEqual(buildSaCouncilCard(council, 'loading').details, [
     'Downloading results from the IEC…',
   ]);
-  assert.deepEqual(buildSaWardCard({ ...council, municipality: 'M' }, 'failed').details, [
-    'IEC results unavailable',
+  assert.deepEqual(
+    buildSaWardCard({ ...council, municipality: 'M' }, 'failed').details,
+    ['IEC results unavailable'],
+  );
+  const noSeats = {
+    ...council,
+    result: {
+      ...council.result,
+      largest: null,
+      totalSeats: null,
+      majority: null,
+    },
+  };
+  assert.deepEqual(buildSaCouncilCard(noSeats, 'ok').details, [
+    'Seat count unavailable',
   ]);
-  const noSeats = { ...council, result: { ...council.result, largest: null, totalSeats: null, majority: null } };
-  assert.deepEqual(buildSaCouncilCard(noSeats, 'ok').details, ['Seat count unavailable']);
   assert.equal(buildSaCouncilCard(noSeats, 'ok').accent, '#9aa4ad');
 });
 
 test('anchor reuses the drone airspace centroid', () => {
-  const sq = [[0, 0], [2, 0], [2, 2], [0, 2], [0, 0]];
+  const sq = [
+    [0, 0],
+    [2, 0],
+    [2, 2],
+    [0, 2],
+    [0, 0],
+  ];
   assert.deepEqual(saAnchorDegrees([[sq]]), { lon: 1, lat: 1 });
 });

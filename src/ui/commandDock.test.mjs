@@ -2088,14 +2088,28 @@ test('bundled place names never default to an action', async (t) => {
 /** Give the page a browser location answered by `geolocation`, on a secure page. */
 function stubBrowserLocation(t, geolocation) {
   const navigatorRef = globalThis.navigator;
-  const ownGeolocation = Object.getOwnPropertyDescriptor(navigatorRef, 'geolocation');
-  const ownSecure = Object.getOwnPropertyDescriptor(globalThis, 'isSecureContext');
-  Object.defineProperty(navigatorRef, 'geolocation', { value: geolocation, configurable: true });
-  Object.defineProperty(globalThis, 'isSecureContext', { value: true, configurable: true });
+  const ownGeolocation = Object.getOwnPropertyDescriptor(
+    navigatorRef,
+    'geolocation',
+  );
+  const ownSecure = Object.getOwnPropertyDescriptor(
+    globalThis,
+    'isSecureContext',
+  );
+  Object.defineProperty(navigatorRef, 'geolocation', {
+    value: geolocation,
+    configurable: true,
+  });
+  Object.defineProperty(globalThis, 'isSecureContext', {
+    value: true,
+    configurable: true,
+  });
   t.after(() => {
-    if (ownGeolocation) Object.defineProperty(navigatorRef, 'geolocation', ownGeolocation);
+    if (ownGeolocation)
+      Object.defineProperty(navigatorRef, 'geolocation', ownGeolocation);
     else delete navigatorRef.geolocation;
-    if (ownSecure) Object.defineProperty(globalThis, 'isSecureContext', ownSecure);
+    if (ownSecure)
+      Object.defineProperty(globalThis, 'isSecureContext', ownSecure);
     else delete globalThis.isSecureContext;
   });
 }
@@ -2119,7 +2133,9 @@ test('a location fix that arrives after a newer search neither flies nor speaks'
   stubBrowserLocation(t, {
     getCurrentPosition(success) {
       answer = () =>
-        success({ coords: { latitude: -33.9429, longitude: 18.6876, accuracy: 25801 } });
+        success({
+          coords: { latitude: -33.9429, longitude: 18.6876, accuracy: 25801 },
+        });
     },
   });
   $('.omnibar-locate').click();
@@ -2144,7 +2160,11 @@ test('a location failure shows even while the GEV chat is open', async (t) => {
   t.after(() => voice.remove());
   voice.update('root', { chatOpen: true });
   await settleAll();
-  assert.equal(useVoiceStore(pinia).view?.root?.chatOpen, true, 'the chat is open');
+  assert.equal(
+    useVoiceStore(pinia).view?.root?.chatOpen,
+    true,
+    'the chat is open',
+  );
   stubBrowserLocation(t, {
     getCurrentPosition(_success, failure) {
       failure({ code: 1, message: 'denied' });
@@ -2155,7 +2175,11 @@ test('a location failure shows even while the GEV chat is open', async (t) => {
   const line = $('#omnibar-error');
   assert.equal(line.textContent.trim(), 'Location access was not allowed');
   assert.notEqual(line.style.display, 'none', 'the line is shown');
-  assert.notEqual($('.omnibar-results').style.display, 'none', 'its panel is shown');
+  assert.notEqual(
+    $('.omnibar-results').style.display,
+    'none',
+    'its panel is shown',
+  );
 });
 
 test('a rough fix is framed through the runner at a range that shows its error area', async (t) => {
@@ -2168,13 +2192,18 @@ test('a rough fix is framed through the runner at a range that shows its error a
   globalThis.localStorage?.removeItem?.('gev:my-location-spot:v1');
   stubBrowserLocation(t, {
     getCurrentPosition(success) {
-      success({ coords: { latitude: -33.9429, longitude: 18.6876, accuracy: 25801 } });
+      success({
+        coords: { latitude: -33.9429, longitude: 18.6876, accuracy: 25801 },
+      });
     },
   });
   $('.omnibar-locate').click();
   await settleAll();
   assert.deepEqual(calls, [
-    ['fly_to_location', { latitude: -33.9429, longitude: 18.6876, rangeM: 64503 }],
+    [
+      'fly_to_location',
+      { latitude: -33.9429, longitude: 18.6876, rangeM: 64503 },
+    ],
   ]);
   assert.match($('#omnibar-notice').textContent, /Rough location \(±26 km\)/);
 });
@@ -2201,7 +2230,9 @@ test('a location fix after the globe was taken does not fly', async (t) => {
   stubBrowserLocation(t, {
     getCurrentPosition(success) {
       answer = () =>
-        success({ coords: { latitude: -33.9429, longitude: 18.6876, accuracy: 25801 } });
+        success({
+          coords: { latitude: -33.9429, longitude: 18.6876, accuracy: 25801 },
+        });
     },
   });
   $('.omnibar-locate').click();
@@ -2233,7 +2264,9 @@ test('a location notice is a polite status, not an error on the field', async (t
   globalThis.localStorage?.removeItem?.('gev:my-location-spot:v1');
   stubBrowserLocation(t, {
     getCurrentPosition(success) {
-      success({ coords: { latitude: -33.9429, longitude: 18.6876, accuracy: 25801 } });
+      success({
+        coords: { latitude: -33.9429, longitude: 18.6876, accuracy: 25801 },
+      });
     },
   });
   $('.omnibar-locate').click();
@@ -2244,7 +2277,11 @@ test('a location notice is a polite status, not an error on the field', async (t
   assert.match(notice.textContent, /Rough location \(±26 km\)/);
   assert.notEqual(notice.style.display, 'none', 'shown');
   assert.equal(error.style.display, 'none', 'the alert line stays hidden');
-  assert.equal(input.hasAttribute('aria-invalid'), false, 'the field is not marked invalid');
+  assert.equal(
+    input.hasAttribute('aria-invalid'),
+    false,
+    'the field is not marked invalid',
+  );
   assert.equal(input.getAttribute('aria-describedby'), 'omnibar-notice');
 });
 
@@ -2269,23 +2306,38 @@ test('a location failure is still an alert that marks the field invalid', async 
 
 test('right-click saves the spot and confirms it politely; a failed save is an error', async (t) => {
   const { $, pinia } = omnibarFixture(t);
-  t.after(() => globalThis.localStorage?.removeItem?.('gev:my-location-spot:v1'));
+  t.after(() =>
+    globalThis.localStorage?.removeItem?.('gev:my-location-spot:v1'),
+  );
   let centre = { lat: -33.9301, lon: 18.4172 };
   useEntityCardStore(pinia).connect({ centre: () => centre });
   const rightClick = () => {
-    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+    const event = new MouseEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+    });
     $('.omnibar-locate').dispatchEvent(event);
     return event;
   };
   const saved = rightClick();
   await settleAll();
-  assert.equal(saved.defaultPrevented, true, "the browser's own menu does not open");
-  assert.deepEqual(JSON.parse(globalThis.localStorage.getItem('gev:my-location-spot:v1')), {
-    lat: -33.9301,
-    lon: 18.4172,
-  });
+  assert.equal(
+    saved.defaultPrevented,
+    true,
+    "the browser's own menu does not open",
+  );
+  assert.deepEqual(
+    JSON.parse(globalThis.localStorage.getItem('gev:my-location-spot:v1')),
+    {
+      lat: -33.9301,
+      lon: 18.4172,
+    },
+  );
   let { input, error, notice } = locateLines($);
-  assert.equal(notice.textContent.trim(), 'Saved the centre of this view as your spot');
+  assert.equal(
+    notice.textContent.trim(),
+    'Saved the centre of this view as your spot',
+  );
   assert.equal(error.style.display, 'none');
   assert.equal(input.hasAttribute('aria-invalid'), false);
   // Nothing under the middle of the screen: nothing to save.
@@ -2300,10 +2352,19 @@ test('right-click saves the spot and confirms it politely; a failed save is an e
 });
 
 /** Connect omnibar controls listing the SA layers, with a way to fire their change listener. */
-function connectSouthAfrica(pinia, { councils = true, wards = true, onLayersChange = true } = {}) {
+function connectSouthAfrica(
+  pinia,
+  { councils = true, wards = true, onLayersChange = true } = {},
+) {
   const layers = [];
-  if (councils) layers.push({ id: 'sa-councils-2026', name: 'SA councils', enabled: false });
-  if (wards) layers.push({ id: 'sa-wards-2026', name: 'SA wards', enabled: false });
+  if (councils)
+    layers.push({
+      id: 'sa-councils-2026',
+      name: 'SA councils',
+      enabled: false,
+    });
+  if (wards)
+    layers.push({ id: 'sa-wards-2026', name: 'SA wards', enabled: false });
   const mutations = [];
   const listeners = new Set();
   useOmnibarStore(pinia).connect({
@@ -2325,7 +2386,13 @@ function connectSouthAfrica(pinia, { councils = true, wards = true, onLayersChan
     calls.push([name, args]);
     return { ok: true };
   });
-  return { layers, mutations, listeners, calls, fire: () => listeners.forEach((listener) => listener()) };
+  return {
+    layers,
+    mutations,
+    listeners,
+    calls,
+    fire: () => listeners.forEach((listener) => listener()),
+  };
 }
 
 test('South Africa turns the councils layer on and frames the country', async (t) => {
@@ -2356,7 +2423,10 @@ test('South Africa pressed again turns both layers off and leaves the camera', a
   sa.calls.length = 0;
   $('.omnibar-sa').click();
   await settleAll();
-  assert.deepEqual(sa.mutations, [['sa-councils-2026', false], ['sa-wards-2026', false]]);
+  assert.deepEqual(sa.mutations, [
+    ['sa-councils-2026', false],
+    ['sa-wards-2026', false],
+  ]);
   assert.deepEqual(sa.calls, []);
   assert.equal($('.omnibar-sa').getAttribute('aria-pressed'), 'false');
 });
@@ -2374,7 +2444,10 @@ test('South Africa shows pressed when the wards layer is turned on elsewhere', a
   assert.ok(button.classList.contains('active'));
   button.click();
   await settleAll();
-  assert.deepEqual(sa.mutations, [['sa-councils-2026', false], ['sa-wards-2026', false]]);
+  assert.deepEqual(sa.mutations, [
+    ['sa-councils-2026', false],
+    ['sa-wards-2026', false],
+  ]);
   assert.deepEqual(sa.calls, []);
 });
 

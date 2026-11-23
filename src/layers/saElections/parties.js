@@ -33,7 +33,10 @@ export const PARTY_STYLES = {
   ACTIONSA: { short: 'ActionSA', color: '#0b3d91' },
   'PATRIOTIC ALLIANCE': { short: 'PA', color: '#00897b' },
   // The IEC writes the Afrikaans/English pair with " | " (or a line break); normalization folds both.
-  'VRYHEIDSFRONT PLUS FREEDOM FRONT PLUS': { short: 'FF Plus', color: '#f28c28' },
+  'VRYHEIDSFRONT PLUS FREEDOM FRONT PLUS': {
+    short: 'FF Plus',
+    color: '#f28c28',
+  },
   'AFRICAN TRANSFORMATION MOVEMENT': { short: 'ATM', color: '#6a4c93' },
   'UNITED DEMOCRATIC MOVEMENT': { short: 'UDM', color: '#ff7043' },
   GOOD: { short: 'GOOD', color: '#7cb342' },
@@ -48,7 +51,9 @@ export const PARTY_STYLES = {
 
 /** "DEMOCRATIC PEOPLE'S ALTERNATIVE" -> "Democratic People's Alternative". */
 function titleCase(upper) {
-  return upper.toLowerCase().replace(/(^|[\s/-])(\p{L})/gu, (_, sep, ch) => sep + ch.toUpperCase());
+  return upper
+    .toLowerCase()
+    .replace(/(^|[\s/-])(\p{L})/gu, (_, sep, ch) => sep + ch.toUpperCase());
 }
 
 /**

@@ -8,10 +8,20 @@ const SECTOR = 512;
 const MINI_SECTOR = 64;
 const MINI_CUTOFF = 4096;
 
-export const u16 = (n) => { const b = Buffer.alloc(2); b.writeUInt16LE(n); return b; };
-export const u32 = (n) => { const b = Buffer.alloc(4); b.writeUInt32LE(n >>> 0); return b; };
-export const rec = (type, data = Buffer.alloc(0)) => Buffer.concat([u16(type), u16(data.length), data]);
-const padTo = (buf, n) => Buffer.concat([buf, Buffer.alloc((n - (buf.length % n)) % n)]);
+export const u16 = (n) => {
+  const b = Buffer.alloc(2);
+  b.writeUInt16LE(n);
+  return b;
+};
+export const u32 = (n) => {
+  const b = Buffer.alloc(4);
+  b.writeUInt32LE(n >>> 0);
+  return b;
+};
+export const rec = (type, data = Buffer.alloc(0)) =>
+  Buffer.concat([u16(type), u16(data.length), data]);
+const padTo = (buf, n) =>
+  Buffer.concat([buf, Buffer.alloc((n - (buf.length % n)) % n)]);
 
 /**
  * SST + CONTINUE records, each holding at most `chunk` data bytes. Entries are
@@ -21,7 +31,10 @@ function sstRecords(entries, chunk) {
   const records = [];
   let parts = [Buffer.concat([u32(entries.length), u32(entries.length)])];
   let used = 8;
-  const push = (b) => { parts.push(b); used += b.length; };
+  const push = (b) => {
+    parts.push(b);
+    used += b.length;
+  };
   const flush = () => {
     records.push(rec(records.length ? 0x003c : 0x00fc, Buffer.concat(parts)));
     parts = [];
@@ -39,8 +52,12 @@ function sstRecords(entries, chunk) {
   for (const { text, runs = 0, ext = 0 } of entries) {
     const wide = /[^\x00-\xff]/.test(text);
     const flags = (wide ? 1 : 0) | (ext ? 4 : 0) | (runs ? 8 : 0);
-    const head = Buffer.concat([u16(text.length), Buffer.from([flags]),
-      ...(runs ? [u16(runs)] : []), ...(ext ? [u32(ext)] : [])]);
+    const head = Buffer.concat([
+      u16(text.length),
+      Buffer.from([flags]),
+      ...(runs ? [u16(runs)] : []),
+      ...(ext ? [u32(ext)] : []),
+    ]);
     if (chunk - used < head.length + (wide ? 2 : 1)) flush();
     push(head);
     for (let i = 0; i < text.length;) {
@@ -59,9 +76,14 @@ function sstRecords(entries, chunk) {
   return records;
 }
 
-export const bof = (type) => rec(0x0809, Buffer.concat([u16(0x0600), u16(type), Buffer.alloc(12)]));
+export const bof = (type) =>
+  rec(0x0809, Buffer.concat([u16(0x0600), u16(type), Buffer.alloc(12)]));
 
-const f64 = (v) => { const b = Buffer.alloc(8); b.writeDoubleLE(v); return b; };
+const f64 = (v) => {
+  const b = Buffer.alloc(8);
+  b.writeDoubleLE(v);
+  return b;
+};
 
 /**
  * Cells: string, number, null, or an object:
@@ -74,32 +96,59 @@ function workbookStream(sheets, chunk) {
   const index = new Map();
   const intern = (e) => {
     const key = JSON.stringify(e);
-    if (!index.has(key)) { index.set(key, entries.length); entries.push(e); }
+    if (!index.has(key)) {
+      index.set(key, entries.length);
+      entries.push(e);
+    }
     return index.get(key);
   };
-  for (const sheet of sheets) for (const row of sheet) for (const v of row) {
-    if (typeof v === 'string') intern({ text: v });
-    else if (v?.rich !== undefined) intern({ text: v.rich, runs: v.runs, ext: v.ext });
-  }
+  for (const sheet of sheets)
+    for (const row of sheet)
+      for (const v of row) {
+        if (typeof v === 'string') intern({ text: v });
+        else if (v?.rich !== undefined)
+          intern({ text: v.rich, runs: v.runs, ext: v.ext });
+      }
   const out = [bof(0x0005), ...sstRecords(entries, chunk), rec(0x000a)];
   for (const sheet of sheets) {
     out.push(bof(0x0010));
-    sheet.forEach((row, r) => row.forEach((v, c) => {
-      const pos = Buffer.concat([u16(r), u16(c), u16(0)]);
-      const add = (type, ...data) => out.push(rec(type, Buffer.concat([pos, ...data])));
-      if (typeof v === 'string') add(0x00fd, u32(intern({ text: v })));
-      else if (typeof v === 'number') add(0x0203, f64(v));
-      else if (v?.rk !== undefined) add(0x027e, u32(v.rk));
-      else if (v?.mulrk) {
-        out.push(rec(0x00bd, Buffer.concat([u16(r), u16(c), ...v.mulrk.flatMap((rk) => [u16(0), u32(rk)]),
-          u16(c + v.mulrk.length - 1)])));
-      } else if (v && 'formula' in v) {
-        const result = v.formula === null ? Buffer.from([0, 0, 0, 0, 0, 0, 0xff, 0xff]) : f64(v.formula);
-        add(0x0006, result, Buffer.alloc(6)); // result, flags u16, chn u32
-      } else if (v?.label !== undefined) {
-        add(0x0204, u16(v.label.length), Buffer.from([0]), Buffer.from(v.label, 'latin1'));
-      } else if (v?.rich !== undefined) add(0x00fd, u32(intern({ text: v.rich, runs: v.runs, ext: v.ext })));
-    }));
+    sheet.forEach((row, r) =>
+      row.forEach((v, c) => {
+        const pos = Buffer.concat([u16(r), u16(c), u16(0)]);
+        const add = (type, ...data) =>
+          out.push(rec(type, Buffer.concat([pos, ...data])));
+        if (typeof v === 'string') add(0x00fd, u32(intern({ text: v })));
+        else if (typeof v === 'number') add(0x0203, f64(v));
+        else if (v?.rk !== undefined) add(0x027e, u32(v.rk));
+        else if (v?.mulrk) {
+          out.push(
+            rec(
+              0x00bd,
+              Buffer.concat([
+                u16(r),
+                u16(c),
+                ...v.mulrk.flatMap((rk) => [u16(0), u32(rk)]),
+                u16(c + v.mulrk.length - 1),
+              ]),
+            ),
+          );
+        } else if (v && 'formula' in v) {
+          const result =
+            v.formula === null
+              ? Buffer.from([0, 0, 0, 0, 0, 0, 0xff, 0xff])
+              : f64(v.formula);
+          add(0x0006, result, Buffer.alloc(6)); // result, flags u16, chn u32
+        } else if (v?.label !== undefined) {
+          add(
+            0x0204,
+            u16(v.label.length),
+            Buffer.from([0]),
+            Buffer.from(v.label, 'latin1'),
+          );
+        } else if (v?.rich !== undefined)
+          add(0x00fd, u32(intern({ text: v.rich, runs: v.runs, ext: v.ext })));
+      }),
+    );
     out.push(rec(0x000a));
   }
   return Buffer.concat(out);
@@ -160,7 +209,8 @@ export function buildXlsFromStream(workbook) {
 
   const miniFat = new Array(128).fill(FREESECT);
   const nMiniSectors = data.length / MINI_SECTOR;
-  for (let i = 0; i < nMiniSectors && mini; i++) miniFat[i] = i < nMiniSectors - 1 ? i + 1 : ENDOFCHAIN;
+  for (let i = 0; i < nMiniSectors && mini; i++)
+    miniFat[i] = i < nMiniSectors - 1 ? i + 1 : ENDOFCHAIN;
 
   const header = Buffer.alloc(SECTOR);
   Buffer.from('d0cf11e0a1b11ae1', 'hex').copy(header);
@@ -175,7 +225,8 @@ export function buildXlsFromStream(workbook) {
   header.writeUInt32LE(mini ? miniFatId : ENDOFCHAIN, 0x3c);
   header.writeUInt32LE(nMini, 0x40);
   header.writeUInt32LE(ENDOFCHAIN, 0x44);
-  for (let i = 0; i < 109; i++) header.writeUInt32LE(i < nFat ? fatId + i : FREESECT, 0x4c + i * 4);
+  for (let i = 0; i < 109; i++)
+    header.writeUInt32LE(i < nFat ? fatId + i : FREESECT, 0x4c + i * 4);
 
   const dir = Buffer.concat([
     dirEntry('Root Entry', 5, 1, mini ? 0 : ENDOFCHAIN, mini ? data.length : 0),
@@ -184,7 +235,13 @@ export function buildXlsFromStream(workbook) {
     dirEntry('', 0, FREESECT, 0, 0),
   ]);
   const toBuf = (arr) => Buffer.concat(arr.map(u32));
-  return new Uint8Array(Buffer.concat([
-    header, sectors, ...(mini ? [toBuf(miniFat)] : []), dir, toBuf(fat),
-  ]));
+  return new Uint8Array(
+    Buffer.concat([
+      header,
+      sectors,
+      ...(mini ? [toBuf(miniFat)] : []),
+      dir,
+      toBuf(fat),
+    ]),
+  );
 }

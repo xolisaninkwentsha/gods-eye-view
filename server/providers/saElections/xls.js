@@ -27,10 +27,12 @@ function chainOf(fat, start) {
 /** Return the bytes of the stream called `Workbook` (or `Book`). */
 function readWorkbookStream(bytes) {
   const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  if (bytes.length < 512 || SIGNATURE.some((b, i) => bytes[i] !== b)) throw new Error('not cfb');
+  if (bytes.length < 512 || SIGNATURE.some((b, i) => bytes[i] !== b))
+    throw new Error('not cfb');
   const shift = dv.getUint16(0x1e, true);
   const miniShift = dv.getUint16(0x20, true);
-  if (shift < 9 || shift > 16 || miniShift > shift) throw new Error('bad shift');
+  if (shift < 9 || shift > 16 || miniShift > shift)
+    throw new Error('bad shift');
   const size = 1 << shift;
   const miniSize = 1 << miniShift;
   const cutoff = dv.getUint32(0x38, true);
@@ -39,7 +41,8 @@ function readWorkbookStream(bytes) {
     if (at + size > bytes.length) throw new Error('sector out of range');
     return bytes.subarray(at, at + size);
   };
-  const u32s = (buf) => Array.from(new Uint32Array(Uint8Array.from(buf).buffer));
+  const u32s = (buf) =>
+    Array.from(new Uint32Array(Uint8Array.from(buf).buffer));
 
   // FAT sector ids: 109 in the header, the rest in DIFAT sectors.
   const fatIds = [];
@@ -49,8 +52,13 @@ function readWorkbookStream(bytes) {
   if (fatCount > maxSectors) throw new Error('fat count exceeds file');
   let difat = dv.getUint32(0x44, true);
   const seenDifat = new Set();
-  for (let n = Math.min(dv.getUint32(0x48, true), maxSectors); n > 0 && fatIds.length < fatCount; n--) {
-    if (difat >= ENDOFCHAIN_MIN || seenDifat.has(difat)) throw new Error('bad difat');
+  for (
+    let n = Math.min(dv.getUint32(0x48, true), maxSectors);
+    n > 0 && fatIds.length < fatCount;
+    n--
+  ) {
+    if (difat >= ENDOFCHAIN_MIN || seenDifat.has(difat))
+      throw new Error('bad difat');
     seenDifat.add(difat);
     const ids = u32s(sector(difat));
     difat = ids.pop();
@@ -59,7 +67,8 @@ function readWorkbookStream(bytes) {
   if (fatIds.length < fatCount) throw new Error('fat sectors missing');
   const fat = fatIds.slice(0, fatCount).flatMap((id) => u32s(sector(id)));
 
-  const readChain = (table, start, length, get) => Buffer.concat(chainOf(table, start).map(get)).subarray(0, length);
+  const readChain = (table, start, length, get) =>
+    Buffer.concat(chainOf(table, start).map(get)).subarray(0, length);
   const dirBytes = readChain(fat, dv.getUint32(0x30, true), Infinity, sector);
 
   let root = null;
@@ -68,20 +77,31 @@ function readWorkbookStream(bytes) {
     const e = dirBytes.subarray(at, at + 128);
     const nameLen = e.readUInt16LE(0x40);
     const name = e.subarray(0, Math.max(0, nameLen - 2)).toString('utf16le');
-    const entry = { type: e[0x42], start: e.readUInt32LE(0x74), size: e.readUInt32LE(0x78) };
+    const entry = {
+      type: e[0x42],
+      start: e.readUInt32LE(0x74),
+      size: e.readUInt32LE(0x78),
+    };
     if (entry.type === 5 && !root) root = entry;
-    else if (entry.type === 2 && (name === 'Workbook' || name === 'Book') && !book) book = entry;
+    else if (
+      entry.type === 2 &&
+      (name === 'Workbook' || name === 'Book') &&
+      !book
+    )
+      book = entry;
   }
   if (!root || !book) throw new Error('no workbook stream');
 
   if (book.size >= cutoff) return readChain(fat, book.start, book.size, sector);
 
   const miniFat = [];
-  for (const id of chainOf(fat, dv.getUint32(0x3c, true))) miniFat.push(...u32s(sector(id)));
+  for (const id of chainOf(fat, dv.getUint32(0x3c, true)))
+    miniFat.push(...u32s(sector(id)));
   const miniStream = readChain(fat, root.start, root.size, sector);
   return readChain(miniFat, book.start, book.size, (id) => {
     const at = id * miniSize;
-    if (at + miniSize > miniStream.length) throw new Error('mini sector out of range');
+    if (at + miniSize > miniStream.length)
+      throw new Error('mini sector out of range');
     return miniStream.subarray(at, at + miniSize);
   });
 }
@@ -130,7 +150,10 @@ function parseSst(segments) {
     let text = '';
     for (let left = cch; left > 0;) {
       const wide = flags & 1;
-      const n = Math.min(left, Math.floor((segments[seg].length - pos) / (wide ? 2 : 1)));
+      const n = Math.min(
+        left,
+        Math.floor((segments[seg].length - pos) / (wide ? 2 : 1)),
+      );
       if (n === 0) {
         // Segment exhausted (or too short for a whole char): the next one restarts with a flags byte.
         if (++seg >= segments.length) throw new Error('sst truncated');
@@ -152,7 +175,9 @@ function labelText(d, at) {
   const cch = d.readUInt16LE(at);
   const wide = d[at + 2] & 1;
   const start = at + 3;
-  return d.subarray(start, start + cch * (wide ? 2 : 1)).toString(wide ? 'utf16le' : 'latin1');
+  return d
+    .subarray(start, start + cch * (wide ? 2 : 1))
+    .toString(wide ? 'utf16le' : 'latin1');
 }
 
 /**
@@ -167,7 +192,10 @@ export function readXlsSheets(bytes) {
     for (let at = 0; at + 4 <= wb.length;) {
       const len = wb.readUInt16LE(at + 2);
       if (at + 4 + len > wb.length) throw new Error('record overruns stream');
-      records.push({ type: wb.readUInt16LE(at), data: wb.subarray(at + 4, at + 4 + len) });
+      records.push({
+        type: wb.readUInt16LE(at),
+        data: wb.subarray(at + 4, at + 4 + len),
+      });
       at += 4 + len;
     }
 
@@ -189,11 +217,25 @@ export function readXlsSheets(bytes) {
         while (records[i + 1]?.type === 0x003c) segs.push(records[++i].data);
         strings = parseSst(segs);
       } else if (cells && depth === 1) {
-        const put = (r, c, v) => { if (v !== undefined) cells.set(`${r},${c}`, [r, c, v]); };
-        if (type === 0x00fd) put(data.readUInt16LE(0), data.readUInt16LE(2), strings[data.readUInt32LE(6)] ?? null);
-        else if (type === 0x0203) put(data.readUInt16LE(0), data.readUInt16LE(2), data.readDoubleLE(6));
-        else if (type === 0x027e) put(data.readUInt16LE(0), data.readUInt16LE(2), decodeRk(data.readUInt32LE(6)));
-        else if (type === 0x0204) put(data.readUInt16LE(0), data.readUInt16LE(2), labelText(data, 6));
+        const put = (r, c, v) => {
+          if (v !== undefined) cells.set(`${r},${c}`, [r, c, v]);
+        };
+        if (type === 0x00fd)
+          put(
+            data.readUInt16LE(0),
+            data.readUInt16LE(2),
+            strings[data.readUInt32LE(6)] ?? null,
+          );
+        else if (type === 0x0203)
+          put(data.readUInt16LE(0), data.readUInt16LE(2), data.readDoubleLE(6));
+        else if (type === 0x027e)
+          put(
+            data.readUInt16LE(0),
+            data.readUInt16LE(2),
+            decodeRk(data.readUInt32LE(6)),
+          );
+        else if (type === 0x0204)
+          put(data.readUInt16LE(0), data.readUInt16LE(2), labelText(data, 6));
         else if (type === 0x0006 && data.readUInt16LE(12) !== 0xffff) {
           put(data.readUInt16LE(0), data.readUInt16LE(2), data.readDoubleLE(6));
         } else if (type === 0x00bd) {
@@ -208,11 +250,20 @@ export function readXlsSheets(bytes) {
     return sheets.map((map) => {
       let maxRow = -1;
       let maxCol = -1;
-      for (const [r, c] of map.values()) { maxRow = Math.max(maxRow, r); maxCol = Math.max(maxCol, c); }
-      if (maxRow >= MAX_ROWS || maxCol >= MAX_COLS || (maxRow + 1) * (maxCol + 1) > MAX_CELLS) {
+      for (const [r, c] of map.values()) {
+        maxRow = Math.max(maxRow, r);
+        maxCol = Math.max(maxCol, c);
+      }
+      if (
+        maxRow >= MAX_ROWS ||
+        maxCol >= MAX_COLS ||
+        (maxRow + 1) * (maxCol + 1) > MAX_CELLS
+      ) {
         throw new Error('sheet too large');
       }
-      const grid = Array.from({ length: maxRow + 1 }, () => new Array(maxCol + 1).fill(null));
+      const grid = Array.from({ length: maxRow + 1 }, () =>
+        new Array(maxCol + 1).fill(null),
+      );
       for (const [r, c, v] of map.values()) grid[r][c] = v;
       return grid;
     });

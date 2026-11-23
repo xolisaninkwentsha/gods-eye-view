@@ -25,7 +25,10 @@ function validPolygons(polygons) {
   return (
     Array.isArray(polygons) &&
     polygons.length > 0 &&
-    polygons.every((rings) => Array.isArray(rings) && rings.length > 0 && rings.every(validRing))
+    polygons.every(
+      (rings) =>
+        Array.isArray(rings) && rings.length > 0 && rings.every(validRing),
+    )
   );
 }
 
@@ -38,11 +41,14 @@ const text = (v) => typeof v === 'string' && v.trim() !== '';
  */
 export function normalizeSaElectionsPayload(payload, _level) {
   const status = STATUSES.has(payload?.results) ? payload.results : 'failed';
-  const resultsAsOf = Number.isFinite(payload?.resultsAsOf) ? payload.resultsAsOf : null;
+  const resultsAsOf = Number.isFinite(payload?.resultsAsOf)
+    ? payload.resultsAsOf
+    : null;
   const rows = [];
   for (const area of Array.isArray(payload?.areas) ? payload.areas : []) {
     if (!area || typeof area !== 'object') continue;
-    if (!text(area.id) || !text(area.name) || !validPolygons(area.polygons)) continue;
+    if (!text(area.id) || !text(area.name) || !validPolygons(area.polygons))
+      continue;
     rows.push({ ...area, stableId: area.id, result: area.result ?? null });
   }
   return { status, resultsAsOf, rows };

@@ -48,7 +48,13 @@ test('in dock voice mode the locate button gives way to the waveform with the fi
   );
   assert.ok(voice, 'the voice-mode rule that hides the field');
   const hidden = voice[1].split(',').map((part) => part.trim());
-  for (const part of ['input', '.omnibar-kbd', '.omnibar-search-icon', '.omnibar-locate', '.omnibar-sa'])
+  for (const part of [
+    'input',
+    '.omnibar-kbd',
+    '.omnibar-search-icon',
+    '.omnibar-locate',
+    '.omnibar-sa',
+  ])
     assert.ok(hidden.includes(part), `${part} hides in voice mode`);
 });
 

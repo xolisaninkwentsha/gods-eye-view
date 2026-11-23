@@ -7,14 +7,47 @@ const quotaBlock = [
   ['Seat Calculation Detail'],
   [],
   ['Quota - (Q)', null, null, null, null, null, null, 9000],
-  ['Total Seats Available in Municipality - (B)', null, null, null, null, null, null, 231],
-  ['Independent Ward Councillors Elected - (C)', null, null, null, null, null, null, 0],
+  [
+    'Total Seats Available in Municipality - (B)',
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    231,
+  ],
+  [
+    'Independent Ward Councillors Elected - (C)',
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    0,
+  ],
   [],
-  ['Party Name', null, null, 'Total Valid Votes', null, 'Round 2 \nAllocation', 'Total Party Seats'],
+  [
+    'Party Name',
+    null,
+    null,
+    'Total Valid Votes',
+    null,
+    'Round 2 \nAllocation',
+    'Total Party Seats',
+  ],
   ['DEMOCRATIC ALLIANCE', null, null, 1000, null, '0', 140],
 ];
 const seatTable = [
-  [null, null, 'Party Name', 'Total Party Seats (x)', 'Ward Seats (y)', 'PR List Seats (x-y)'],
+  [
+    null,
+    null,
+    'Party Name',
+    'Total Party Seats (x)',
+    'Ward Seats (y)',
+    'PR List Seats (x-y)',
+  ],
   [null, null, 'AFRICAN NATIONAL CONGRESS', '60', '0', 60],
   [null, null, 'DEMOCRATIC ALLIANCE', 140, 100, 40],
   [null, null, 'ACTIONSA (PF)', 0, 0, 0],
@@ -26,9 +59,19 @@ const expected = {
   totalSeats: 231,
   independentWardSeats: 0,
   parties: [
-    { party: 'AFRICAN NATIONAL CONGRESS', seats: 60, wardSeats: 0, prSeats: 60 },
+    {
+      party: 'AFRICAN NATIONAL CONGRESS',
+      seats: 60,
+      wardSeats: 0,
+      prSeats: 60,
+    },
     { party: 'DEMOCRATIC ALLIANCE', seats: 140, wardSeats: 100, prSeats: 40 },
-    { party: 'VRYHEIDSFRONT PLUS FREEDOM FRONT PLUS', seats: 31, wardSeats: 0, prSeats: 31 },
+    {
+      party: 'VRYHEIDSFRONT PLUS FREEDOM FRONT PLUS',
+      seats: 31,
+      wardSeats: 0,
+      prSeats: 31,
+    },
   ],
 };
 
@@ -38,18 +81,28 @@ test('parses totals and the per-party seat table', () => {
 
 test('reads the independent ward councillor count', () => {
   const rows = [...quotaBlock, ...seatTable].map((r) =>
-    String(r[0]).startsWith('Independent Ward') ? [r[0], null, null, null, null, null, null, 3] : r);
+    String(r[0]).startsWith('Independent Ward')
+      ? [r[0], null, null, null, null, null, null, 3]
+      : r,
+  );
   assert.equal(parseSeatSheet(rows).independentWardSeats, 3);
 });
 
 test('refuses a sheet without the seat table', () => {
-  assert.throws(() => parseSeatSheet(quotaBlock), { message: 'seat_sheet_unreadable' });
-  assert.throws(() => parseSeatSheet(seatTable), { message: 'seat_sheet_unreadable' });
+  assert.throws(() => parseSeatSheet(quotaBlock), {
+    message: 'seat_sheet_unreadable',
+  });
+  assert.throws(() => parseSeatSheet(seatTable), {
+    message: 'seat_sheet_unreadable',
+  });
   assert.throws(() => parseSeatSheet([]), { message: 'seat_sheet_unreadable' });
 });
 
 test('readSeatFile reads one sheet that holds everything', () => {
-  assert.deepEqual(readSeatFile(buildXls([[...quotaBlock, ...seatTable]])), expected);
+  assert.deepEqual(
+    readSeatFile(buildXls([[...quotaBlock, ...seatTable]])),
+    expected,
+  );
 });
 
 test('readSeatFile reads totals and table split over two sheets', () => {
@@ -57,6 +110,11 @@ test('readSeatFile reads totals and table split over two sheets', () => {
 });
 
 test('readSeatFile skips an unrelated sheet and refuses a workbook with no seats', () => {
-  assert.deepEqual(readSeatFile(buildXls([[['nothing here']], [...quotaBlock, ...seatTable]])), expected);
-  assert.throws(() => readSeatFile(buildXls([[['nothing here']]])), { message: 'seat_sheet_unreadable' });
+  assert.deepEqual(
+    readSeatFile(buildXls([[['nothing here']], [...quotaBlock, ...seatTable]])),
+    expected,
+  );
+  assert.throws(() => readSeatFile(buildXls([[['nothing here']]])), {
+    message: 'seat_sheet_unreadable',
+  });
 });

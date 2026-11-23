@@ -731,14 +731,15 @@ export function cctvProxy({ sourceRoot = process.cwd() } = {}) {
                       resolveCapeGlidingFrameUrl(source.url),
                     )
                   : source?.streetViewFallback === false
-                  ? await fetchThrottledFrame(
-                      source,
-                      cameraId,
-                      upstreamCandidate,
-                    )
-                  : await fetchCctvImageFromUpstream(upstreamCandidate, {
-                      allowMjpeg: source?.sourceKind === 'taiwan-highway-motc',
-                    });
+                    ? await fetchThrottledFrame(
+                        source,
+                        cameraId,
+                        upstreamCandidate,
+                      )
+                    : await fetchCctvImageFromUpstream(upstreamCandidate, {
+                        allowMjpeg:
+                          source?.sourceKind === 'taiwan-highway-motc',
+                      });
         if (
           source?.sourceKind === 'mlit-river' &&
           isMlitRiverAdjustmentImage(upstreamImage)

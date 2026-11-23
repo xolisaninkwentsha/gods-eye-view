@@ -8,9 +8,15 @@ export function createSaElectionsSource({
     /** @returns {Promise<object>} The raw route payload (see records.js to normalize it). */
     async getSnapshot({ signal, level } = {}) {
       signal?.throwIfAborted();
-      const response = await fetchImpl(`/api/sa-elections/${level}`, { signal });
+      const response = await fetchImpl(`/api/sa-elections/${level}`, {
+        signal,
+      });
       if (!response.ok) throw new Error(`SA elections HTTP ${response.status}`);
-      const payload = await readResponseJsonCapped(response, 40 * 1024 * 1024, signal);
+      const payload = await readResponseJsonCapped(
+        response,
+        40 * 1024 * 1024,
+        signal,
+      );
       signal?.throwIfAborted();
       return payload;
     },

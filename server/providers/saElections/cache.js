@@ -17,14 +17,19 @@ export async function readJsonFile(fsImpl, file) {
  * @returns {Promise<boolean>} whether the file landed
  */
 export async function writeJsonAtomic(fsImpl, dir, name, value) {
-  const temp = path.join(dir, `.${name}.${process.pid}.${randomBytes(6).toString('hex')}.tmp`);
+  const temp = path.join(
+    dir,
+    `.${name}.${process.pid}.${randomBytes(6).toString('hex')}.tmp`,
+  );
   try {
     await fsImpl.mkdir(dir, { recursive: true });
     await fsImpl.writeFile(temp, JSON.stringify(value));
     await fsImpl.rename(temp, path.join(dir, name));
     return true;
   } catch (err) {
-    console.warn(`[sa-elections] cache write ${name} failed: ${err?.message || err}`);
+    console.warn(
+      `[sa-elections] cache write ${name} failed: ${err?.message || err}`,
+    );
     try {
       await fsImpl.rm?.(temp, { force: true });
     } catch {
