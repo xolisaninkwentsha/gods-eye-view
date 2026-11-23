@@ -35,6 +35,7 @@ import { createApplicationGnssIntegrity } from './layers/gnss.js';
 import { createApplicationGhostMaps } from './layers/ghostMaps.js';
 import { createApplicationShipwrecks } from './layers/shipwrecks.js';
 import { createApplicationDroneAirspace } from './layers/droneAirspace.js';
+import { createApplicationSaElections } from './layers/saElections.js';
 import { createApplicationNews } from './layers/news.js';
 import { createApplicationWildlifeSightings } from './layers/wildlifeSightings.js';
 import { createApplicationCables } from './layers/submarineCables.js';
@@ -53,6 +54,9 @@ export const LOCAL_ONLY_LAYER_METADATA = Object.freeze([
   Object.freeze({ id: 'local-adsb', disposition: 'local-only' }),
   // Voice search results belong to this session, like a receiver to this machine.
   Object.freeze({ id: 'osm-places', disposition: 'local-only' }),
+  // The fork-local South African election map is not shared by link.
+  Object.freeze({ id: 'sa-councils-2026', disposition: 'local-only' }),
+  Object.freeze({ id: 'sa-wards-2026', disposition: 'local-only' }),
 ]);
 
 /** Serialization metadata for every layer the application catalog constructs. */
@@ -155,6 +159,14 @@ export function createApplicationCatalog({
         createApplicationShipwrecks({ source: sources.shipwrecks }),
         createApplicationDroneAirspace({
           source: sources['drone-airspace'],
+        }),
+        createApplicationSaElections({
+          level: 'councils',
+          source: sources['sa-elections'],
+        }),
+        createApplicationSaElections({
+          level: 'wards',
+          source: sources['sa-elections'],
         }),
         // Ages, the window and the counts read the world clock: a host that
         // follows it for the layer shows the news at the time on the timeline.

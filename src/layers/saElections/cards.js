@@ -37,6 +37,11 @@ function statusDetails(status) {
   return [t('IEC results unavailable')];
 }
 
+/** The one-line reason results are not shown, or null while they are. */
+export function saStatusLine(status) {
+  return statusDetails(status)?.[0] ?? null;
+}
+
 export function buildSaCouncilCard(row, status) {
   const title = `${row.name} (${row.code})`;
   const id = `sa-council-card:${row.stableId}`;

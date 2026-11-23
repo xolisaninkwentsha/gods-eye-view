@@ -114,6 +114,14 @@ export const NYC_DOT_DISCLAIMER =
 export const DATA_CREDITS = [
   // ── Live sources ────────────────────────────────────────────────
   {
+    key: 'za-elections',
+    html:
+      'South African elections: boundaries simplified from ' +
+      '<a href="https://spatialhub-mdb-sa.opendata.arcgis.com/" target="_blank" rel="noopener">Municipal Demarcation Board</a> ' +
+      '2026 data (non-commercial use) · results from the ' +
+      '<a href="https://results.elections.org.za/" target="_blank" rel="noopener">Electoral Commission of South Africa</a>',
+  },
+  {
     key: 'opensky',
     html:
       'Flights: OpenSky Network — Schäfer et al., ' +

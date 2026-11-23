@@ -371,7 +371,9 @@ test('the South African camera credit carries the Kapstadt.de sponsor link and e
       'utf8',
     ),
   );
-  const origins = new Set(cameras.map((camera) => new URL(camera.sourceUrl).origin));
+  const origins = new Set(
+    cameras.map((camera) => new URL(camera.sourceUrl).origin),
+  );
   for (const origin of origins)
     assert.ok(
       credit.html.includes(`href="${origin}`),
@@ -407,4 +409,18 @@ test('the always-on rail credit names live feeds only, never timetables', () => 
   assert.ok(rail);
   assert.match(rail.html, /realtime feeds/);
   assert.doesNotMatch(rail.html, /timetable|placed from/i);
+});
+
+test('the South African election credit names both publishers', () => {
+  const credit = DATA_CREDITS.find((entry) => entry.key === 'za-elections');
+  assert.ok(credit, 'the SA election layers must be credited');
+  assert.match(credit.html, /Municipal Demarcation Board/);
+  assert.match(credit.html, /Electoral Commission of South Africa/);
+  assert.match(
+    credit.html,
+    /https:\/\/spatialhub-mdb-sa\.opendata\.arcgis\.com\//,
+  );
+  assert.match(credit.html, /https:\/\/results\.elections\.org\.za\//);
+  assert.match(credit.html, /simplified from/);
+  assert.match(credit.html, /non-commercial/);
 });
