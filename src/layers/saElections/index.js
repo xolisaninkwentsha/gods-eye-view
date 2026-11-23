@@ -91,6 +91,7 @@ export function createSaElectionsLayer({
   let _enabled = false;
   let _repollTimer = null;
   let _removeMoveEnd = null;
+  let _rowListener = null;
   let _clickSubscription = null;
   let _selectedId = null;
   /** @type {Map<string, object>} */
@@ -109,7 +110,8 @@ export function createSaElectionsLayer({
     if (_status !== 'loading' || !_enabled) return;
     _repollTimer = setTimeout(() => {
       _repollTimer = null;
-      void layer.update();
+      // The lifecycle does not see this update, so the row is told itself.
+      void layer.update().finally(() => _rowListener?.());
     }, repollMs);
   }
 
@@ -200,6 +202,11 @@ export function createSaElectionsLayer({
     icon: '🗳️',
     source: 'MDB · IEC',
     updateInterval: 3_600_000,
+
+    /** Connect the layer row's repaint listener. */
+    setRowControlsListener(listener) {
+      _rowListener = typeof listener === 'function' ? listener : null;
+    },
 
     init(viewer) {
       if (_viewer) throw new Error('SA elections layer is already initialized');
@@ -331,6 +338,7 @@ export function createSaElectionsLayer({
     destroy() {
       _request?.abort();
       _request = null;
+      _rowListener = null;
       clearRepoll();
       removeCameraGate();
       removeClickHandler();

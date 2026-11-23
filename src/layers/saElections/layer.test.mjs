@@ -231,13 +231,17 @@ test('while loading it re-polls once, and disabling cancels the re-poll', async 
     await h.layer.update();
     assert.equal(calls, 3);
     h.layer.disable();
+    // Enabled again, a leaked timer would now get past the enabled check.
+    h.layer.enable();
     mock.timers.tick(60_000);
     await new Promise((r) => setImmediate(r));
     assert.equal(calls, 3, 'disable cancelled the re-poll');
 
-    h.layer.enable();
     await h.layer.update();
+    assert.equal(calls, 4);
     h.layer.destroy();
+    h.layer.init(h.viewer);
+    h.layer.enable();
     mock.timers.tick(60_000);
     await new Promise((r) => setImmediate(r));
     assert.equal(calls, 4, 'destroy cancelled the re-poll');
@@ -286,4 +290,30 @@ test('stats report a stale payload and a failed fetch', async () => {
   fail = true;
   assert.equal(await h.layer.update(), false);
   assert.equal(h.layer.getStats().error, 'SA elections HTTP 502');
+});
+
+test('the row listener fires when a re-poll update completes', async () => {
+  mock.timers.enable({ apis: ['setTimeout'] });
+  try {
+    let state = 'loading';
+    const h = harness(
+      'wards',
+      { getSnapshot: async () => payload('wards', [ward('w1', ANC)], state) },
+      { repollMs: 5000 },
+    );
+    let fired = 0;
+    h.layer.setRowControlsListener(() => fired++);
+    await h.layer.update();
+    assert.equal(fired, 0, 'the lifecycle reports its own updates');
+    state = 'ok';
+    mock.timers.tick(5000);
+    await new Promise((r) => setImmediate(r));
+    await new Promise((r) => setImmediate(r));
+    assert.equal(fired, 1);
+    assert.equal(h.layer.getRowControls().legend[0].label, 'ANC');
+    h.layer.setRowControlsListener(null);
+    h.layer.destroy();
+  } finally {
+    mock.timers.reset();
+  }
 });
