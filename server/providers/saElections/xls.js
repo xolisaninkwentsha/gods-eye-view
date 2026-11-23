@@ -4,13 +4,23 @@
 const ENDOFCHAIN_MIN = 0xfffffffa; // ids at or above this are special markers
 const SIGNATURE = [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1];
 
-/** Follow a sector chain through a FAT. Guards against loops and bad ids. */
+const ENDOFCHAIN = 0xfffffffe;
+const MAX_ROWS = 65536; // BIFF8 limits
+const MAX_COLS = 256;
+const MAX_CELLS = 1000000;
+
+/** Follow a sector chain through a FAT. Out-of-range ids, loops and unterminated chains throw. */
 function chainOf(fat, start) {
   const out = [];
-  for (let s = start; s < ENDOFCHAIN_MIN; s = fat[s]) {
-    if (s === undefined || out.length > fat.length) throw new Error('bad chain');
+  const seen = new Set();
+  let s = start;
+  while (s < ENDOFCHAIN_MIN) {
+    if (s >= fat.length || seen.has(s)) throw new Error('bad chain');
+    seen.add(s);
     out.push(s);
+    s = fat[s];
   }
+  if (s !== ENDOFCHAIN) throw new Error('chain ends on a reserved id');
   return out;
 }
 
@@ -34,13 +44,19 @@ function readWorkbookStream(bytes) {
   // FAT sector ids: 109 in the header, the rest in DIFAT sectors.
   const fatIds = [];
   for (let i = 0; i < 109; i++) fatIds.push(dv.getUint32(0x4c + i * 4, true));
+  const fatCount = dv.getUint32(0x2c, true);
+  const maxSectors = Math.floor(bytes.length / size);
+  if (fatCount > maxSectors) throw new Error('fat count exceeds file');
   let difat = dv.getUint32(0x44, true);
-  for (let n = dv.getUint32(0x48, true); n > 0 && difat < ENDOFCHAIN_MIN; n--) {
+  const seenDifat = new Set();
+  for (let n = Math.min(dv.getUint32(0x48, true), maxSectors); n > 0 && fatIds.length < fatCount; n--) {
+    if (difat >= ENDOFCHAIN_MIN || seenDifat.has(difat)) throw new Error('bad difat');
+    seenDifat.add(difat);
     const ids = u32s(sector(difat));
     difat = ids.pop();
     fatIds.push(...ids);
   }
-  const fatCount = dv.getUint32(0x2c, true);
+  if (fatIds.length < fatCount) throw new Error('fat sectors missing');
   const fat = fatIds.slice(0, fatCount).flatMap((id) => u32s(sector(id)));
 
   const readChain = (table, start, length, get) => Buffer.concat(chainOf(table, start).map(get)).subarray(0, length);
@@ -113,9 +129,15 @@ function parseSst(segments) {
     const ext = flags & 0x04 ? take(4).readUInt32LE(0) : 0;
     let text = '';
     for (let left = cch; left > 0;) {
-      if (pos >= segments[seg].length) { ensure(); flags = take(1)[0]; } // continued: fresh flags byte
       const wide = flags & 1;
       const n = Math.min(left, Math.floor((segments[seg].length - pos) / (wide ? 2 : 1)));
+      if (n === 0) {
+        // Segment exhausted (or too short for a whole char): the next one restarts with a flags byte.
+        if (++seg >= segments.length) throw new Error('sst truncated');
+        pos = 0;
+        flags = take(1)[0];
+        continue;
+      }
       text += take(n * (wide ? 2 : 1)).toString(wide ? 'utf16le' : 'latin1');
       left -= n;
     }
@@ -187,6 +209,9 @@ export function readXlsSheets(bytes) {
       let maxRow = -1;
       let maxCol = -1;
       for (const [r, c] of map.values()) { maxRow = Math.max(maxRow, r); maxCol = Math.max(maxCol, c); }
+      if (maxRow >= MAX_ROWS || maxCol >= MAX_COLS || (maxRow + 1) * (maxCol + 1) > MAX_CELLS) {
+        throw new Error('sheet too large');
+      }
       const grid = Array.from({ length: maxRow + 1 }, () => new Array(maxCol + 1).fill(null));
       for (const [r, c, v] of map.values()) grid[r][c] = v;
       return grid;

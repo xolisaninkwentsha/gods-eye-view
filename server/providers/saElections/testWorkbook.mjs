@@ -8,15 +8,18 @@ const SECTOR = 512;
 const MINI_SECTOR = 64;
 const MINI_CUTOFF = 4096;
 
-const u16 = (n) => { const b = Buffer.alloc(2); b.writeUInt16LE(n); return b; };
-const u32 = (n) => { const b = Buffer.alloc(4); b.writeUInt32LE(n >>> 0); return b; };
-const rec = (type, data = Buffer.alloc(0)) => Buffer.concat([u16(type), u16(data.length), data]);
+export const u16 = (n) => { const b = Buffer.alloc(2); b.writeUInt16LE(n); return b; };
+export const u32 = (n) => { const b = Buffer.alloc(4); b.writeUInt32LE(n >>> 0); return b; };
+export const rec = (type, data = Buffer.alloc(0)) => Buffer.concat([u16(type), u16(data.length), data]);
 const padTo = (buf, n) => Buffer.concat([buf, Buffer.alloc((n - (buf.length % n)) % n)]);
 
-/** SST + CONTINUE records, each holding at most `chunk` data bytes. */
-function sstRecords(strings, chunk) {
+/**
+ * SST + CONTINUE records, each holding at most `chunk` data bytes. Entries are
+ * { text, runs, ext }: `runs` rich-text runs and `ext` bytes of phonetic data.
+ */
+function sstRecords(entries, chunk) {
   const records = [];
-  let parts = [Buffer.concat([u32(strings.length), u32(strings.length)])];
+  let parts = [Buffer.concat([u32(entries.length), u32(entries.length)])];
   let used = 8;
   const push = (b) => { parts.push(b); used += b.length; };
   const flush = () => {
@@ -24,43 +27,78 @@ function sstRecords(strings, chunk) {
     parts = [];
     used = 0;
   };
-  for (const s of strings) {
-    const wide = /[^\x00-\xff]/.test(s);
-    if (chunk - used < 3 + (wide ? 2 : 1)) flush();
-    push(Buffer.concat([u16(s.length), Buffer.from([wide ? 1 : 0])]));
-    for (let i = 0; i < s.length;) {
+  // Raw bytes (rich runs, ext data) may cross a record boundary with no flags byte.
+  const pushRaw = (b) => {
+    for (let i = 0; i < b.length;) {
+      if (chunk - used < 1) flush();
+      const n = Math.min(b.length - i, chunk - used);
+      push(b.subarray(i, i + n));
+      i += n;
+    }
+  };
+  for (const { text, runs = 0, ext = 0 } of entries) {
+    const wide = /[^\x00-\xff]/.test(text);
+    const flags = (wide ? 1 : 0) | (ext ? 4 : 0) | (runs ? 8 : 0);
+    const head = Buffer.concat([u16(text.length), Buffer.from([flags]),
+      ...(runs ? [u16(runs)] : []), ...(ext ? [u32(ext)] : [])]);
+    if (chunk - used < head.length + (wide ? 2 : 1)) flush();
+    push(head);
+    for (let i = 0; i < text.length;) {
       const w = wide ? 2 : 1;
       if (chunk - used < w) {
         flush();
         push(Buffer.from([wide ? 1 : 0])); // a continued string restarts with a flags byte
       }
-      const n = Math.min(s.length - i, Math.floor((chunk - used) / w));
-      push(Buffer.from(s.slice(i, i + n), wide ? 'utf16le' : 'latin1'));
+      const n = Math.min(text.length - i, Math.floor((chunk - used) / w));
+      push(Buffer.from(text.slice(i, i + n), wide ? 'utf16le' : 'latin1'));
       i += n;
     }
+    pushRaw(Buffer.alloc(runs * 4 + ext, 0x41));
   }
   if (used > 0 || !records.length) flush();
   return records;
 }
 
-const bof = (type) => rec(0x0809, Buffer.concat([u16(0x0600), u16(type), Buffer.alloc(12)]));
+export const bof = (type) => rec(0x0809, Buffer.concat([u16(0x0600), u16(type), Buffer.alloc(12)]));
 
+const f64 = (v) => { const b = Buffer.alloc(8); b.writeDoubleLE(v); return b; };
+
+/**
+ * Cells: string, number, null, or an object:
+ * { rk }, { mulrk: [rk, ...] } (starts at that column), { formula: number | null }
+ * (null = a string result, whose cached value is not a number), { label: text },
+ * { rich: text, runs, ext } (shared string with rich-text runs and ext data).
+ */
 function workbookStream(sheets, chunk) {
-  const strings = [];
+  const entries = [];
   const index = new Map();
+  const intern = (e) => {
+    const key = JSON.stringify(e);
+    if (!index.has(key)) { index.set(key, entries.length); entries.push(e); }
+    return index.get(key);
+  };
   for (const sheet of sheets) for (const row of sheet) for (const v of row) {
-    if (typeof v === 'string' && !index.has(v)) { index.set(v, strings.length); strings.push(v); }
+    if (typeof v === 'string') intern({ text: v });
+    else if (v?.rich !== undefined) intern({ text: v.rich, runs: v.runs, ext: v.ext });
   }
-  const out = [bof(0x0005), ...sstRecords(strings, chunk), rec(0x000a)];
+  const out = [bof(0x0005), ...sstRecords(entries, chunk), rec(0x000a)];
   for (const sheet of sheets) {
     out.push(bof(0x0010));
     sheet.forEach((row, r) => row.forEach((v, c) => {
       const pos = Buffer.concat([u16(r), u16(c), u16(0)]);
-      if (typeof v === 'string') out.push(rec(0x00fd, Buffer.concat([pos, u32(index.get(v))])));
-      else if (typeof v === 'number') {
-        const f = Buffer.alloc(8); f.writeDoubleLE(v);
-        out.push(rec(0x0203, Buffer.concat([pos, f])));
-      } else if (v && typeof v === 'object' && 'rk' in v) out.push(rec(0x027e, Buffer.concat([pos, u32(v.rk)])));
+      const add = (type, ...data) => out.push(rec(type, Buffer.concat([pos, ...data])));
+      if (typeof v === 'string') add(0x00fd, u32(intern({ text: v })));
+      else if (typeof v === 'number') add(0x0203, f64(v));
+      else if (v?.rk !== undefined) add(0x027e, u32(v.rk));
+      else if (v?.mulrk) {
+        out.push(rec(0x00bd, Buffer.concat([u16(r), u16(c), ...v.mulrk.flatMap((rk) => [u16(0), u32(rk)]),
+          u16(c + v.mulrk.length - 1)])));
+      } else if (v && 'formula' in v) {
+        const result = v.formula === null ? Buffer.from([0, 0, 0, 0, 0, 0, 0xff, 0xff]) : f64(v.formula);
+        add(0x0006, result, Buffer.alloc(6)); // result, flags u16, chn u32
+      } else if (v?.label !== undefined) {
+        add(0x0204, u16(v.label.length), Buffer.from([0]), Buffer.from(v.label, 'latin1'));
+      } else if (v?.rich !== undefined) add(0x00fd, u32(intern({ text: v.rich, runs: v.runs, ext: v.ext })));
     }));
     out.push(rec(0x000a));
   }
@@ -90,7 +128,17 @@ function dirEntry(name, type, child, start, size) {
  * @returns {Uint8Array}
  */
 export function buildXls(sheets, { sstChunkBytes = 8224 } = {}) {
-  const wb = workbookStream(sheets, sstChunkBytes);
+  return buildXlsFromStream(workbookStream(sheets, sstChunkBytes));
+}
+
+/**
+ * Wrap raw BIFF bytes (a Workbook stream) in a compound file. Lets tests hand-craft
+ * malformed records.
+ * @param {Uint8Array} workbook
+ * @returns {Uint8Array}
+ */
+export function buildXlsFromStream(workbook) {
+  const wb = Buffer.from(workbook);
   const mini = wb.length < MINI_CUTOFF;
   // In the mini case the sectors hold the mini stream, indexed by one mini FAT sector.
   const data = padTo(wb, mini ? MINI_SECTOR : SECTOR);
