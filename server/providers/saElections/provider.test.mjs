@@ -1056,6 +1056,32 @@ test('a seat file that cannot be read leaves only that council unchecked', async
   assert.equal(logged.filter((m) => m.includes('FS/FS001')).length, 1);
 });
 
+test('a (PF) seat row joins its CSV party, and a party with no PR votes is logged once', async (t) => {
+  const warn = t.mock.method(console, 'warn', () => {});
+  const { up, request } = await setup(t);
+  up.seats.WP001 = seatXls([
+    [DA, 2, 1, 1],
+    [`${ANC} (PF)`, 1, 1, 0],
+    ['GHOST PARTY', 1, 0, 1],
+  ]);
+  await request('/councils');
+  const wp = byId(await untilResults(request, 'ok')).WP001.result;
+  assert.equal(wp.seatCheck, 'ok');
+  const anc = wp.parties.find((p) => p.party === ANC);
+  assert.equal(anc.seats, 1);
+  assert.equal(anc.prVotes, 100, 'the (PF) row matched the CSV name');
+  const unmatched = warn.mock.calls
+    .map((c) => String(c.arguments[0]))
+    .filter((m) => m.includes('no PR votes'));
+  assert.equal(unmatched.length, 1, unmatched.join('\n'));
+  assert.match(unmatched[0], /WP\/WP001: .*GHOST PARTY/);
+  assert.doesNotMatch(unmatched[0], new RegExp(ANC));
+  assert.ok(
+    warn.mock.calls.every((c) => !String(c.arguments[0]).includes(ANC)),
+    'no warning names the (PF) party',
+  );
+});
+
 test('a restart serves the cached copy and only checks Last-Modified', async (t) => {
   const first = await setup(t);
   await first.request('/councils');
