@@ -265,6 +265,7 @@
       "src/ui/layerNames.js",
       "src/ui/views/panels/AltitudeGraph.vue",
       "src/ui/stores/omnibar.js",
+      "src/ui/myLocation.js",
       "src/ui/views/panels/SunDial.vue",
       "src/ui/views/panels/CctvPreview.vue",
       "src/data/contextStore.js",
@@ -576,6 +577,7 @@
       "server/providers/cctv/quebec.js",
       "server/providers/cctv/ottawa.js",
       "server/providers/cctv/worldCameras.js",
+      "server/providers/cctv/capeGliding.js",
       "server/providers/cctv/constants.js",
       "server/providers/cctv/media.js",
       "server/providers/cctv/normalize.js",
@@ -1137,7 +1139,13 @@
       "src/geo/vector.js",
       "src/geo/ellipsoid.js",
       "src/geo/horizon.js",
-      "src/render/rendererOf.js"
+      "src/render/rendererOf.js",
+      "src/data/youtubeApi.js",
+      "src/i18n/marker.js",
+      "src/data/liveStreams.js",
+      "src/ui/views/panels/YoutubeCctvOverlay.vue",
+      "src/data/youtubeLivePlayer.js",
+      "src/ui/youtubeCctvOverlay.js"
     ],
     "external": ["vue", "pinia", "vue-i18n", "cesium"]
   },
@@ -1715,7 +1723,9 @@
       "src/data/liveStreams.js",
       "src/data/youtubeApi.js",
       "src/data/youtubeLivePlayer.js",
-      "src/ui/liveControls.js"
+      "src/ui/liveControls.js",
+      "src/ui/views/panels/YoutubeCctvOverlay.vue",
+      "src/ui/youtubeCctvOverlay.js"
     ],
     "external": [
       "cesium",
@@ -5603,7 +5613,9 @@
       "src/layers/satellites/tiangongStation.js",
       "src/layers/satellites/tiangongModel.js",
       "src/layers/satellites/tiangongJoints.js",
-      "src/layers/satellites/tiangongArticulation.js"
+      "src/layers/satellites/tiangongArticulation.js",
+      "src/ui/views/panels/YoutubeCctvOverlay.vue",
+      "src/ui/youtubeCctvOverlay.js"
     ],
     "external": [
       "hls.js",
