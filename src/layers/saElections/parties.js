@@ -46,6 +46,8 @@ export const PARTY_STYLES = {
   'AL JAMA-AH': { short: 'Al Jama-ah', color: '#00695c' },
   'CONGRESS OF THE PEOPLE': { short: 'COPE', color: '#29b6f6' },
   'RISE MZANSI': { short: 'Rise Mzansi', color: '#ec407a' },
+  // Red in its own branding; a deep maroon here, so it does not read as the EFF's bright red.
+  'SOUTH AFRICAN COMMUNIST PARTY': { short: 'SACP', color: '#6b0f1a' },
   INDEPENDENT: { short: 'Independent', color: '#a1887f' },
 };
 

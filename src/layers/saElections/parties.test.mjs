@@ -22,6 +22,18 @@ function hue(hex) {
 }
 const bucket = (hex) => Math.round(hue(hex) / 30) % 12;
 
+/** WCAG relative luminance, and the contrast ratio of two colours (1 to 21). */
+function luminance(hex) {
+  const [r, g, b] = [1, 3, 5]
+    .map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+    .map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+const contrast = (a, b) => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+
 test('normalizes forfeiture marks, spacing and case', () => {
   assert.equal(normalizePartyName(' ActionSA (PF) '), 'ACTIONSA');
   assert.equal(
@@ -45,8 +57,28 @@ test('known parties get a short name and a colour', () => {
     'FF Plus',
   );
   assert.equal(partyStyle('INDEPENDENT').short, 'Independent');
+  assert.equal(partyStyle('SOUTH AFRICAN COMMUNIST PARTY').short, 'SACP');
   for (const style of Object.values(PARTY_STYLES))
     assert.match(style.color, /^#[0-9a-f]{6}$/i);
+  const colours = Object.values(PARTY_STYLES).map((s) => s.color.toLowerCase());
+  assert.equal(
+    new Set(colours).size,
+    colours.length,
+    'every colour is its own',
+  );
+  assert.ok(!colours.includes(OTHER_COLOR.toLowerCase()));
+});
+
+test('the SACP red is told apart from the EFF red', () => {
+  const sacp = partyStyle('SOUTH AFRICAN COMMUNIST PARTY').color;
+  assert.notEqual(sacp, OTHER_COLOR, 'not drawn as Other');
+  const eff = partyStyle('ECONOMIC FREEDOM FIGHTERS').color;
+  assert.ok(
+    contrast(sacp, eff) >= 2,
+    `contrast with EFF ${contrast(sacp, eff).toFixed(2)}`,
+  );
+  const anc = partyStyle('AFRICAN NATIONAL CONGRESS').color;
+  assert.notEqual(bucket(sacp), bucket(anc));
 });
 
 test('an unknown party is Other', () => {
