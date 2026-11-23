@@ -154,9 +154,10 @@ test('no-majority councils are faint and seat-less ones are outline only', async
 });
 
 test('results off draws outlines only and says so in the legend', async () => {
+  // With the switch off the server sends every area without a result.
   const h = harness(
     'councils',
-    sourceOf(payload('councils', [council('A', ANC, true)], 'off')),
+    sourceOf(payload('councils', [council('A', null)], 'off')),
   );
   await h.layer.update();
   assert.equal(h.fills().items.size, 0);
@@ -164,6 +165,101 @@ test('results off draws outlines only and says so in the legend', async () => {
   const { legend } = h.layer.getRowControls();
   assert.equal(legend.length, 1);
   assert.equal(legend[0].blurb, 'Results are off');
+});
+
+test('while loading, the areas that have results are drawn and carded', async (t) => {
+  const h = harness(
+    'wards',
+    sourceOf(payload('wards', [ward('w1', ANC), ward('w2', null)], 'loading')),
+  );
+  t.after(() => h.layer.destroy());
+  assert.equal(await h.layer.update(), true);
+  assert.deepEqual(
+    [...h.fills().items.keys()],
+    ['sa-wards:w1:0', 'sa-wards:w1:1'],
+  );
+  assert.equal(h.lines().items.size, 4, 'every area has an outline');
+  const grey = h.lines().items.get('sa-wards:w2:0');
+  assert.ok(Math.abs(grey.style.color[0] - 0x9a / 255) < 1e-9);
+  const { legend } = h.layer.getRowControls();
+  assert.deepEqual(
+    legend.map((row) => [row.label, row.count]),
+    [
+      ['ANC', 1],
+      ['Other', 0],
+    ],
+  );
+  assert.equal(legend[0].blurb, 'Downloading results from the IEC…');
+  h.click('sa-wards:w1:0');
+  assert.equal(
+    h.overlay.entries.get('sa-wards-2026')[0].details[0],
+    'ANC 60.0%',
+  );
+  h.click('sa-wards:w2:0');
+  assert.deepEqual(h.overlay.entries.get('sa-wards-2026')[0].details, [
+    'Downloading results from the IEC…',
+  ]);
+});
+
+test('councils while loading: results drawn, the rest wait, and later say so', async (t) => {
+  let state = 'loading';
+  const h = harness('councils', {
+    getSnapshot: async () =>
+      payload(
+        'councils',
+        [council('A', ANC, true), council('B', DA, false), council('C', null)],
+        state,
+      ),
+  });
+  t.after(() => h.layer.destroy());
+  await h.layer.update();
+  assert.equal(h.fills().items.get('sa-councils:A:0').fill[3], 0.5);
+  assert.equal(h.fills().items.get('sa-councils:B:0').fill[3], 0.15);
+  assert.equal(h.fills().items.has('sa-councils:C:0'), false);
+  const { legend } = h.layer.getRowControls();
+  assert.deepEqual(
+    legend.map((row) => row.label),
+    ['ANC', 'DA', 'Other'],
+  );
+  assert.match(legend[0].blurb, /Downloading results from the IEC…/);
+  assert.match(
+    legend[0].blurb,
+    /Faint: no party holds more than half the seats/,
+  );
+  h.click('sa-councils:A:0');
+  assert.equal(
+    h.overlay.entries.get('sa-councils-2026')[0].details[0],
+    'ANC · 60 of 100 seats',
+  );
+  h.click('sa-councils:C:0');
+  assert.deepEqual(h.overlay.entries.get('sa-councils-2026')[0].details, [
+    'Downloading results from the IEC…',
+  ]);
+  state = 'ok';
+  await h.layer.update();
+  assert.deepEqual(h.overlay.entries.get('sa-councils-2026')[0].details, [
+    'No result for this council',
+  ]);
+  assert.equal(
+    h.layer.getRowControls().legend[0].blurb,
+    'Faint: no party holds more than half the seats',
+  );
+});
+
+test('while loading with no results at all the legend keeps one status row', async (t) => {
+  const h = harness(
+    'councils',
+    sourceOf(payload('councils', [council('A', null)], 'loading')),
+  );
+  t.after(() => h.layer.destroy());
+  await h.layer.update();
+  assert.equal(h.fills().items.size, 0);
+  assert.equal(h.lines().items.size, 1);
+  const { legend } = h.layer.getRowControls();
+  assert.equal(legend.length, 1);
+  assert.equal(legend[0].label, 'SA councils 2026');
+  assert.equal(legend[0].count, 1);
+  assert.equal(legend[0].blurb, 'Downloading results from the IEC…');
 });
 
 test("a click opens that area's card", async () => {
@@ -290,6 +386,100 @@ test('stats report a stale payload and a failed fetch', async () => {
   fail = true;
   assert.equal(await h.layer.update(), false);
   assert.equal(h.layer.getStats().error, 'SA elections HTTP 502');
+});
+
+/** Run the pending re-poll timer and let its fetch settle. */
+async function repoll(ms = 5000) {
+  mock.timers.tick(ms);
+  for (let i = 0; i < 3; i++) await new Promise((r) => setImmediate(r));
+}
+
+test('a failed fetch while loading keeps re-polling, and disable or destroy still cancel', async (t) => {
+  t.mock.method(console, 'warn', () => {});
+  mock.timers.enable({ apis: ['setTimeout'] });
+  try {
+    let calls = 0;
+    let answer = 'loading';
+    const source = {
+      getSnapshot: async () => {
+        calls++;
+        if (answer === 'fail') throw new Error('SA elections HTTP 502');
+        return payload('wards', [ward('w1', ANC)], answer);
+      },
+    };
+    const h = harness('wards', source, { repollMs: 5000 });
+    let fired = 0;
+    h.layer.setRowControlsListener(() => fired++);
+    await h.layer.update();
+    assert.equal(calls, 1);
+
+    answer = 'fail';
+    await repoll();
+    assert.equal(calls, 2);
+    assert.equal(fired, 1, 'the row hears of the failed re-poll');
+    assert.equal(h.layer.getStats().error, 'SA elections HTTP 502');
+    assert.equal(h.fills().items.size, 2, 'the last fills stay');
+    await repoll();
+    assert.equal(calls, 3, 'a failed fetch while loading re-polls');
+    assert.equal(fired, 2);
+
+    answer = 'ok';
+    await repoll();
+    assert.equal(calls, 4);
+    assert.equal(fired, 3);
+    assert.equal(h.layer.getStats().error, null);
+    await repoll(60_000);
+    assert.equal(calls, 4, 'no re-poll once results are in');
+
+    // A re-poll a failure scheduled is cancelled by disable...
+    answer = 'loading';
+    await h.layer.update();
+    answer = 'fail';
+    await repoll();
+    assert.equal(calls, 6);
+    h.layer.disable();
+    h.layer.enable();
+    await repoll(60_000);
+    assert.equal(calls, 6, 'disable cancelled the re-poll');
+
+    // ...and by destroy.
+    await h.layer.update();
+    assert.equal(calls, 7);
+    h.layer.destroy();
+    h.layer.init(h.viewer);
+    h.layer.enable();
+    await repoll(60_000);
+    assert.equal(calls, 7, 'destroy cancelled the re-poll');
+  } finally {
+    mock.timers.reset();
+  }
+});
+
+test('a first fetch that fails re-polls while the status is still loading', async (t) => {
+  t.mock.method(console, 'warn', () => {});
+  mock.timers.enable({ apis: ['setTimeout'] });
+  try {
+    let calls = 0;
+    const h = harness(
+      'wards',
+      {
+        getSnapshot: async () => {
+          calls++;
+          if (calls === 1) throw new Error('SA elections HTTP 502');
+          return payload('wards', [ward('w1', ANC)], 'ok');
+        },
+      },
+      { repollMs: 5000 },
+    );
+    assert.equal(await h.layer.update(), false);
+    await repoll();
+    assert.equal(calls, 2);
+    assert.equal(h.fills().items.size, 2);
+    await repoll(60_000);
+    assert.equal(calls, 2);
+  } finally {
+    mock.timers.reset();
+  }
 });
 
 test('the row listener fires when a re-poll update completes', async () => {

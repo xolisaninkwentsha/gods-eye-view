@@ -4557,6 +4557,7 @@
   "{party} PR vote {share}": "{party} voto proporzionale {share}",
   "Turnout {share}": "Affluenza {share}",
   "No result for this ward": "Nessun risultato per questo collegio",
+  "No result for this council": "Nessun risultato per questo consiglio",
   "Tie": "Parità",
   "Runner-up {party} {share}": "Secondo: {party} {share}",
   "Margin {points} points": "Margine di {points} punti",

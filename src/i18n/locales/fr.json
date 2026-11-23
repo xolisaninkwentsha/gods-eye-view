@@ -4557,6 +4557,7 @@
   "{party} PR vote {share}": "{party} vote proportionnel {share}",
   "Turnout {share}": "Participation {share}",
   "No result for this ward": "Aucun résultat pour ce quartier électoral",
+  "No result for this council": "Aucun résultat pour ce conseil",
   "Tie": "Égalité",
   "Runner-up {party} {share}": "Deuxième : {party} {share}",
   "Margin {points} points": "Écart de {points} points",

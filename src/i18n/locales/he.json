@@ -4557,6 +4557,7 @@
   "{party} PR vote {share}": "{party} קולות ביחס {share}",
   "Turnout {share}": "אחוז הצבעה {share}",
   "No result for this ward": "אין תוצאה עבור אזור הבחירה הזה",
+  "No result for this council": "אין תוצאה עבור המועצה הזו",
   "Tie": "תיקו",
   "Runner-up {party} {share}": "מקום שני {party} {share}",
   "Margin {points} points": "פער של {points} נקודות",

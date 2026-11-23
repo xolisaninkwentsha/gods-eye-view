@@ -9,7 +9,7 @@ The layers are for personal display on this PC. No IEC or MDB data is stored in 
 - **Councils** are filled in the colour of the party with the most seats. A council where no party holds more than half the seats keeps that party’s colour at a visibly fainter fill; the legend says what faint means.
 - **Wards** are filled in the colour of the party (or independent) that won the ward ballot.
 - A click opens a card. The council card shows the largest party with its seats out of the total, “Majority” or “No majority”, the top three parties by seats, the largest party’s PR vote share and turnout. The ward card shows the ward number and municipality, the winner and share, the runner-up and share, the margin and turnout.
-- When results are off, loading or failed, areas draw as outlines only and the card says why.
+- Every area that has a result is filled and carded, whatever the status, so during a download the provinces already read appear as they land. An area without a result draws as an outline only, and its card says why: results are off, still downloading, or unavailable, or, once results are in, that there is none for that area.
 - The layers sit in a “South Africa” group in the layer panel.
 
 ### Winner rules
@@ -56,7 +56,13 @@ The derived results and the simplified boundaries live in `.gev-cache/sa-electio
 - **Seat files:** one that failed is retried the next day.
 - **Gaps:** provinces missing from the cache are filled on the next request.
 - **First run:** the full download takes minutes. The routes answer at once with boundaries and status `loading`.
-- **Statuses:** `off`, `loading`, `ok`, `stale` (some provinces are missing, or the last refresh failed, so the cached results are served as they are) and `failed`. The client polls hourly; the server answers from its cache.
+- **Statuses:**
+  - `off`: the switch is not set, so no area has a result.
+  - `loading`: a download is running, either the first run or a run filling provinces missing from the cache. Areas already downloaded are drawn; the rest wait as outlines, and the legend says the download is running.
+  - `ok`: all nine provinces are in and the last check succeeded.
+  - `stale`: some provinces are missing, or the last refresh failed, so the cached results are served as they are.
+  - `failed`: a run failed with no results at all.
+- **Polling:** the client polls hourly and the server answers from its cache. While the status is `loading` the client asks again every 30 seconds, also after a failed request, until the download ends.
 
 ## Local-only behaviour
 

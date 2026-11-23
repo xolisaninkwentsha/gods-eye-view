@@ -89,17 +89,54 @@ test('ward card shows winner, runner-up, margin and turnout, and flags unconfirm
   assert.equal(tie.accent, '#9aa4ad');
 });
 
-test('cards say why when results are off, loading or failed', () => {
-  assert.deepEqual(buildSaCouncilCard(council, 'off').details, [
+test('an area without a result says why when results are off, loading or failed', () => {
+  const noCouncil = { ...council, result: null };
+  const noWard = { ...noCouncil, municipality: 'M' };
+  assert.deepEqual(buildSaCouncilCard(noCouncil, 'off').details, [
     'Results are off',
   ]);
-  assert.deepEqual(buildSaCouncilCard(council, 'loading').details, [
+  assert.deepEqual(buildSaCouncilCard(noCouncil, 'loading').details, [
     'Downloading results from the IEC…',
   ]);
-  assert.deepEqual(
-    buildSaWardCard({ ...council, municipality: 'M' }, 'failed').details,
-    ['IEC results unavailable'],
-  );
+  assert.deepEqual(buildSaWardCard(noWard, 'failed').details, [
+    'IEC results unavailable',
+  ]);
+  assert.deepEqual(buildSaWardCard(noWard, 'loading').details, [
+    'Downloading results from the IEC…',
+  ]);
+  for (const status of ['ok', 'stale']) {
+    assert.deepEqual(buildSaCouncilCard(noCouncil, status).details, [
+      'No result for this council',
+    ]);
+    assert.deepEqual(buildSaWardCard(noWard, status).details, [
+      'No result for this ward',
+    ]);
+  }
+});
+
+test('an area with a result shows it whatever the status', () => {
+  const ward = {
+    stableId: 'w1',
+    name: 'Ward 5',
+    municipality: 'City of Cape Town',
+    result: {
+      winner: { party: DA, votes: 900, share: 0.5 },
+      runnerUp: null,
+      tie: false,
+      margin: null,
+      turnout: null,
+      confirmed: true,
+    },
+  };
+  for (const status of ['loading', 'off', 'failed']) {
+    const card = buildSaCouncilCard(council, status);
+    assert.equal(card.details[0], 'ANC · 130 of 270 seats', status);
+    assert.equal(card.accent, '#1f9d55', status);
+    assert.deepEqual(buildSaWardCard(ward, status).details, ['DA 50.0%']);
+  }
+});
+
+test('a council with a result but no seat file says the seat count is unavailable', () => {
   const noSeats = {
     ...council,
     result: {
@@ -109,9 +146,11 @@ test('cards say why when results are off, loading or failed', () => {
       majority: null,
     },
   };
-  assert.deepEqual(buildSaCouncilCard(noSeats, 'ok').details, [
-    'Seat count unavailable',
-  ]);
+  for (const status of ['ok', 'stale', 'loading']) {
+    assert.deepEqual(buildSaCouncilCard(noSeats, status).details, [
+      'Seat count unavailable',
+    ]);
+  }
   assert.equal(buildSaCouncilCard(noSeats, 'ok').accent, '#9aa4ad');
 });
 

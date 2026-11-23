@@ -37,19 +37,25 @@ function statusDetails(status) {
   return [t('IEC results unavailable')];
 }
 
-/** The one-line reason results are not shown, or null while they are. */
+/** The one-line reason results are missing (off, loading, failed), or null for ok and stale. */
 export function saStatusLine(status) {
   return statusDetails(status)?.[0] ?? null;
 }
 
+/**
+ * An area with a result shows it whatever the status: while a download runs, the provinces
+ * already read are served. Only an area without one says why (or, with results in, that it has none).
+ */
 export function buildSaCouncilCard(row, status) {
   const title = `${row.name} (${row.code})`;
   const id = `sa-council-card:${row.stableId}`;
   const accent = saAreaColor(row, 'councils').color ?? NEUTRAL;
-  const why = statusDetails(status);
-  if (why) return entry(id, title, why, accent);
   const result = row.result;
-  if (!result?.largest)
+  if (!result) {
+    const why = statusDetails(status) ?? [t('No result for this council')];
+    return entry(id, title, why, accent);
+  }
+  if (!result.largest)
     return entry(id, title, [t('Seat count unavailable')], accent);
 
   const { party, seats } = result.largest;
@@ -83,10 +89,11 @@ export function buildSaWardCard(row, status) {
   const title = `${row.name} · ${row.municipality}`;
   const id = `sa-ward-card:${row.stableId}`;
   const accent = saAreaColor(row, 'wards').color ?? NEUTRAL;
-  const why = statusDetails(status);
-  if (why) return entry(id, title, why, accent);
   const result = row.result;
-  if (!result) return entry(id, title, [t('No result for this ward')], accent);
+  if (!result) {
+    const why = statusDetails(status) ?? [t('No result for this ward')];
+    return entry(id, title, why, accent);
+  }
   if (result.tie || !result.winner) return entry(id, title, [t('Tie')], accent);
 
   const details = [

@@ -4663,6 +4663,7 @@
   "{party} PR vote {share}": "{party} пропорциональный голос {share}",
   "Turnout {share}": "Явка {share}",
   "No result for this ward": "Нет результата по этому округу",
+  "No result for this council": "Нет результата по этому совету",
   "Tie": "Ничья",
   "Runner-up {party} {share}": "Второе место: {party} {share}",
   "Margin {points} points": "Отрыв {points} п. п.",

@@ -4875,6 +4875,7 @@
   "{party} PR vote {share}": "{party} أصوات التمثيل النسبي {share}",
   "Turnout {share}": "نسبة المشاركة {share}",
   "No result for this ward": "لا توجد نتيجة لهذه الدائرة",
+  "No result for this council": "لا توجد نتيجة لهذا المجلس",
   "Tie": "تعادل",
   "Runner-up {party} {share}": "الوصيف {party} {share}",
   "Margin {points} points": "الفارق {points} نقطة",

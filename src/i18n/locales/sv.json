@@ -4451,6 +4451,7 @@
   "{party} PR vote {share}": "{party} proportionell röst {share}",
   "Turnout {share}": "Valdeltagande {share}",
   "No result for this ward": "Inget resultat för denna valkrets",
+  "No result for this council": "Inget resultat för detta kommunfullmäktige",
   "Tie": "Lika",
   "Runner-up {party} {share}": "Tvåa {party} {share}",
   "Margin {points} points": "Marginal {points} procentenheter",

@@ -4451,6 +4451,7 @@
   "{party} PR vote {share}": "{party} Listenstimmen {share}",
   "Turnout {share}": "Wahlbeteiligung {share}",
   "No result for this ward": "Kein Ergebnis für diesen Wahlkreis",
+  "No result for this council": "Kein Ergebnis für diesen Gemeinderat",
   "Tie": "Gleichstand",
   "Runner-up {party} {share}": "Zweitplatzierte Partei {party} {share}",
   "Margin {points} points": "Abstand {points} Punkte",

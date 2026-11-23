@@ -4663,6 +4663,7 @@
   "{party} PR vote {share}": "{party} пропорційний голос {share}",
   "Turnout {share}": "Явка {share}",
   "No result for this ward": "Немає результату для цього округу",
+  "No result for this council": "Немає результату для цієї ради",
   "Tie": "Нічия",
   "Runner-up {party} {share}": "Друге місце: {party} {share}",
   "Margin {points} points": "Відрив {points} в. п.",

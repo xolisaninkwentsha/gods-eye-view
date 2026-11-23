@@ -98,13 +98,16 @@ export function createSaElectionsLayer({
   const _rowById = new Map();
 
   const canSelect = () => overlayHost && inputFor && picking;
-  const resultsShown = () => _status === 'ok' || _status === 'stale';
 
   function clearRepoll() {
     clearTimeout(_repollTimer);
     _repollTimer = null;
   }
 
+  /**
+   * While the last known status is `loading` (a download is running, or no answer came yet),
+   * fetch again after `repollMs`, after a failed fetch too, so areas appear as they land.
+   */
   function scheduleRepoll() {
     clearRepoll();
     if (_status !== 'loading' || !_enabled) return;
@@ -269,23 +272,22 @@ export function createSaElectionsLayer({
           return false;
         const { status, rows } = normalizeSaElectionsPayload(payload, level);
         _status = status;
-        const signature = JSON.stringify([
-          status,
+        // The drawing depends on the areas alone: any area with a result is filled, whatever
+        // the status, so a status change by itself redraws nothing.
+        const signature = JSON.stringify(
           rows
             .map(({ polygons, ...facts }) => ({
               ...facts,
               geometry: geometryHash(polygons),
             }))
             .sort((a, b) => a.stableId.localeCompare(b.stableId)),
-        ]);
+        );
         if (signature !== _signature) {
           const nextFills = [];
           const nextLines = [];
           _rowById.clear();
           for (const row of rows) {
-            const { color, strength } = resultsShown()
-              ? saAreaColor(row, level)
-              : { color: null, strength: null };
+            const { color, strength } = saAreaColor(row, level);
             for (const [index, rings] of row.polygons.entries()) {
               const id = `${pickPrefix}${row.stableId}:${index}`;
               if (color) {
@@ -329,6 +331,7 @@ export function createSaElectionsLayer({
           return false;
         console.warn(`[Data:SaElections:${level}] Fetch error:`, e);
         _lastError = e?.message || msg('SA election results unavailable');
+        scheduleRepoll();
         return false;
       } finally {
         if (_request === request) _request = null;
@@ -358,7 +361,10 @@ export function createSaElectionsLayer({
     },
 
     getRowControls() {
-      if (!resultsShown()) {
+      // Null for ok and stale; otherwise why results are missing (off, loading, failed).
+      const statusLine = saStatusLine(_status);
+      const anyResult = [..._rowById.values()].some((row) => row.result);
+      if (statusLine && !anyResult) {
         return {
           chips: [],
           legend: [
@@ -367,7 +373,7 @@ export function createSaElectionsLayer({
                 level === 'wards' ? t('SA wards 2026') : t('SA councils 2026'),
               color: NEUTRAL,
               count: _rowById.size,
-              blurb: saStatusLine(_status),
+              blurb: statusLine,
             },
           ],
         };
@@ -396,9 +402,15 @@ export function createSaElectionsLayer({
           .slice(LEGEND_PARTIES)
           .reduce((sum, p) => sum + p.count, 0),
       });
-      if (level === 'councils') {
-        legend[0].blurb = t('Faint: no party holds more than half the seats');
-      }
+      // The first row's tooltip: why some results are missing (a download still running),
+      // then what faint means.
+      const blurbs = [
+        statusLine,
+        level === 'councils'
+          ? t('Faint: no party holds more than half the seats')
+          : null,
+      ].filter(Boolean);
+      if (blurbs.length) legend[0].blurb = blurbs.join('\n');
       return { chips: [], legend };
     },
 

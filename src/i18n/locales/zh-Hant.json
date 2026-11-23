@@ -4345,6 +4345,7 @@
   "{party} PR vote {share}": "{party} 比例代表制得票 {share}",
   "Turnout {share}": "投票率 {share}",
   "No result for this ward": "該選區無結果",
+  "No result for this council": "該議會無結果",
   "Tie": "持平",
   "Runner-up {party} {share}": "第二名 {party} {share}",
   "Margin {points} points": "差距 {points} 個百分點",
