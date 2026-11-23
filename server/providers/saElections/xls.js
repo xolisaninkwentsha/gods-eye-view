@@ -7,7 +7,10 @@ const SIGNATURE = [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1];
 const ENDOFCHAIN = 0xfffffffe;
 const MAX_ROWS = 65536; // BIFF8 limits
 const MAX_COLS = 256;
+/** Grid cells for the whole file, all sheets together: tiny sheets can each ask for a huge grid. */
 const MAX_CELLS = 1000000;
+/** Seat files have two worksheets; more than this is not one of them. */
+const MAX_SHEETS = 16;
 
 /** Follow a sector chain through a FAT. Out-of-range ids, loops and unterminated chains throw. */
 function chainOf(fat, start) {
@@ -209,7 +212,10 @@ export function readXlsSheets(bytes) {
         depth++;
         if (depth === 1 && data.readUInt16LE(2) === 0x0010) cells = new Map();
       } else if (type === 0x000a) {
-        if (depth === 1 && cells) sheets.push(cells);
+        if (depth === 1 && cells) {
+          sheets.push(cells);
+          if (sheets.length > MAX_SHEETS) throw new Error('too many sheets');
+        }
         cells = null;
         depth = Math.max(0, depth - 1);
       } else if (type === 0x00fc && depth === 1 && !cells) {
@@ -247,22 +253,23 @@ export function readXlsSheets(bytes) {
         }
       }
     }
-    return sheets.map((map) => {
+    // Every grid is sized, and the sum checked, before any is allocated.
+    let cellsLeft = MAX_CELLS;
+    const sizes = sheets.map((map) => {
       let maxRow = -1;
       let maxCol = -1;
       for (const [r, c] of map.values()) {
         maxRow = Math.max(maxRow, r);
         maxCol = Math.max(maxCol, c);
       }
-      if (
-        maxRow >= MAX_ROWS ||
-        maxCol >= MAX_COLS ||
-        (maxRow + 1) * (maxCol + 1) > MAX_CELLS
-      ) {
-        throw new Error('sheet too large');
-      }
-      const grid = Array.from({ length: maxRow + 1 }, () =>
-        new Array(maxCol + 1).fill(null),
+      cellsLeft -= (maxRow + 1) * (maxCol + 1);
+      if (maxRow >= MAX_ROWS || maxCol >= MAX_COLS || cellsLeft < 0)
+        throw new Error('sheets too large');
+      return { rows: maxRow + 1, cols: maxCol + 1 };
+    });
+    return sheets.map((map, i) => {
+      const grid = Array.from({ length: sizes[i].rows }, () =>
+        new Array(sizes[i].cols).fill(null),
       );
       for (const [r, c, v] of map.values()) grid[r][c] = v;
       return grid;

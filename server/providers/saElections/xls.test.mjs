@@ -256,6 +256,41 @@ test(
   },
 );
 
+/** A workbook of `count` sheets, each holding one RK cell at (`row`, `col`). */
+function farCellSheets(count, row, col) {
+  const cell = rec(
+    0x027e,
+    Buffer.concat([u16(row), u16(col), u16(0), u32((7 << 2) | 2)]),
+  );
+  const parts = [bof(0x0005), rec(0x000a)];
+  for (let i = 0; i < count; i++) parts.push(bof(0x0010), cell, rec(0x000a));
+  return buildXlsFromStream(Buffer.concat(parts));
+}
+
+test('one cell budget covers all sheets together', () => {
+  // 3,906 x 256 = 999,936 cells: one such sheet fits the 1,000,000-cell budget, two do not.
+  const one = readXlsSheets(farCellSheets(1, 3905, 255));
+  assert.equal(one.length, 1);
+  assert.equal(one[0].length, 3906);
+  assert.equal(one[0][3905][255], 7);
+  assert.throws(
+    () => readXlsSheets(farCellSheets(2, 3905, 255)),
+    /xls_unreadable/,
+  );
+  // The reviewer's probe: 20 tiny sheets, each needing a near-full grid.
+  assert.throws(
+    () => readXlsSheets(farCellSheets(20, 3905, 255)),
+    /xls_unreadable/,
+  );
+});
+
+test('a workbook may hold at most 16 worksheets', () => {
+  const sixteen = readXlsSheets(farCellSheets(16, 0, 0));
+  assert.equal(sixteen.length, 16);
+  assert.deepEqual(sixteen[15], [[7]]);
+  assert.throws(() => readXlsSheets(farCellSheets(17, 0, 0)), /xls_unreadable/);
+});
+
 test('refuses a sheet whose cells would need an oversized grid', () => {
   const far = Array.from({ length: 65536 }, () => []);
   far[65535] = new Array(255).fill(null).concat([1]);
