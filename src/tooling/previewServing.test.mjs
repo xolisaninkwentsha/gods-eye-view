@@ -16,6 +16,7 @@ test('data providers have both hooks; credential editing stays development-only'
   assert.ok(plugins.some(({ name }) => name === 'gnss-integrity'));
   assert.ok(plugins.some(({ name }) => name === 'ghostmaps'));
   assert.ok(plugins.some(({ name }) => name === 'drone-airspace'));
+  assert.ok(plugins.some(({ name }) => name === 'sa-elections'));
   assert.ok(plugins.some(({ name }) => name === 'inaturalist'));
   assert.ok(plugins.some(({ name }) => name === 'acartia'));
   for (const plugin of plugins) {
@@ -118,6 +119,8 @@ test('real dev and built-preview servers serve provider JSON and terminate unkno
         ['/api/ghostmaps/unknown', 404],
         ['/api/inaturalist/unknown', 404],
         ['/api/acartia/unknown', 404],
+        // Answered by the provider itself, before any MDB or IEC request.
+        ['/api/sa-elections/unknown', 404],
         ['/api/terrain/heights?points=invalid', 400],
         ['/api/overpass', 405],
         ['/api/overpass/status', 200],
@@ -155,6 +158,8 @@ test('real dev and built-preview servers serve provider JSON and terminate unkno
           assert.deepEqual(body, { configured: false }, route);
         if (route.startsWith('/api/mapillary/tiles'))
           assert.deepEqual(body, { error: 'no_key', keyRequired: true }, route);
+        if (route === '/api/sa-elections/unknown')
+          assert.deepEqual(body, { error: 'unknown_route' }, route);
         if (
           route === '/api/does-not-exist' ||
           (isPreview && route.startsWith('/api/setup'))
