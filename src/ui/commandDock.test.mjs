@@ -2483,6 +2483,47 @@ test('South Africa unsubscribes when the controls go away', async (t) => {
   assert.equal(sa.listeners.size, 0);
 });
 
+test('a refused South Africa flight says why, keeps the layer on and rejects nothing', async (t) => {
+  const unhandled = [];
+  const onUnhandled = (reason) => unhandled.push(reason);
+  process.on('unhandledRejection', onUnhandled);
+  t.after(() => process.off('unhandledRejection', onUnhandled));
+  const { $, pinia } = omnibarFixture(t);
+  const sa = connectSouthAfrica(pinia);
+  useOmnibarStore(pinia).connectRunner(async (name, args) => {
+    sa.calls.push([name, args]);
+    return { ok: false, say: 'The globe is busy.' };
+  });
+  await settleAll();
+  $('.omnibar-sa').click();
+  await settleAll();
+  assert.deepEqual(sa.mutations, [['sa-councils-2026', true]]);
+  assert.equal(sa.calls.length, 1, 'the flight was asked for');
+  assert.equal($('.omnibar-sa').getAttribute('aria-pressed'), 'true');
+  const { error } = locateLines($);
+  assert.equal(
+    error.textContent.trim(),
+    'Unable to complete this action: The globe is busy.',
+  );
+  assert.notEqual(error.style.display, 'none');
+  assert.deepEqual(unhandled, []);
+
+  // With neither a runner nor location controls there is nowhere to fly.
+  $('.omnibar-sa').click();
+  await settleAll();
+  useOmnibarStore(pinia).connectRunner(null);
+  useLocationStore(pinia).connect(null);
+  sa.mutations.length = 0;
+  $('.omnibar-sa').click();
+  await settleAll();
+  assert.deepEqual(sa.mutations, [['sa-councils-2026', true]]);
+  assert.equal(
+    locateLines($).error.textContent.trim(),
+    'Unable to complete this action. Please try again.',
+  );
+  assert.deepEqual(unhandled, []);
+});
+
 test('South Africa does nothing while a cockpit owns the screen', async (t) => {
   const { $, pinia } = omnibarFixture(t);
   const sa = connectSouthAfrica(pinia);

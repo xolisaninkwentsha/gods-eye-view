@@ -18,7 +18,7 @@ import { useOmnibarStore } from '../../stores/omnibar.js';
 import { useVoiceStore } from '../../stores/voice.js';
 import UiButton from '../../kit/UiButton.vue';
 import UiIcon from '../../kit/UiIcon.vue';
-import { createMyLocationAction, saveSpot, spotSavedText } from '../../myLocation.js';
+import { createMyLocationAction, flightFailureText, saveSpot, spotSavedText } from '../../myLocation.js';
 
 // One field for places, layers and questions. Places run through the location
 // controls, layers through the shell's omnibar actions, and anything else can
@@ -429,8 +429,9 @@ async function frameAt(place, rangeM) {
 const SA_COUNCILS = 'sa-councils-2026';
 const SA_LAYERS = [SA_COUNCILS, 'sa-wards-2026'];
 const saRevision = ref(0);
-// Each computed reads the revision itself: the layer list is the same array
-// every time, so a computed over it alone would never see a change.
+// Each computed reads the revision itself: layers() returns a new array of
+// plain, non-reactive snapshots on each call, so a computed over it alone
+// would never see a layer turn on or off.
 function saLayerList() {
   void saRevision.value;
   return controls.value?.layers?.() || [];
@@ -453,7 +454,11 @@ function onSouthAfrica() {
   }
   controls.value.setLayer(SA_COUNCILS, true);
   saRevision.value++;
-  void frameAt({ latitude: -28.5, longitude: 24.7 }, 2_600_000);
+  // The layer stays on. A refused flight says so, as "Go to my location" does.
+  const mine = generation;
+  frameAt({ latitude: -28.5, longitude: 24.7 }, 2_600_000).catch((failure) => {
+    if (mine === generation && !screenIsOwned()) showLocateMessage(flightFailureText(failure));
+  });
 }
 const myLocation = createMyLocationAction({
   goTo,
