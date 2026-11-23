@@ -44,3 +44,14 @@ test('an unknown party is Other', () => {
   assert.equal(s.short, "Democratic People's Alternative");
   assert.notEqual(OTHER_COLOR.toLowerCase(), '#9aa4ad');
 });
+
+test('every FF Plus spelling reaches one canonical key and style', () => {
+  const key = 'VRYHEIDSFRONT PLUS FREEDOM FRONT PLUS';
+  const spellings = ['VRYHEIDSFRONT PLUS | FREEDOM FRONT PLUS', 'VRYHEIDSFRONT PLUS \n FREEDOM FRONT PLUS', 'VRYHEIDSFRONT PLUS|FREEDOM FRONT PLUS'];
+  for (const s of spellings) {
+    assert.equal(normalizePartyName(s), key);
+    assert.deepEqual(partyStyle(s), PARTY_STYLES[key]);
+    assert.equal(partyStyle(s).short, 'FF Plus');
+  }
+  assert.equal(Object.keys(PARTY_STYLES).filter((k) => k.startsWith('VRYHEIDSFRONT')).length, 1);
+});

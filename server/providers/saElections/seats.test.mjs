@@ -28,7 +28,7 @@ const expected = {
   parties: [
     { party: 'AFRICAN NATIONAL CONGRESS', seats: 60, wardSeats: 0, prSeats: 60 },
     { party: 'DEMOCRATIC ALLIANCE', seats: 140, wardSeats: 100, prSeats: 40 },
-    { party: 'VRYHEIDSFRONT PLUS | FREEDOM FRONT PLUS', seats: 31, wardSeats: 0, prSeats: 31 },
+    { party: 'VRYHEIDSFRONT PLUS FREEDOM FRONT PLUS', seats: 31, wardSeats: 0, prSeats: 31 },
   ],
 };
 

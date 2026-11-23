@@ -6,19 +6,18 @@ export const OTHER_COLOR = '#b07aa1';
 
 /**
  * Normalizes an IEC party name: drops a trailing "(PF)" forfeiture mark, folds all whitespace
- * (including newlines) to single spaces, trims and uppercases.
+ * (including newlines) and "|" separators to single spaces, trims and uppercases.
  * @param {string} name
  * @returns {string}
  */
 export function normalizePartyName(name) {
   return String(name ?? '')
     .replace(/\(\s*PF\s*\)\s*$/i, '')
+    .replace(/\s*\|\s*/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
     .toUpperCase();
 }
-
-const FF_PLUS = { short: 'FF Plus', color: '#f28c28' };
 
 /**
  * Style table keyed by normalized IEC name. Keys come from the IEC 2026 files; "RISE MZANSI" is
@@ -33,9 +32,8 @@ export const PARTY_STYLES = {
   'INKATHA FREEDOM PARTY': { short: 'IFP', color: '#b3541e' },
   ACTIONSA: { short: 'ActionSA', color: '#0b3d91' },
   'PATRIOTIC ALLIANCE': { short: 'PA', color: '#00897b' },
-  // The IEC writes the Afrikaans/English pair with " | " in files and CSVs; keep the plain form too.
-  'VRYHEIDSFRONT PLUS | FREEDOM FRONT PLUS': FF_PLUS,
-  'VRYHEIDSFRONT PLUS FREEDOM FRONT PLUS': FF_PLUS,
+  // The IEC writes the Afrikaans/English pair with " | " (or a line break); normalization folds both.
+  'VRYHEIDSFRONT PLUS FREEDOM FRONT PLUS': { short: 'FF Plus', color: '#f28c28' },
   'AFRICAN TRANSFORMATION MOVEMENT': { short: 'ATM', color: '#6a4c93' },
   'UNITED DEMOCRATIC MOVEMENT': { short: 'UDM', color: '#ff7043' },
   GOOD: { short: 'GOOD', color: '#7cb342' },
