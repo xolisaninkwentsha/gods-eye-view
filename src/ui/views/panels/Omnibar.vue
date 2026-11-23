@@ -425,6 +425,36 @@ async function frameAt(place, rangeM) {
     return settled(await runner.value('fly_to_location', { ...place, rangeM }));
   return goTo(place);
 }
+// The South Africa election map: two local-only layers behind one toggle.
+const SA_COUNCILS = 'sa-councils-2026';
+const SA_LAYERS = [SA_COUNCILS, 'sa-wards-2026'];
+const saRevision = ref(0);
+// Each computed reads the revision itself: the layer list is the same array
+// every time, so a computed over it alone would never see a change.
+function saLayerList() {
+  void saRevision.value;
+  return controls.value?.layers?.() || [];
+}
+const saAvailable = computed(() => saLayerList().some((layer) => layer.id === SA_COUNCILS));
+const saOn = computed(() => saLayerList().some((layer) => SA_LAYERS.includes(layer.id) && layer.enabled));
+// Re-read the layers whenever the shell says one changed; controls without
+// onLayersChange are re-read after a click instead.
+watch(controls, (next, _previous, onCleanup) => {
+  saRevision.value++;
+  const stop = next?.onLayersChange?.(() => { saRevision.value++; });
+  onCleanup(() => stop?.());
+}, { immediate: true });
+function onSouthAfrica() {
+  if (screenIsOwned() || !controls.value || !saAvailable.value) return;
+  if (saOn.value) {
+    for (const id of SA_LAYERS) controls.value.setLayer(id, false);
+    saRevision.value++;
+    return;
+  }
+  controls.value.setLayer(SA_COUNCILS, true);
+  saRevision.value++;
+  void frameAt({ latitude: -28.5, longitude: 24.7 }, 2_600_000);
+}
 const myLocation = createMyLocationAction({
   goTo,
   frame: frameAt,
@@ -1128,6 +1158,9 @@ watch(
       <UiButton class="omnibar-locate" :disabled="locating" :label="t('Go to my location')" @click="onLocate" @contextmenu.prevent="onSaveSpot">
         <UiIcon name="my_location" :size="null" />
       </UiButton>
+      <UiButton class="omnibar-sa" :pressed="saOn" pressed-class="active" :disabled="!saAvailable" :label="t('South Africa: 2026 election map')" @click="onSouthAfrica">
+        <UiIcon name="how_to_vote" :size="null" />
+      </UiButton>
       <UiButton class="omnibar-mic" :pressed="voiceOn" pressed-class="active" :disabled="!voice.controls" :label="t('Talk to GEV')" @click="onMic(true)">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" /></svg>
       </UiButton>
@@ -1248,6 +1281,7 @@ button:focus-visible { outline: 2px solid #7bd3ef; outline-offset: -2px; }
 /* The locate button wears the mic's look but stays when the command dock
    hides the mic (omnibar-dock.css), so it is never lost on desktop. */
 .omnibar-locate,
+.omnibar-sa,
 .omnibar-mic {
   display: grid;
   flex: none;
@@ -1261,6 +1295,8 @@ button:focus-visible { outline: 2px solid #7bd3ef; outline-offset: -2px; }
   border-radius: 8px;
 }
 .omnibar-locate:not(:disabled):is(:hover, :focus-visible),
+.omnibar-sa.active,
+.omnibar-sa:not(:disabled):is(:hover, :focus-visible),
 .omnibar-mic.active,
 .omnibar-mic:not(:disabled):is(:hover, :focus-visible) {
   color: #36dcff;

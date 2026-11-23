@@ -15,7 +15,7 @@ const template = source.replace(/<(script|style)\b[\s\S]*?<\/\1\s*>/g, '');
 
 test('the Omnibar hand-writes no button; each is a UiButton', () => {
   assert.deepEqual(template.match(/<button\b/gi) ?? [], []);
-  assert.equal(template.match(/<UiButton\b/g)?.length, 3);
+  assert.equal(template.match(/<UiButton\b/g)?.length, 4);
 });
 
 test('the locate button is a kit button carrying the my_location glyph', () => {
@@ -25,6 +25,16 @@ test('the locate button is a kit button carrying the my_location glyph', () => {
   assert.ok(locate, 'a UiButton with class omnibar-locate');
   assert.match(locate, /:label="t\('Go to my location'\)"/);
   assert.match(locate, /<UiIcon name="my_location" :size="null" \/>/);
+});
+
+test('the South Africa button is a UiButton with the how_to_vote glyph', () => {
+  const sa = template.match(
+    /<UiButton\b[^>]*class="omnibar-sa"[^>]*>[\s\S]*?<\/UiButton>/,
+  )?.[0];
+  assert.ok(sa, 'a UiButton with class omnibar-sa');
+  assert.match(sa, /:label="t\('South Africa: 2026 election map'\)"/);
+  assert.match(sa, /<UiIcon name="how_to_vote" :size="null" \/>/);
+  assert.match(sa, /pressed-class="active"/);
 });
 
 test('in dock voice mode the locate button gives way to the waveform with the field', () => {
@@ -38,14 +48,14 @@ test('in dock voice mode the locate button gives way to the waveform with the fi
   );
   assert.ok(voice, 'the voice-mode rule that hides the field');
   const hidden = voice[1].split(',').map((part) => part.trim());
-  for (const part of ['input', '.omnibar-kbd', '.omnibar-search-icon', '.omnibar-locate'])
+  for (const part of ['input', '.omnibar-kbd', '.omnibar-search-icon', '.omnibar-locate', '.omnibar-sa'])
     assert.ok(hidden.includes(part), `${part} hides in voice mode`);
 });
 
 test('the Omnibar hand-writes no Material glyph; each is a UiIcon', () => {
   assert.deepEqual(template.match(/material-symbols-outlined/g) ?? [], []);
   const icons = template.match(/<UiIcon\b[^>]*>/g) ?? [];
-  assert.equal(icons.length, 4);
+  assert.equal(icons.length, 5);
   // Without it the kit writes an 18px size that beats the Omnibar's own rules.
   for (const icon of icons) assert.match(icon, /:size="null"/);
 });

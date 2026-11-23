@@ -2298,3 +2298,126 @@ test('right-click saves the spot and confirms it politely; a failed save is an e
   assert.equal(notice.style.display, 'none');
   assert.equal(input.getAttribute('aria-invalid'), 'true');
 });
+
+/** Connect omnibar controls listing the SA layers, with a way to fire their change listener. */
+function connectSouthAfrica(pinia, { councils = true, wards = true, onLayersChange = true } = {}) {
+  const layers = [];
+  if (councils) layers.push({ id: 'sa-councils-2026', name: 'SA councils', enabled: false });
+  if (wards) layers.push({ id: 'sa-wards-2026', name: 'SA wards', enabled: false });
+  const mutations = [];
+  const listeners = new Set();
+  useOmnibarStore(pinia).connect({
+    layers: () => layers,
+    setLayer: (id, enabled) => {
+      mutations.push([id, enabled]);
+      const layer = layers.find((each) => each.id === id);
+      if (layer) layer.enabled = enabled;
+    },
+    ...(onLayersChange && {
+      onLayersChange: (listener) => {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+    }),
+  });
+  const calls = [];
+  useOmnibarStore(pinia).connectRunner(async (name, args) => {
+    calls.push([name, args]);
+    return { ok: true };
+  });
+  return { layers, mutations, listeners, calls, fire: () => listeners.forEach((listener) => listener()) };
+}
+
+test('South Africa turns the councils layer on and frames the country', async (t) => {
+  const { $, pinia } = omnibarFixture(t);
+  const sa = connectSouthAfrica(pinia);
+  await settleAll();
+  const button = $('.omnibar-sa');
+  assert.equal(button.disabled, false);
+  assert.equal(button.getAttribute('aria-pressed'), 'false');
+  button.click();
+  await settleAll();
+  assert.deepEqual(sa.mutations, [['sa-councils-2026', true]]);
+  assert.equal(sa.calls.length, 1);
+  assert.equal(sa.calls[0][0], 'fly_to_location');
+  assert.equal(sa.calls[0][1].latitude, -28.5);
+  assert.equal(sa.calls[0][1].longitude, 24.7);
+  assert.equal(sa.calls[0][1].rangeM, 2_600_000);
+  assert.equal(button.getAttribute('aria-pressed'), 'true');
+});
+
+test('South Africa pressed again turns both layers off and leaves the camera', async (t) => {
+  const { $, pinia } = omnibarFixture(t);
+  const sa = connectSouthAfrica(pinia);
+  await settleAll();
+  $('.omnibar-sa').click();
+  await settleAll();
+  sa.mutations.length = 0;
+  sa.calls.length = 0;
+  $('.omnibar-sa').click();
+  await settleAll();
+  assert.deepEqual(sa.mutations, [['sa-councils-2026', false], ['sa-wards-2026', false]]);
+  assert.deepEqual(sa.calls, []);
+  assert.equal($('.omnibar-sa').getAttribute('aria-pressed'), 'false');
+});
+
+test('South Africa shows pressed when the wards layer is turned on elsewhere', async (t) => {
+  const { $, pinia } = omnibarFixture(t);
+  const sa = connectSouthAfrica(pinia);
+  await settleAll();
+  const button = $('.omnibar-sa');
+  assert.equal(button.getAttribute('aria-pressed'), 'false');
+  sa.layers.find((layer) => layer.id === 'sa-wards-2026').enabled = true;
+  sa.fire();
+  await settleAll();
+  assert.equal(button.getAttribute('aria-pressed'), 'true');
+  assert.ok(button.classList.contains('active'));
+  button.click();
+  await settleAll();
+  assert.deepEqual(sa.mutations, [['sa-councils-2026', false], ['sa-wards-2026', false]]);
+  assert.deepEqual(sa.calls, []);
+});
+
+test('South Africa is disabled without the layer or the controls, and clicking does not throw', async (t) => {
+  const { $, pinia } = omnibarFixture(t);
+  const without = connectSouthAfrica(pinia, { councils: false });
+  await settleAll();
+  assert.equal($('.omnibar-sa').disabled, true);
+  $('.omnibar-sa').click();
+  await settleAll();
+  assert.deepEqual(without.mutations, []);
+  assert.deepEqual(without.calls, []);
+  useOmnibarStore(pinia).connect(null);
+  await settleAll();
+  assert.equal($('.omnibar-sa').disabled, true);
+  assert.doesNotThrow(() => $('.omnibar-sa').click());
+  // Controls that predate onLayersChange still work.
+  const plain = connectSouthAfrica(pinia, { onLayersChange: false });
+  await settleAll();
+  assert.equal($('.omnibar-sa').disabled, false);
+  $('.omnibar-sa').click();
+  await settleAll();
+  assert.deepEqual(plain.mutations, [['sa-councils-2026', true]]);
+});
+
+test('South Africa unsubscribes when the controls go away', async (t) => {
+  const { pinia } = omnibarFixture(t);
+  const sa = connectSouthAfrica(pinia);
+  await settleAll();
+  assert.equal(sa.listeners.size, 1);
+  useOmnibarStore(pinia).connect(null);
+  await settleAll();
+  assert.equal(sa.listeners.size, 0);
+});
+
+test('South Africa does nothing while a cockpit owns the screen', async (t) => {
+  const { $, pinia } = omnibarFixture(t);
+  const sa = connectSouthAfrica(pinia);
+  await settleAll();
+  document.body.classList.add('cockpit-mode');
+  t.after(() => document.body.classList.remove('cockpit-mode'));
+  $('.omnibar-sa').click();
+  await settleAll();
+  assert.deepEqual(sa.mutations, []);
+  assert.deepEqual(sa.calls, []);
+});

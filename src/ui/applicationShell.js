@@ -193,6 +193,7 @@ export class StyleManager extends ShellFacade {
     });
     // Vue views share this runtime and its stores; dispose unmounts them.
     this._ui = createUiRuntime({ pinia: applicationPinia() });
+    this._layerListeners = new Set();
     // The omnibar and Context list and toggle data layers through the shell.
     useOmnibarStore(applicationPinia()).connect({
       layers: () => this._dataManager?.getAll?.() || [],
@@ -206,6 +207,12 @@ export class StyleManager extends ShellFacade {
         shown
           ? showOsmCredit(this.viewer, 'omnibar')
           : hideOsmCredit(this.viewer, 'omnibar'),
+      // Subscribers hear layer changes through one forwarder on the data
+      // manager, which arrives after the omnibar mounts.
+      onLayersChange: (listener) => {
+        this._layerListeners.add(listener);
+        return () => this._layerListeners.delete(listener);
+      },
       // "Go to my location" stands down if anything takes the camera while
       // the browser works out where the viewer is.
       watchCamera: () => watchCameraOwner(this.viewer, this),
@@ -1961,6 +1968,9 @@ export class StyleManager extends ShellFacade {
       this.services;
     if (this._disposed) return;
     useOmnibarStore(applicationPinia()).connect(null);
+    this._layerForwarderUnsubscribe?.();
+    this._layerForwarderUnsubscribe = null;
+    this._layerListeners?.clear();
     this._removeRailEdgeScroll?.();
     this._removeEntityContext?.();
     this._shareRestoration.destroy();
