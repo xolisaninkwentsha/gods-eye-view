@@ -368,6 +368,7 @@ export class StyleManager extends ShellFacade {
       },
       feedback: this._feedback,
       shareRestoration: this._shareRestoration,
+      layerListeners: this._layerListeners,
     });
 
     this._windowResizeHandler = null;
@@ -1968,8 +1969,6 @@ export class StyleManager extends ShellFacade {
       this.services;
     if (this._disposed) return;
     useOmnibarStore(applicationPinia()).connect(null);
-    this._layerForwarderUnsubscribe?.();
-    this._layerForwarderUnsubscribe = null;
     this._layerListeners?.clear();
     this._removeRailEdgeScroll?.();
     this._removeEntityContext?.();

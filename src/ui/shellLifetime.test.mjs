@@ -98,7 +98,7 @@ test('world jump completion cannot revive navigation after shell disposal', (t) 
   assert.equal(calls.filter(c => c === 'resume').length, 1);
 });
 
-function bindings(t) {
+function bindings(t, layerListeners) {
   replaceWindow(t, new EventTarget());
   const events = [];
   const controls = {
@@ -109,7 +109,7 @@ function bindings(t) {
   };
   const owner = new LayerBindings({
     viewer: {}, services: {}, readControls: () => controls,
-    feedback: {}, shareRestoration: { connect() {} },
+    feedback: {}, shareRestoration: { connect() {} }, layerListeners,
     operations: {
       _updateTrafficSyncChip() {}, _updateGlobalLoadingFeedback() {},
       _syncContextModeButtons() {},
@@ -189,4 +189,45 @@ test('weather shell supplies live imagery hosts to wind and observations and rel
   for (const id of ids) assert.equal(attached.get(id).imageryHost(), host);
   owner.disconnect();
   for (const id of ids) assert.equal(attached.get(id), null);
+});
+
+test('layer-change listeners registered before attach hear the manager, one manager at a time', (t) => {
+  const listeners = new Set();
+  const { owner } = bindings(t, listeners);
+  const heard = [];
+  listeners.add(() => heard.push('a'));
+  const managers = [];
+  const make = () => {
+    const callbacks = new Set();
+    const m = { layers: new Map(), callbacks, subscribe(cb) { callbacks.add(cb); return () => callbacks.delete(cb); } };
+    managers.push(m);
+    return m;
+  };
+  const first = make();
+  owner.attachDataManager(first);
+  first.callbacks.forEach((cb) => cb({}));
+  assert.deepEqual(heard, ['a']);
+  const second = make();
+  owner.attachDataManager(second);
+  assert.equal(first.callbacks.size, 0, 'old manager unsubscribed');
+  first.callbacks.forEach((cb) => cb({}));
+  second.callbacks.forEach((cb) => cb({}));
+  assert.deepEqual(heard, ['a', 'a'], 'no double delivery');
+  owner.stop(); owner.disconnect();
+  assert.equal(second.callbacks.size, 0, 'unsubscribed on dispose');
+});
+
+test('a throwing layer-change listener does not stop the next one', (t) => {
+  const listeners = new Set();
+  const { owner } = bindings(t, listeners);
+  const warn = t.mock.method(console, 'warn', () => {});
+  const heard = [];
+  listeners.add(() => { throw new Error('boom'); });
+  listeners.add(() => heard.push('second'));
+  let callback;
+  owner.attachDataManager({ layers: new Map(), subscribe(cb) { callback = cb; return () => {}; } });
+  assert.doesNotThrow(() => callback({}));
+  assert.deepEqual(heard, ['second']);
+  assert.equal(warn.mock.callCount(), 1);
+  owner.stop(); owner.disconnect();
 });

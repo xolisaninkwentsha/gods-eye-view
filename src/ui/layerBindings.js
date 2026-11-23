@@ -19,6 +19,7 @@ export class LayerBindings {
     operations,
     feedback,
     shareRestoration,
+    layerListeners = new Set(),
   }) {
     Object.assign(
       this,
@@ -28,6 +29,7 @@ export class LayerBindings {
         readControls,
         _feedback: feedback,
         _shareRestoration: shareRestoration,
+        _layerListeners: layerListeners,
       },
       operations,
     );
@@ -256,22 +258,21 @@ export class LayerBindings {
       this._dataManagerUnsubscribe();
       this._dataManagerUnsubscribe = null;
     }
-    // One forwarder serves the omnibar's onLayersChange listeners.
-    if (this._layerForwarderUnsubscribe) {
-      this._layerForwarderUnsubscribe();
-      this._layerForwarderUnsubscribe = null;
-    }
-    if (typeof this._dataManager?.subscribe === 'function') {
-      this._layerForwarderUnsubscribe = this._dataManager.subscribe(() => {
-        for (const listener of [...(this._layerListeners || [])]) listener();
-      });
-    }
     this._contextControls.connect(this._dataManager);
     this._spaceMissionsControls?.connect(this._dataManager);
     if (typeof this._dataManager?.subscribe === 'function') {
       this._dataManagerUnsubscribe = this._dataManager.subscribe((change) => {
         this._feedback._loadingFeedbackEvent = change;
         this._updateGlobalLoadingFeedback(performance.now());
+        // The omnibar's onLayersChange listeners ride this one subscription,
+        // each isolated so a throwing one cannot skip the rest.
+        for (const listener of [...this._layerListeners]) {
+          try {
+            listener(change);
+          } catch (error) {
+            console.warn('layer change listener failed', error);
+          }
+        }
       });
     }
     this._updateGlobalLoadingFeedback(performance.now());
