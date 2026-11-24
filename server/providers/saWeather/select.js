@@ -43,6 +43,8 @@ const windowOf = (info, sentMs) => ({
 
 const overlaps = (a, b) => a.start < b.end && b.start < a.end;
 
+const isExpired = (info, nowMs) => info.expiresMs !== null && info.expiresMs !== undefined && info.expiresMs <= nowMs;
+
 export function currentWarningAreas(files, nowMs) {
   // Rule 1 and 2: Actual files only, grouped by office|hazard, numbered into issues.
   const groups = new Map();
@@ -65,31 +67,37 @@ export function currentWarningAreas(files, nowMs) {
       issues.push(issue);
     }
 
-    // Rule 3: a later issue that names the same area over an overlapping window replaces.
-    group.forEach((f, i) => {
-      if (f.alert.msgType === 'Cancel') return;
-      for (const info of f.alert.infos) {
-        const w = windowOf(info, f.alert.sentMs);
-        for (const area of info.areas) {
-          const replaced = group.some(
-            (g, j) =>
-              issues[j] > issues[i] &&
-              g.alert.infos.some(
-                (gi) =>
-                  gi.areas.some((ga) => ga.desc === area.desc) &&
-                  overlaps(w, windowOf(gi, g.alert.sentMs)),
-              ),
-          );
-          if (!replaced) pairs.push({ file: f, info, area });
+    // Rule 3, newest issue first: a later warning replaces only while it is itself
+    // shown (unexpired, not replaced). A Cancel always replaces.
+    const replacers = [];
+    for (let k = issue; k >= 0; k--) {
+      const added = [];
+      group.forEach((f, i) => {
+        if (issues[i] !== k) return;
+        const isCancel = f.alert.msgType === 'Cancel';
+        for (const info of f.alert.infos) {
+          const w = windowOf(info, f.alert.sentMs);
+          for (const area of info.areas) {
+            if (isCancel) {
+              added.push({ desc: area.desc, w });
+              continue;
+            }
+            const replaced = replacers.some((r) => r.desc === area.desc && overlaps(w, r.w));
+            if (replaced) continue;
+            if (!isExpired(info, nowMs)) {
+              pairs.push({ file: f, info, area });
+              added.push({ desc: area.desc, w });
+            }
+          }
         }
-      }
-    });
+      });
+      replacers.push(...added);
+    }
   }
 
   // Rule 4 and 5: drop expired, merge by desc plus ring.
   const merged = new Map();
   for (const { file, info, area } of pairs) {
-    if (info.expiresMs !== null && info.expiresMs !== undefined && info.expiresMs <= nowMs) continue;
     const rk = ringKey(area.ring);
     const key = `${area.desc}|${rk}`;
     let rec = merged.get(key);

@@ -125,7 +125,7 @@
 **The rule** (the spec's "replace per area, by issue"):
 1. Files whose `alert.status` is not `'Actual'` are ignored.
 2. Group by `office|hazard`, sort each group by `alert.sentMs`, and number the issues. A file starts a new issue when its `sentMs` is more than `ISSUE_GAP_MS` after the previous file's.
-3. Warning W (one info and area in issue k) is replaced when a file in the same group with issue > k has an info that lists an area with the same `desc` and whose window overlaps W's. A window is `[onsetMs ?? sentMs, expiresMs)`; overlap is `a.start < b.end && b.start < a.end`. An info in a `msgType: 'Cancel'` file replaces in the same way, but never shows itself.
+3. Warning W (one info and area in issue k) is replaced when a file in the same group with issue > k has an info that lists an area with the same `desc` and whose window overlaps W's. A window is `[onsetMs ?? sentMs, expiresMs)`; overlap is `a.start < b.end && b.start < a.end`. Only a later warning that is itself shown (unexpired, not replaced) replaces; a Cancel info always replaces, whatever its own expiry, and never shows itself.
 4. Drop warnings with `expiresMs <= nowMs`.
 5. Merge the remaining (area, warning) pairs by `desc` plus ring. An area's `band` is its worst warning's band. Groups never replace each other, so KZN winds and KZN storms on one area both show.
 

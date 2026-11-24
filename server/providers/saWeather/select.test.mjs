@@ -239,3 +239,72 @@ test('long texts are cut', () => {
   assert.equal(w.instruction.length, 400);
   assert.ok(w.instruction.endsWith('…'));
 });
+
+test('an expired later warning does not hide an earlier one still in force', () => {
+  const files = [
+    file('GP', 'SevereThunderstorms', '2026-11-23T18:00:00+02:00', [
+      info(2, '2026-11-24T00:00:00+02:00', '2026-11-24T23:59:00+02:00', ['X']),
+    ]),
+    file('GP', 'SevereThunderstorms', '2026-11-24T06:00:00+02:00', [
+      info(4, '2026-11-24T06:00:00+02:00', '2026-11-24T08:59:00+02:00', ['X']),
+    ]),
+  ];
+  const areas = currentWarningAreas(files, t('2026-11-24T10:00:00+02:00'));
+  assert.deepEqual(byName(areas, 'X').warnings.map((w) => w.level), [2]);
+});
+
+test('a superseded later warning does not replace an earlier one (chain)', () => {
+  const g = (sent, level, from, to) =>
+    file('GP', 'SevereThunderstorms', sent, [info(level, from, to, ['X'])]);
+  const files = [
+    g('2026-11-23T06:00:00+02:00', 2, '2026-11-24T00:00:00+02:00', '2026-11-24T12:00:00+02:00'),
+    g('2026-11-23T20:00:00+02:00', 3, '2026-11-24T10:00:00+02:00', '2026-11-25T06:00:00+02:00'),
+    g('2026-11-24T08:00:00+02:00', 4, '2026-11-24T18:00:00+02:00', '2026-11-25T12:00:00+02:00'),
+  ];
+  const areas = currentWarningAreas(files, t('2026-11-24T11:00:00+02:00'));
+  assert.deepEqual(byName(areas, 'X').warnings.map((w) => w.level).sort(), [2, 4]);
+});
+
+test('a Cancel whose own window has passed still removes the earlier warning', () => {
+  const files = [
+    file('GP', 'SevereThunderstorms', '2026-11-23T08:00:00+02:00', [
+      info(2, '2026-11-23T13:00:00+02:00', '2026-11-24T23:59:00+02:00', ['X', 'Y']),
+    ]),
+    file(
+      'GP',
+      'SevereThunderstorms',
+      '2026-11-23T14:00:00+02:00',
+      [info(2, '2026-11-23T13:00:00+02:00', '2026-11-23T15:00:00+02:00', ['X'])],
+      'Cancel',
+    ),
+  ];
+  const areas = currentWarningAreas(files, t('2026-11-24T10:00:00+02:00'));
+  assert.deepEqual(areas.map((a) => a.name), ['Y']);
+});
+
+test('hazard groups never replace each other, even hours apart', () => {
+  const files = [
+    file('KZN', 'DamagingWinds', '2026-11-23T08:00:00+02:00', [
+      info(2, '2026-11-23T13:00:00+02:00', '2026-11-23T23:59:00+02:00', ['X']),
+    ]),
+    file('KZN', 'SevereThunderstorms', '2026-11-23T10:00:00+02:00', [
+      info(6, '2026-11-23T13:00:00+02:00', '2026-11-23T23:59:00+02:00', ['X']),
+    ]),
+  ];
+  const areas = currentWarningAreas(files, t('2026-11-23T12:00:00+02:00'));
+  assert.deepEqual(byName(areas, 'X').warnings.map((w) => w.level), [6, 2]);
+});
+
+test('the issue gap is measured from the previous file, not the first', () => {
+  const g = (sent, level) =>
+    file('GP', 'SevereThunderstorms', sent, [
+      info(level, '2026-11-23T13:00:00+02:00', '2026-11-23T23:59:00+02:00', ['X']),
+    ]);
+  const files = [
+    g('2026-11-23T10:00:00+02:00', 4),
+    g('2026-11-23T10:50:00+02:00', 3),
+    g('2026-11-23T11:40:00+02:00', 2),
+  ];
+  const areas = currentWarningAreas(files, t('2026-11-23T12:00:00+02:00'));
+  assert.deepEqual(byName(areas, 'X').warnings.map((w) => w.level), [4, 3, 2]);
+});
