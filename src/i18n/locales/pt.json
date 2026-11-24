@@ -4579,7 +4579,7 @@
   "Orange": "Laranja",
   "Yellow": "Amarelo",
   "{band} · Level {level} · {event}": "{band} · Nível {level} · {event}",
-  "Issued {time}": "Emitido {time}",
+  "Issued {time}": "Emitido em {time}",
   "Source: South African Weather Service": "Fonte: Serviço Meteorológico da África do Sul",
   "SA weather warnings source unavailable": "Fonte de avisos meteorológicos da África do Sul indisponível",
   "SAWS impact-based warnings. Colour is the impact, the number the likelihood. For decisions, check weathersa.co.za.": "Avisos do SAWS baseados no impacto. A cor indica o impacto e o número a probabilidade. Para decisões, consulte weathersa.co.za.",
