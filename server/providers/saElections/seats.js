@@ -80,16 +80,21 @@ export function parseSeatSheet(rows) {
   };
   let closed = false;
   let noPrListSeats = 0;
+  let sawTotalSeats = false;
+  /** @type {Array<[string, number]>} */
+  const late = [];
   for (const row of rows.slice(headerAt + 1)) {
     const name = text(row[nameCol]);
     if (name === '') continue;
     if (closed) {
       // After the main table's total: parties that won wards but have no PR list, up to "Total Seats".
-      if (name.startsWith('Total Seats')) break;
+      if (name.startsWith('Total Seats')) {
+        sawTotalSeats = true;
+        break;
+      }
       const n = toNumber(row[totalCol]);
       if (name === 'Independents' || n === null || n === 0) continue;
-      add(name, n, n, 0);
-      noPrListSeats += n;
+      late.push([name, n]);
       continue;
     }
     if (name.startsWith('Total')) {
@@ -102,6 +107,13 @@ export function parseSeatSheet(rows) {
     add(name, seats, toNumber(row[wardCol]) ?? 0, toNumber(row[prCol]) ?? 0);
   }
   if (!closed) throw unreadable();
+  // Rows after the main total count only when the "Total Seats" row closes them.
+  if (sawTotalSeats)
+    for (const [name, n] of late) {
+      if (!Number.isInteger(n) || n < 0 || n > totalSeats) throw unreadable();
+      add(name, n, n, 0);
+      noPrListSeats += n;
+    }
   const declared = labelledNumber(
     rows,
     'Ward Councillors Seats from Parties with no PR List',

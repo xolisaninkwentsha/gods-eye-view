@@ -4,6 +4,26 @@
 /** Colour for every party without a table entry. Deliberately not the neutral grey of "no fill". */
 export const OTHER_COLOR = '#b07aa1';
 
+/** Peels trailing "*" and "(PF)" marks one at a time: linear, whatever the input. */
+function stripTrailingMarks(name) {
+  let s = name.trimEnd();
+  for (;;) {
+    if (s.endsWith('*')) s = s.slice(0, -1).trimEnd();
+    else if (s.endsWith(')')) {
+      const open = s.lastIndexOf('(');
+      if (
+        open < 0 ||
+        s
+          .slice(open + 1, -1)
+          .trim()
+          .toUpperCase() !== 'PF'
+      )
+        return s;
+      s = s.slice(0, open).trimEnd();
+    } else return s;
+  }
+}
+
 /**
  * Normalizes an IEC party name: drops trailing "(PF)" forfeiture marks and "*" footnote marks
  * (the seat files' excess-seat marker; any order, any number), folds all whitespace
@@ -12,8 +32,7 @@ export const OTHER_COLOR = '#b07aa1';
  * @returns {string}
  */
 export function normalizePartyName(name) {
-  return String(name ?? '')
-    .replace(/(?:\s*(?:\(\s*PF\s*\)|\*+))+\s*$/i, '')
+  return stripTrailingMarks(String(name ?? ''))
     .replace(/\s*\|\s*/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()

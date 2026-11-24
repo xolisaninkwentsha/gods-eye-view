@@ -220,3 +220,26 @@ test('readSeatFile reads the no-PR-list layout over two sheets', () => {
   assert.equal(got.parties.at(-1).party, 'UNITED DEMOCRATIC MOVEMENT');
   assert.equal(got.parties.at(-1).seats, 13);
 });
+
+test('rows after Total without a Total Seats row are not read as parties', () => {
+  const rows = [
+    ...quotaBlock,
+    ...seatTable,
+    [null, null, 'Note: figures provisional', 7],
+    [null, null, 'Odd note', -1.5],
+  ];
+  assert.deepEqual(parseSeatSheet(rows), expected);
+});
+
+test('a no-PR-list seat count must be a whole number within the council total', () => {
+  for (const bad of [-1, 1.5, 232]) {
+    const rows = [
+      ...quotaBlock,
+      ...seatTable.slice(0, 5),
+      ...noPrTail([[null, null, 'UNITED DEMOCRATIC MOVEMENT **', bad]]),
+    ];
+    assert.throws(() => parseSeatSheet(rows), {
+      message: 'seat_sheet_unreadable',
+    });
+  }
+});

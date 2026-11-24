@@ -124,3 +124,13 @@ test('trailing footnote asterisks are dropped, in any order with (PF)', () => {
   assert.equal(normalizePartyName('ActionSA * (PF)'), 'ACTIONSA');
   assert.equal(partyStyle('AFRICAN NATIONAL CONGRESS *').short, 'ANC');
 });
+
+test('the marker strip is linear on hostile names', () => {
+  const stars = '*'.repeat(10000);
+  let t = performance.now();
+  assert.equal(normalizePartyName(`A${stars}x`), `A${stars}X`);
+  assert.equal(normalizePartyName(`A${stars}`), 'A');
+  assert.equal(normalizePartyName(`A ${'* '.repeat(5000)}`), 'A');
+  assert.equal(normalizePartyName(`A${'(PF)'.repeat(2000)}`), 'A');
+  assert.ok(performance.now() - t < 50, 'under 50 ms');
+});
