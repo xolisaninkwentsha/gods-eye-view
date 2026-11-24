@@ -19,6 +19,7 @@ test('data providers have both hooks; credential editing stays development-only'
   assert.ok(plugins.some(({ name }) => name === 'sa-elections'));
   assert.ok(plugins.some(({ name }) => name === 'sa-weather-warnings'));
   assert.ok(plugins.some(({ name }) => name === 'sa-earthquakes'));
+  assert.ok(plugins.some(({ name }) => name === 'sa-governance'));
   assert.ok(plugins.some(({ name }) => name === 'inaturalist'));
   assert.ok(plugins.some(({ name }) => name === 'acartia'));
   for (const plugin of plugins) {
@@ -125,6 +126,8 @@ test('real dev and built-preview servers serve provider JSON and terminate unkno
         ['/api/sa-elections/unknown', 404],
         ['/api/sa-weather-warnings/unknown', 404],
         ['/api/sa-earthquakes/unknown', 404],
+        ['/api/sa-governance/unknown', 404],
+        ['/api/sa-governance/districts/unknown', 404],
         ['/api/terrain/heights?points=invalid', 400],
         ['/api/overpass', 405],
         ['/api/overpass/status', 200],
