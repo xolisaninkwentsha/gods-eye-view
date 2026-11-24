@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createSaQuakesLayer } from './index.js';
 import { fakeInputUnderLabel } from '../../input/testDoubles.mjs';
+import { createStubRenderer } from '../../render/stub/index.js';
+import { bindRenderer } from '../../render/rendererOf.js';
 import { bindFakeDraw } from '../../testSupport/fakeDrawPort.mjs';
 
 const NOW = Date.parse('2026-11-24T10:00:00Z');
@@ -95,6 +97,9 @@ test('draws a dot per event, newest last, coloured by age', async () => {
   const newest = h.dots().items.get('sa-quake:N');
   assert.ok(Math.abs(newest.color[0] - red) < 1e-9, 'newest is red');
   assert.equal(newest.pixelSize, 6 + 3 * 2.5);
+  for (const axis of ['x', 'y', 'z'])
+    assert.ok(Number.isFinite(newest.pos?.[axis]), `pos.${axis} is finite`);
+  assert.equal('position' in newest, false, 'the contract field is pos');
   assert.deepEqual(newest.outlineColor, [1, 1, 1, 0.9]);
   assert.equal(newest.outlineWidth, 1);
   const week = h.dots().items.get('sa-quake:W');
@@ -175,8 +180,8 @@ test('the legend counts the age bands and analyst records list events', async ()
     legend.map((r) => [r.label, r.count]),
     [
       ['Last 24 hours', 2],
-      ['Last 7 days', 1],
-      ['Last 30 days', 0],
+      ['1 to 7 days ago', 1],
+      ['7 to 30 days ago', 0],
     ],
   );
   assert.match(legend[0].blurb, /seismograph network/);
@@ -204,4 +209,22 @@ test('a source error is reported in getStats', async (t) => {
   fail = true;
   assert.equal(await h.layer.update(), false);
   assert.equal(h.layer.getStats().error, 'EMSC HTTP 502');
+});
+
+test('the real stub renderer places a dot', async () => {
+  const renderer = createStubRenderer();
+  const viewer = {};
+  bindRenderer(viewer, renderer);
+  const api = Object.values(renderer).find(
+    (v) => v && typeof v.drawnPosition === 'function',
+  );
+  const layer = createSaQuakesLayer({
+    source: sourceOf([quake('Q', HOUR)]),
+    now: () => NOW,
+  });
+  layer.init(viewer);
+  layer.enable();
+  await layer.update();
+  const set = api.sets().find((id) => id.startsWith('sa-earthquakes:'));
+  assert.ok(api.drawnPosition({ set, id: 'sa-quake:Q' }), 'dot is placed');
 });

@@ -387,9 +387,9 @@ Failures:
   - `createSaQuakesLayer({source, overlayHost, picking, inputFor, now = () => Date.now()})`.
     - `id: 'sa-earthquakes'`, `name: 'SA earthquakes (30 days)'`, `icon: '〰️'`, `source: 'EMSC'`, `updateInterval: 600000`.
     - One `draw.points` set `sa-earthquakes:<n>:dots` with `clampTo: 'both'`.
-    - Each item is `{id: 'sa-quake:' + stableId, position: fromDegrees(lon, lat), pixelSize: saQuakeDotPx(mag), color: <age colour>, outlineColor: [1, 1, 1, 0.9], outlineWidth: 1}`, ordered oldest first so the newest is drawn on top.
+    - Each item is `{id: 'sa-quake:' + stableId, pos: fromDegrees(lon, lat), pixelSize: saQuakeDotPx(mag), color: <age colour>, outlineColor: [1, 1, 1, 0.9], outlineWidth: 1}`, ordered oldest first so the newest is drawn on top.
     - The click card copies the weather layer's handling.
-    - The legend is the three age bands, labelled `t('Last 24 hours')`, `t('Last 7 days')` and `t('Last 30 days')`, with counts. The first item's blurb is `t('Events recorded by the South African seismograph network (SASN), via EMSC. Includes mine tremors, which are not labelled separately. Depth is not measured, so it is not shown.')`.
+    - The legend is the three age bands, labelled `t('Last 24 hours')`, `t('1 to 7 days ago')` and `t('7 to 30 days ago')`, with counts. The first item's blurb is `t('Events recorded by the South African seismograph network (SASN), via EMSC. Includes mine tremors, which are not labelled separately. Depth is not measured, so it is not shown.')`.
     - `getAnalystRecords` gives `{id, magnitude, timeMs, region, lat, lon}`.
 
 - [ ] **Step 1: Write the failing tests.**

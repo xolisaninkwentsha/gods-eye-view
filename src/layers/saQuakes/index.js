@@ -220,7 +220,7 @@ export function createSaQuakesLayer({
           const band = saQuakeAgeBand(row.timeMs, _nowMs);
           items.push({
             id: `${PICK_PREFIX}${row.stableId}`,
-            position: fromDegrees(row.lon, row.lat),
+            pos: fromDegrees(row.lon, row.lat),
             pixelSize: saQuakeDotPx(row.mag),
             color: cssColor(SA_QUAKE_AGE_ACCENTS[band]),
             outlineColor: OUTLINE,
@@ -293,8 +293,8 @@ export function createSaQuakesLayer({
     getRowControls() {
       const labels = {
         day: t('Last 24 hours'),
-        week: t('Last 7 days'),
-        month: t('Last 30 days'),
+        week: t('1 to 7 days ago'),
+        month: t('7 to 30 days ago'),
       };
       const counts = { day: 0, week: 0, month: 0 };
       for (const row of _rowById.values())
