@@ -716,7 +716,7 @@ test('first request answers loading, then ok with council and ward results joine
   const saved = JSON.parse(
     await fs.promises.readFile(path.join(cacheDir, 'results.json'), 'utf8'),
   );
-  assert.equal(saved.version, 1);
+  assert.equal(saved.version, 2);
   assert.deepEqual(
     Object.keys(saved.provinces).sort(),
     [...IEC_PROVINCES].sort(),
@@ -1290,4 +1290,26 @@ test('refuses unknown paths, other methods and rate-limited clients', async (t) 
   assert.equal(last.headers['Retry-After'], '60');
   assert.equal(last.body.error, 'rate_limited');
   assert.equal((await request('/councils', { peer: '10.0.0.10' })).status, 200);
+});
+
+test('a version-1 results cache is not served', async (t) => {
+  const { request, cacheDir } = await setup(t);
+  await fs.promises.writeFile(
+    path.join(cacheDir, 'results.json'),
+    JSON.stringify({
+      version: 1,
+      provinces: {
+        WP: {
+          lastModified: null,
+          councils: { WP001: { seatCheck: 'stale-v1' } },
+          wards: {},
+        },
+      },
+    }),
+  );
+  const first = await request('/councils');
+  assert.equal(first.status, 200);
+  assert.notEqual(byId(first).WP001.result?.seatCheck, 'stale-v1');
+  const ok = await untilResults(request, 'ok');
+  assert.equal(byId(ok).WP001.result.seatCheck, 'ok');
 });

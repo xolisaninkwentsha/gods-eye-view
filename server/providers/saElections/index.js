@@ -57,6 +57,8 @@ function limiter(max) {
     });
 }
 
+// Bumped when the seat-file parser changes what it reads: a cache built by the old one is rebuilt.
+const RESULTS_VERSION = 2;
 const validArea = (area) =>
   isRecord(area) && typeof area.id === 'string' && Array.isArray(area.polygons);
 const validBoundaries = (saved) =>
@@ -118,7 +120,7 @@ export function saElectionsProxy({
     return writes;
   };
   const persistResults = () =>
-    persist(RESULTS_FILE, () => ({ version: 1, provinces }));
+    persist(RESULTS_FILE, () => ({ version: RESULTS_VERSION, provinces }));
 
   // Before the first cache read, and so before any write, the temp files a process killed
   // between write and rename left behind are deleted.
@@ -151,7 +153,8 @@ export function saElectionsProxy({
     resultsCacheRead ??= sweepTemps()
       .then(() => readJsonFile(fsImpl, cacheFile(RESULTS_FILE)))
       .then((saved) => {
-        if (saved?.version !== 1 || !isRecord(saved.provinces)) return;
+        if (saved?.version !== RESULTS_VERSION || !isRecord(saved.provinces))
+          return;
         for (const code of IEC_PROVINCES) {
           const entry = cachedProvince(saved.provinces[code]);
           if (entry) provinces[code] ??= entry;

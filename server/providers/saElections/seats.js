@@ -65,17 +65,7 @@ export function parseSeatSheet(rows) {
   // in the order each party first appears.
   /** @type {Map<string, PartySeats>} */
   const byParty = new Map();
-  let closed = false;
-  for (const row of rows.slice(headerAt + 1)) {
-    const name = text(row[nameCol]);
-    if (name === '') continue;
-    if (name.startsWith('Total')) {
-      closed = true;
-      break;
-    }
-    const seats = toNumber(row[totalCol]);
-    if (seats === null) throw unreadable();
-    if (seats === 0) continue;
+  const add = (name, seats, wardSeats, prSeats) => {
     const party = normalizePartyName(name);
     const entry = byParty.get(party) ?? {
       party,
@@ -84,11 +74,39 @@ export function parseSeatSheet(rows) {
       prSeats: 0,
     };
     entry.seats += seats;
-    entry.wardSeats += toNumber(row[wardCol]) ?? 0;
-    entry.prSeats += toNumber(row[prCol]) ?? 0;
+    entry.wardSeats += wardSeats;
+    entry.prSeats += prSeats;
     byParty.set(party, entry);
+  };
+  let closed = false;
+  let noPrListSeats = 0;
+  for (const row of rows.slice(headerAt + 1)) {
+    const name = text(row[nameCol]);
+    if (name === '') continue;
+    if (closed) {
+      // After the main table's total: parties that won wards but have no PR list, up to "Total Seats".
+      if (name.startsWith('Total Seats')) break;
+      const n = toNumber(row[totalCol]);
+      if (name === 'Independents' || n === null || n === 0) continue;
+      add(name, n, n, 0);
+      noPrListSeats += n;
+      continue;
+    }
+    if (name.startsWith('Total')) {
+      closed = true;
+      continue;
+    }
+    const seats = toNumber(row[totalCol]);
+    if (seats === null) throw unreadable();
+    if (seats === 0) continue;
+    add(name, seats, toNumber(row[wardCol]) ?? 0, toNumber(row[prCol]) ?? 0);
   }
   if (!closed) throw unreadable();
+  const declared = labelledNumber(
+    rows,
+    'Ward Councillors Seats from Parties with no PR List',
+  );
+  if (declared !== null && declared !== noPrListSeats) throw unreadable();
   return { totalSeats, independentWardSeats, parties: [...byParty.values()] };
 }
 

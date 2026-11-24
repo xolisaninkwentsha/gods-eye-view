@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { parseSeatSheet } from './seats.js';
 import {
   csvRecords,
   aggregateProvince,
@@ -272,4 +273,31 @@ test('a missing header column fails loudly', async () => {
   await assert.rejects(aggregateProvince(csvRecords(lines(''))), {
     message: 'csv_header',
   });
+});
+
+test('a seat file that writes NAME * checks ok against a CSV that writes NAME', async () => {
+  const { councils, wards } = await tallyOf([
+    row('30601001', '1001', 900, 'Ward', 0, 'AFRICAN NATIONAL CONGRESS', 100),
+    row('30601001', '1001', 900, 'Ward', 0, 'DEMOCRATIC ALLIANCE', 50),
+    row('30601001', '1001', 900, 'PR', 0, 'AFRICAN NATIONAL CONGRESS', 400),
+    row('30601001', '1001', 900, 'PR', 0, 'DEMOCRATIC ALLIANCE', 300),
+  ]);
+  const seats = parseSeatSheet([
+    ['Total Seats Available in Municipality - (B)', 3],
+    ['Independent Ward Councillors Elected - (C)', 0],
+    [
+      'Party Name',
+      'Total Party Seats (x)',
+      'Ward Seats (y)',
+      'PR List Seats (x-y)',
+    ],
+    ['AFRICAN NATIONAL CONGRESS *', 2, 1, 1],
+    ['DEMOCRATIC ALLIANCE', 1, 0, 1],
+    ['Total Party Seats', 3, 1, 2],
+  ]);
+  const wardResults = [...wards.values()].map(wardOutcome);
+  assert.equal(seatCheck(wardResults, seats), 'ok');
+  const r = councilOutcome(councils.get('ZZ001'), seats);
+  assert.equal(r.parties[0].party, 'AFRICAN NATIONAL CONGRESS');
+  assert.equal(r.parties[0].prVotes, 400);
 });

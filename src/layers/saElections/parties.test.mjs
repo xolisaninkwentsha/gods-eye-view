@@ -106,3 +106,21 @@ test('every FF Plus spelling reaches one canonical key and style', () => {
     1,
   );
 });
+
+test('trailing footnote asterisks are dropped, in any order with (PF)', () => {
+  assert.equal(
+    normalizePartyName('AFRICAN NATIONAL CONGRESS *'),
+    'AFRICAN NATIONAL CONGRESS',
+  );
+  assert.equal(
+    normalizePartyName('UNITED DEMOCRATIC MOVEMENT **'),
+    'UNITED DEMOCRATIC MOVEMENT',
+  );
+  assert.equal(
+    normalizePartyName('INKATHA FREEDOM PARTY*'),
+    'INKATHA FREEDOM PARTY',
+  );
+  assert.equal(normalizePartyName('ActionSA (PF) *'), 'ACTIONSA');
+  assert.equal(normalizePartyName('ActionSA * (PF)'), 'ACTIONSA');
+  assert.equal(partyStyle('AFRICAN NATIONAL CONGRESS *').short, 'ANC');
+});

@@ -5,14 +5,15 @@
 export const OTHER_COLOR = '#b07aa1';
 
 /**
- * Normalizes an IEC party name: drops a trailing "(PF)" forfeiture mark, folds all whitespace
+ * Normalizes an IEC party name: drops trailing "(PF)" forfeiture marks and "*" footnote marks
+ * (the seat files' excess-seat marker; any order, any number), folds all whitespace
  * (including newlines) and "|" separators to single spaces, trims and uppercases.
  * @param {string} name
  * @returns {string}
  */
 export function normalizePartyName(name) {
   return String(name ?? '')
-    .replace(/\(\s*PF\s*\)\s*$/i, '')
+    .replace(/(?:\s*(?:\(\s*PF\s*\)|\*+))+\s*$/i, '')
     .replace(/\s*\|\s*/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
