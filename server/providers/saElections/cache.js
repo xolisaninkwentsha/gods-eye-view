@@ -47,7 +47,7 @@ export async function readJsonFile(fsImpl, file) {
  * leaves the previous file whole. Never throws; a failed write is logged and its temp removed.
  * @returns {Promise<boolean>} whether the file landed
  */
-export async function writeJsonAtomic(fsImpl, dir, name, value) {
+export async function writeJsonAtomic(fsImpl, dir, name, value, log = console) {
   const temp = path.join(dir, tempName(name));
   try {
     await fsImpl.mkdir(dir, { recursive: true });
@@ -55,7 +55,7 @@ export async function writeJsonAtomic(fsImpl, dir, name, value) {
     await fsImpl.rename(temp, path.join(dir, name));
     return true;
   } catch (err) {
-    console.warn(
+    log.warn(
       `[sa-elections] cache write ${name} failed: ${err?.message || err}`,
     );
     try {

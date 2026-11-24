@@ -1,4 +1,4 @@
-import test from 'node:test';
+import test, { mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { saGovernanceProxy } from './index.js';
 import { INTERVENTIONS, METROS } from './tables.js';
@@ -75,6 +75,8 @@ function upstream() {
     const href = String(url);
     state.calls.push(href);
     if (state.gate) await state.gate;
+    if (state.hangMdb && !href.includes('municipaldata'))
+      await new Promise(() => {});
     const kind = href.includes('municipaldata')
       ? 'audits'
       : href.includes('District_Municipalities')
@@ -358,4 +360,127 @@ test('concurrent requests share one refresh', async () => {
   assert.equal(up.count('aggregate'), 1);
   assert.equal(up.count('District_Municipalities'), 1);
   assert.equal(up.count('MDB_L_ocal'), 1);
+});
+
+const goodAudits = (over = {}) => ({
+  version: 1,
+  fetchedAt: T0,
+  year: 2023,
+  byCode: { JHB: { opinion: 'qualified', label: 'Q' } },
+  ...over,
+});
+const goodDistricts = (over = {}) => ({
+  version: 1,
+  fetchedAt: T0,
+  areas: [
+    {
+      id: 'DC1',
+      name: 'D',
+      code: 'DC1',
+      province: null,
+      category: 'C',
+      polygons: [[ring]],
+    },
+  ],
+  members: [{ code: 'GP001', name: 'A', district: 'DC1', districtName: 'D' }],
+  ...over,
+});
+const seed = (name, value) => {
+  const fsImpl = memoryFs();
+  fsImpl.files.set(`${DIR}/${name}`, JSON.stringify(value));
+  return fsImpl;
+};
+
+test('a malformed v1 audits cache is ignored and refetched', async () => {
+  for (const bad of [
+    goodAudits({ year: 2024.5 }),
+    goodAudits({ byCode: { JHB: 'garbage', CPT: null } }),
+    goodAudits({ fetchedAt: T0 + DAY }),
+  ]) {
+    const up = upstream();
+    const { request } = harness({ up, fsImpl: seed('audits.json', bad) });
+    const res = await request('/');
+    assert.equal(res.body.audits.year, 2024);
+    assert.ok(up.count('municipaldata') > 0);
+    const down = upstream();
+    down.down.add('audits');
+    const h = harness({ up: down, fsImpl: seed('audits.json', bad) });
+    const failed = await h.request('/');
+    assert.equal(failed.body.auditsStatus, 'failed');
+    assert.equal(failed.body.audits, null);
+  }
+});
+
+test('a malformed v1 districts cache is ignored and refetched', async () => {
+  const bads = [
+    goodDistricts({
+      members: [{ code: 'GP001', name: 7, district: 'DC1', districtName: 'D' }],
+    }),
+    goodDistricts({ areas: [{ id: 'DC1', code: 'DC1', name: 'D' }] }),
+    goodDistricts({
+      members: [{ code: 'A', district: 'DC1', districtName: 'D' }],
+    }),
+    goodDistricts({ fetchedAt: T0 + DAY }),
+  ];
+  for (const bad of bads) {
+    const up = upstream();
+    const { request } = harness({ up, fsImpl: seed('districts.json', bad) });
+    const res = await request('/districts');
+    assert.equal(res.status, 200);
+    assert.equal(res.body.areas.length, 2);
+    assert.ok(up.count('District_Municipalities') > 0);
+    const down = upstream();
+    down.down.add('mdb');
+    const h = harness({ up: down, fsImpl: seed('districts.json', bad) });
+    const failed = await h.request('/districts');
+    assert.equal(failed.status, 502);
+    assert.deepEqual(failed.body, { error: 'sa_districts_unavailable' });
+  }
+});
+
+test('a failing cache write logs under its own name and not on the console', async () => {
+  const spy = mock.method(console, 'warn', () => {});
+  try {
+    const fsImpl = memoryFs();
+    fsImpl.writeFile = async () => {
+      throw new Error('EACCES /secret/path');
+    };
+    const { request, logs } = harness({ fsImpl });
+    assert.equal((await request('/')).status, 200);
+    const mine = logs.filter(
+      (l) => l[0] === '[sa-governance] audits cache write failed',
+    );
+    assert.equal(mine.length, 1);
+    assert.equal(mine[0][1], 'cache_write_failed');
+    assert.equal(spy.mock.callCount(), 0);
+    assert.ok(!JSON.stringify(logs).includes('secret'));
+  } finally {
+    spy.mock.restore();
+  }
+});
+
+test('a thrown error is logged by its name, never its message', async () => {
+  const fetchImpl = async () => {
+    throw new TypeError('secret socket detail');
+  };
+  const { request, logs } = harness({ up: { fetchImpl, calls: [] } });
+  const res = await request('/');
+  assert.equal(res.body.auditsStatus, 'failed');
+  assert.ok(logs.some((l) => l[1] === 'TypeError'));
+  assert.ok(!JSON.stringify(logs).includes('secret'));
+});
+
+test('the main route does not wait on a districts refresh once districts are held', async () => {
+  const up = upstream();
+  const { request, time } = harness({ up });
+  await request('/');
+  time.at = T0 + 8 * DAY;
+  up.hangMdb = true;
+  const res = await Promise.race([
+    request('/'),
+    new Promise((resolve) => setTimeout(() => resolve('slow'), 500)),
+  ]);
+  assert.notEqual(res, 'slow');
+  assert.equal(res.status, 200);
+  assert.ok(res.body.districtOf.GP001);
 });

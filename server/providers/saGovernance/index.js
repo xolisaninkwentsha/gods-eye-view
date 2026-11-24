@@ -29,21 +29,52 @@ const errorLabel = (error) =>
 
 const isObject = (value) =>
   value !== null && typeof value === 'object' && !Array.isArray(value);
-const validAudits = (saved) =>
+const text = (value) => typeof value === 'string' && value !== '';
+const position = (p) =>
+  Array.isArray(p) &&
+  p.length >= 2 &&
+  Number.isFinite(p[0]) &&
+  Number.isFinite(p[1]);
+const validRing = (ring) =>
+  Array.isArray(ring) && ring.length >= 4 && ring.every(position);
+const validPolygons = (polygons) =>
+  Array.isArray(polygons) &&
+  polygons.length > 0 &&
+  polygons.every(
+    (rings) =>
+      Array.isArray(rings) && rings.length > 0 && rings.every(validRing),
+  );
+const validArea = (area) =>
+  isObject(area) &&
+  text(area.id) &&
+  text(area.code) &&
+  validPolygons(area.polygons);
+const validMember = (m) =>
+  isObject(m) &&
+  [m.code, m.name, m.district, m.districtName].every(
+    (v) => typeof v === 'string',
+  );
+const validAudits = (saved, at) =>
   saved?.version === 1 &&
   Number.isFinite(saved.fetchedAt) &&
-  Number.isFinite(saved.year) &&
-  isObject(saved.byCode);
-const validDistricts = (saved) =>
+  saved.fetchedAt <= at &&
+  Number.isInteger(saved.year) &&
+  isObject(saved.byCode) &&
+  Object.values(saved.byCode).every(
+    (v) =>
+      isObject(v) &&
+      typeof v.opinion === 'string' &&
+      typeof v.label === 'string',
+  );
+const validDistricts = (saved, at) =>
   saved?.version === 1 &&
   Number.isFinite(saved.fetchedAt) &&
+  saved.fetchedAt <= at &&
   Array.isArray(saved.areas) &&
   saved.areas.length > 0 &&
-  saved.areas.every(
-    (area) => isObject(area) && typeof area.code === 'string',
-  ) &&
+  saved.areas.every(validArea) &&
   Array.isArray(saved.members) &&
-  saved.members.every((m) => isObject(m) && typeof m.code === 'string');
+  saved.members.every(validMember);
 
 /** Vite plugin for /api/sa-governance. `now` drives every refresh decision. */
 export function saGovernanceProxy({
@@ -86,7 +117,7 @@ export function saGovernanceProxy({
         await removeOrphanTemps(fsImpl, cacheDir);
         for (const [kind, { file }] of Object.entries(KINDS)) {
           const saved = await readJsonFile(fsImpl, path.join(cacheDir, file));
-          if (valid[kind](saved)) held[kind] ??= saved;
+          if (valid[kind](saved, now())) held[kind] ??= saved;
         }
       } catch (error) {
         warn('cache read', error);
@@ -98,11 +129,15 @@ export function saGovernanceProxy({
       try {
         const value = await loaders[kind]();
         held[kind] = value;
-        try {
-          await writeJsonAtomic(fsImpl, cacheDir, KINDS[kind].file, value);
-        } catch (error) {
-          warn(`${kind} cache write`, error);
-        }
+        const written = await writeJsonAtomic(
+          fsImpl,
+          cacheDir,
+          KINDS[kind].file,
+          value,
+          { warn() {} },
+        );
+        if (!written)
+          warn(`${kind} cache write`, { code: 'cache_write_failed' });
       } catch (error) {
         failedAt[kind] = now();
         warn(`${kind} refresh`, error);
@@ -114,11 +149,16 @@ export function saGovernanceProxy({
   }
 
   /** The held value for `kind`, refreshed when due; null when nothing usable is held. */
-  async function acquire(kind) {
+  async function acquire(kind, { background = false } = {}) {
     await readDisk();
     const { ttl, staleMax } = KINDS[kind];
     const age = () => (held[kind] ? now() - held[kind].fetchedAt : Infinity);
     if (age() <= ttl) return { value: held[kind], stale: false };
+    if (background && age() <= staleMax) {
+      // Serve what is held; the refresh runs on its own and never rejects.
+      if (!loads[kind] && now() - failedAt[kind] >= MINUTE) refresh(kind);
+      return { value: held[kind], stale: true };
+    }
     if (loads[kind] || now() - failedAt[kind] >= MINUTE) await refresh(kind);
     if (age() <= ttl) return { value: held[kind], stale: false };
     if (age() <= staleMax) return { value: held[kind], stale: true };
@@ -169,7 +209,7 @@ export function saGovernanceProxy({
       }
       const [audits, districts] = await Promise.all([
         acquire('audits'),
-        acquire('districts'),
+        acquire('districts', { background: true }),
       ]);
       let districtOf = null;
       if (districts) {
