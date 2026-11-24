@@ -35,7 +35,18 @@ test('areas with no warnings, a bad ring or no stableId are dropped', () => {
     area({ warnings: [] }),
     area({ warnings: [{ ...warning, expiresMs: null }] }),
     area({ polygons: [[[[1, 2]]]] }),
-    area({ polygons: [[[[999, 2], [1, 2], [1, 3], [999, 2]]]] }),
+    area({
+      polygons: [
+        [
+          [
+            [999, 2],
+            [1, 2],
+            [1, 3],
+            [999, 2],
+          ],
+        ],
+      ],
+    }),
     area({ stableId: undefined }),
     null,
     area({ stableId: 'za-wx:ok' }),

@@ -24,7 +24,16 @@ const base = {
 const area = (warnings) => ({
   stableId: 'za-wx:ab',
   name: 'Cape Town',
-  polygons: [[[[18, -33], [19, -33], [19, -34], [18, -33]]]],
+  polygons: [
+    [
+      [
+        [18, -33],
+        [19, -33],
+        [19, -34],
+        [18, -33],
+      ],
+    ],
+  ],
   band: 'red',
   warnings,
 });
@@ -46,10 +55,7 @@ test('card lists warnings worst first with SAST times', () => {
   assert.equal(card.details[2], 'Issued Tue 24 Nov 10:56');
   assert.equal(card.details[3], 'Heavy rain.');
   assert.ok(card.details.includes('Yellow · Level 2 · Wind'));
-  assert.equal(
-    card.details.at(-1),
-    'Source: South African Weather Service',
-  );
+  assert.equal(card.details.at(-1), 'Source: South African Weather Service');
   assert.equal(card.interactive, false);
   assert.equal(card.placement, 'above');
 });

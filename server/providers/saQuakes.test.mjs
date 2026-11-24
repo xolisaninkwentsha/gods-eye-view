@@ -147,7 +147,10 @@ test('serves stale rows on failure and drops those past 30 days', async () => {
   assert.equal(stale.status, 200);
   assert.equal(stale.body.stale, true);
   assert.equal(stale.headers['X-Data-Stale'], 'true');
-  assert.deepEqual(stale.body.rows.map((r) => r.stableId), ['recent']);
+  assert.deepEqual(
+    stale.body.rows.map((r) => r.stableId),
+    ['recent'],
+  );
 });
 
 test('502 without a snapshot', async () => {
@@ -185,7 +188,8 @@ test('cross-site 403', async () => {
 
 test('concurrent requests share one refresh', async () => {
   const { calls, get } = setup({
-    respond: () => new Response(collection(feature('a', '2026-11-23T10:00:00Z'))),
+    respond: () =>
+      new Response(collection(feature('a', '2026-11-23T10:00:00Z'))),
   });
   await Promise.all([get(), get()]);
   assert.equal(calls.length, 1);

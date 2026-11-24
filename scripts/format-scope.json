@@ -1729,5 +1729,17 @@
   "src/layers/saElections/source.js",
   "src/layers/saElections/source.test.mjs",
   "src/app/layers/saElections.js",
-  "docs/SOUTH_AFRICA_ELECTIONS.md"
+  "docs/SOUTH_AFRICA_ELECTIONS.md",
+  "server/providers/saQuakes.test.mjs",
+  "server/providers/saWeather/cap.test.mjs",
+  "server/providers/saWeather/provider.test.mjs",
+  "server/providers/saWeather/select.test.mjs",
+  "src/layers/saQuakes/cards.test.mjs",
+  "src/layers/saQuakes/layer.test.mjs",
+  "src/layers/saQuakes/records.test.mjs",
+  "src/layers/saQuakes/source.test.mjs",
+  "src/layers/saWeather/cards.test.mjs",
+  "src/layers/saWeather/layer.test.mjs",
+  "src/layers/saWeather/records.test.mjs",
+  "src/layers/saWeather/source.test.mjs"
 ]

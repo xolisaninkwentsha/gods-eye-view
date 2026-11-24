@@ -3,7 +3,17 @@ import assert from 'node:assert/strict';
 import { createSaQuakesSource } from './source.js';
 
 const rows = [
-  { stableId: 'q1', lon: 27, lat: -26, depthKm: 10, mag: 2.2, magType: 'm', timeMs: 1, region: 'South Africa', network: 'SASN' },
+  {
+    stableId: 'q1',
+    lon: 27,
+    lat: -26,
+    depthKm: 10,
+    mag: 2.2,
+    magType: 'm',
+    timeMs: 1,
+    region: 'South Africa',
+    network: 'SASN',
+  },
 ];
 
 test('a good body yields rows, fetchedAt and the requested path', async () => {
@@ -33,7 +43,10 @@ test('a body without rows is malformed', async () => {
   const source = createSaQuakesSource({
     fetchImpl: async () => Response.json({ fetchedAt: 1 }),
   });
-  await assert.rejects(source.getSnapshot(), /Malformed SA earthquake snapshot/);
+  await assert.rejects(
+    source.getSnapshot(),
+    /Malformed SA earthquake snapshot/,
+  );
 });
 
 test('an empty list is valid', async () => {

@@ -42,7 +42,13 @@ function alert(...infos) {
 test('parseSawsFeed collapses repeated guids and parses the name', () => {
   const url = `https://www.weathersa.co.za/Documents/Warnings/${NAME}`;
   const feed = parseSawsFeed(
-    rss(rssItem(url), rssItem(url), rssItem(`http://www.weathersa.co.za/Documents/Warnings/WC_CAP_HighSeas_20261124_090000.xml`)),
+    rss(
+      rssItem(url),
+      rssItem(url),
+      rssItem(
+        `http://www.weathersa.co.za/Documents/Warnings/WC_CAP_HighSeas_20261124_090000.xml`,
+      ),
+    ),
   );
   assert.equal(feed.length, 2);
   assert.deepEqual(feed[0], {
@@ -169,10 +175,7 @@ test('parseCapAlert decodes entities', () => {
       }),
     ),
   );
-  assert.equal(
-    cap.infos[0].description,
-    'a & b < c – d ’ x <b> &amp; y',
-  );
+  assert.equal(cap.infos[0].description, 'a & b < c – d ’ x <b> &amp; y');
 });
 
 test('parseCapAlert keeps a level it cannot read as null', () => {
@@ -186,7 +189,8 @@ test('parseCapAlert keeps a level it cannot read as null', () => {
 test('parseCapAlert rejects a file that is not CAP', () => {
   assert.throws(() => parseCapAlert('<html></html>'), /invalid_cap/);
   assert.throws(
-    () => parseCapAlert('<alert><sent>2026-11-24T08:14:12+02:00</sent></alert>'),
+    () =>
+      parseCapAlert('<alert><sent>2026-11-24T08:14:12+02:00</sent></alert>'),
     /invalid_cap/,
   );
 });

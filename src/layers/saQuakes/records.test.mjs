@@ -43,7 +43,14 @@ test("reads EMSC's ISO time, positive depth and region", () => {
 });
 
 test('falls back to geometry and nulls missing optional fields', () => {
-  const f = feature({ lat: undefined, lon: undefined, depth: undefined, auth: undefined, magtype: undefined, flynn_region: undefined });
+  const f = feature({
+    lat: undefined,
+    lon: undefined,
+    depth: undefined,
+    auth: undefined,
+    magtype: undefined,
+    flynn_region: undefined,
+  });
   const [row] = normalizeEmscSnapshot(coll(f));
   assert.equal(row.lon, 27.484);
   assert.equal(row.lat, -26.429);
@@ -54,7 +61,9 @@ test('falls back to geometry and nulls missing optional fields', () => {
 });
 
 test('title-cases multi-word regions', () => {
-  const [row] = normalizeEmscSnapshot(coll(feature({ flynn_region: 'NORTHERN BOTSWANA' })));
+  const [row] = normalizeEmscSnapshot(
+    coll(feature({ flynn_region: 'NORTHERN BOTSWANA' })),
+  );
   assert.equal(row.region, 'Northern Botswana');
 });
 
@@ -70,7 +79,10 @@ test('skips events without a magnitude or time, or out of range', () => {
       feature({ unid: 'ok' }),
     ),
   );
-  assert.deepEqual(rows.map((r) => r.stableId), ['ok']);
+  assert.deepEqual(
+    rows.map((r) => r.stableId),
+    ['ok'],
+  );
 });
 
 test('keeps the latest update of a repeated event, newest first', () => {
@@ -81,10 +93,13 @@ test('keeps the latest update of a repeated event, newest first', () => {
       feature({ unid: 'newer', time: '2026-11-22T00:00:00Z' }),
     ),
   );
-  assert.deepEqual(rows.map((r) => [r.stableId, r.mag]), [
-    ['newer', 2.2],
-    ['20261121_0000203', 3],
-  ]);
+  assert.deepEqual(
+    rows.map((r) => [r.stableId, r.mag]),
+    [
+      ['newer', 2.2],
+      ['20261121_0000203', 3],
+    ],
+  );
 });
 
 test('returns null for a non-collection', () => {

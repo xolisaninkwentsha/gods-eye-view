@@ -46,7 +46,10 @@ function cut(text, cap) {
 function firstLine(text) {
   if (typeof text !== 'string') return '';
   for (const line of text.split(/\r\n|\r|\n/)) {
-    const bare = line.trim().replace(/^[-•]\s+/, '').trim();
+    const bare = line
+      .trim()
+      .replace(/^[-•]\s+/, '')
+      .trim();
     if (bare) return cut(bare, LINE_CAP);
   }
   return '';

@@ -1,4 +1,7 @@
-import { readResponseTextCapped, coalesceProxyRequest } from '../common/http.js';
+import {
+  readResponseTextCapped,
+  coalesceProxyRequest,
+} from '../common/http.js';
 import { makeRateLimiter, clientKey } from '../common/rate-limit.js';
 import { admitSameSiteKeyless } from '../common/same-site.js';
 import { parseSawsFeed, parseCapAlert, sawsCapUrl } from './cap.js';
@@ -51,7 +54,11 @@ export function saWeatherWarningsProxy({
       }
       capCache.set(entry.name, alert);
     } catch (error) {
-      log.warn('[sa-weather] cap skipped', entry.name, error?.code || error?.message);
+      log.warn(
+        '[sa-weather] cap skipped',
+        entry.name,
+        error?.code || error?.message,
+      );
     }
   }
 
@@ -63,9 +70,12 @@ export function saWeatherWarningsProxy({
     const missing = candidates.filter((e) => !capCache.has(e.name));
     let next = 0;
     await Promise.all(
-      Array.from({ length: Math.min(CAP_CONCURRENCY, missing.length) }, async () => {
-        while (next < missing.length) await loadCap(missing[next++]);
-      }),
+      Array.from(
+        { length: Math.min(CAP_CONCURRENCY, missing.length) },
+        async () => {
+          while (next < missing.length) await loadCap(missing[next++]);
+        },
+      ),
     );
     const files = candidates
       .filter((e) => capCache.has(e.name))
@@ -86,10 +96,14 @@ export function saWeatherWarningsProxy({
     if (!inFlight.has('warnings') && inFlight.size >= 256)
       throw Object.assign(new Error('busy'), { status: 429 });
     try {
-      const { promise } = coalesceProxyRequest(inFlight, 'warnings', async () => {
-        snapshot = await refresh();
-        return snapshot;
-      });
+      const { promise } = coalesceProxyRequest(
+        inFlight,
+        'warnings',
+        async () => {
+          snapshot = await refresh();
+          return snapshot;
+        },
+      );
       return { value: await promise, stale: false };
     } catch (error) {
       if (previous && now() - previous.savedAt <= STALE_MAX_MS)

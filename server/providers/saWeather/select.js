@@ -14,7 +14,11 @@ const bandRank = (band) => BAND_RANK[band] ?? 3;
 
 export function recentWarningFiles(entries, nowMs) {
   return entries
-    .filter((e) => e.nameMs > nowMs - RECENT_MAX_AGE_MS && e.nameMs <= nowMs + FUTURE_SLACK_MS)
+    .filter(
+      (e) =>
+        e.nameMs > nowMs - RECENT_MAX_AGE_MS &&
+        e.nameMs <= nowMs + FUTURE_SLACK_MS,
+    )
     .sort((a, b) => b.nameMs - a.nameMs)
     .slice(0, RECENT_MAX_FILES);
 }
@@ -34,7 +38,8 @@ function fnv1a(str) {
   return h.toString(16).padStart(8, '0');
 }
 
-const ringKey = (ring) => ring.map(([lon, lat]) => `${lon.toFixed(5)},${lat.toFixed(5)}`).join(' ');
+const ringKey = (ring) =>
+  ring.map(([lon, lat]) => `${lon.toFixed(5)},${lat.toFixed(5)}`).join(' ');
 
 const windowOf = (info, sentMs) => ({
   start: info.onsetMs ?? sentMs,
@@ -43,7 +48,10 @@ const windowOf = (info, sentMs) => ({
 
 const overlaps = (a, b) => a.start < b.end && b.start < a.end;
 
-const isExpired = (info, nowMs) => info.expiresMs !== null && info.expiresMs !== undefined && info.expiresMs <= nowMs;
+const isExpired = (info, nowMs) =>
+  info.expiresMs !== null &&
+  info.expiresMs !== undefined &&
+  info.expiresMs <= nowMs;
 
 export function currentWarningAreas(files, nowMs) {
   // Rule 1 and 2: Actual files only, grouped by office|hazard, numbered into issues.
@@ -62,7 +70,8 @@ export function currentWarningAreas(files, nowMs) {
     let issue = 0;
     let prevSent = null;
     for (const f of group) {
-      if (prevSent !== null && f.alert.sentMs - prevSent > ISSUE_GAP_MS) issue += 1;
+      if (prevSent !== null && f.alert.sentMs - prevSent > ISSUE_GAP_MS)
+        issue += 1;
       prevSent = f.alert.sentMs;
       issues.push(issue);
     }
@@ -82,7 +91,9 @@ export function currentWarningAreas(files, nowMs) {
               added.push({ desc: area.desc, w });
               continue;
             }
-            const replaced = replacers.some((r) => r.desc === area.desc && overlaps(w, r.w));
+            const replaced = replacers.some(
+              (r) => r.desc === area.desc && overlaps(w, r.w),
+            );
             if (replaced) continue;
             if (!isExpired(info, nowMs)) {
               pairs.push({ file: f, info, area });
@@ -140,9 +151,16 @@ export function currentWarningAreas(files, nowMs) {
   const areas = [...merged.values()];
   for (const a of areas) {
     a.warnings.sort(
-      (x, y) => bandRank(x.band) - bandRank(y.band) || (x.onsetMs ?? x.sentMs) - (y.onsetMs ?? y.sentMs),
+      (x, y) =>
+        bandRank(x.band) - bandRank(y.band) ||
+        (x.onsetMs ?? x.sentMs) - (y.onsetMs ?? y.sentMs),
     );
-    a.band = a.warnings.reduce((best, w) => (bandRank(w.band) < bandRank(best) ? w.band : best), null);
+    a.band = a.warnings.reduce(
+      (best, w) => (bandRank(w.band) < bandRank(best) ? w.band : best),
+      null,
+    );
   }
-  return areas.sort((a, b) => (a.stableId < b.stableId ? -1 : a.stableId > b.stableId ? 1 : 0));
+  return areas.sort((a, b) =>
+    a.stableId < b.stableId ? -1 : a.stableId > b.stableId ? 1 : 0,
+  );
 }

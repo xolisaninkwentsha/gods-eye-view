@@ -23,7 +23,10 @@ const POLY = (d) =>
 const cap = (zone, level, sent = '2026-11-24T08:56:52+02:00') =>
   `<?xml version="1.0"?><alert xmlns="urn:oasis:names:tc:emergency:cap:1.2"><identifier>i</identifier><sender>s</sender><sent>${sent}</sent><status>Actual</status><msgType>Alert</msgType><scope>Public</scope><info><event>Damaging Winds</event><severity>Minor</severity><onset>2026-11-24T09:00:00+02:00</onset><expires>2026-11-24T22:59:59+02:00</expires><headline>h</headline><description>d</description><instruction>i</instruction><parameter><valueName>alertType</valueName><value>Warning Level ${level}</value></parameter><area><areaDesc>${zone}</areaDesc><polygon>${POLY(level)}</polygon></area></info></alert>`;
 
-const reply = (body, status = 200) => () => new Response(body, { status });
+const reply =
+  (body, status = 200) =>
+  () =>
+    new Response(body, { status });
 
 function setup({ routes, clock = { t: T0 } } = {}) {
   const calls = [];
@@ -84,7 +87,10 @@ test('serves the warnings in force from the feed', async () => {
   const { plugin, calls, get } = setup({
     routes: {
       [RSS_URL]: reply(
-        rss(`http://www.weathersa.co.za/Documents/Warnings/${NAME_A}`, BASE + NAME_B),
+        rss(
+          `http://www.weathersa.co.za/Documents/Warnings/${NAME_A}`,
+          BASE + NAME_B,
+        ),
       ),
       [BASE + NAME_A]: reply(cap('Zone A', 4)),
       [BASE + NAME_B]: reply(cap('Zone B', 6)),
@@ -97,7 +103,9 @@ test('serves the warnings in force from the feed', async () => {
   assert.equal(res.headers['X-Data-Stale'], undefined);
   assert.equal(res.body.fetchedAt, T0);
   assert.equal(res.body.stale, undefined);
-  const byName = Object.fromEntries(res.body.areas.map((a) => [a.name, a.band]));
+  const byName = Object.fromEntries(
+    res.body.areas.map((a) => [a.name, a.band]),
+  );
   assert.deepEqual(byName, { 'Zone A': 'yellow', 'Zone B': 'orange' });
   assert.deepEqual(
     calls.map((c) => c.url).sort(),
@@ -120,7 +128,10 @@ test('a CAP file that fails is skipped and fetched again next time', async () =>
   });
   const first = await get();
   assert.equal(first.status, 200);
-  assert.deepEqual(first.body.areas.map((a) => a.name), ['Zone B']);
+  assert.deepEqual(
+    first.body.areas.map((a) => a.name),
+    ['Zone B'],
+  );
   assert.equal(logs.length, 1);
   assert.ok(logs[0].includes(NAME_A));
   clock.t += RSS_TTL_MS + 1;

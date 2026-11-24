@@ -17,7 +17,11 @@ export function createSaQuakesSource({
     signal?.throwIfAborted();
     const response = await fetchImpl('/api/sa-earthquakes', { signal });
     if (!response.ok) throw new Error(`EMSC HTTP ${response.status}`);
-    const payload = await readResponseJsonCapped(response, 4 * 1024 * 1024, signal);
+    const payload = await readResponseJsonCapped(
+      response,
+      4 * 1024 * 1024,
+      signal,
+    );
     signal?.throwIfAborted();
     if (!Array.isArray(payload?.rows))
       throw new Error(msg('Malformed SA earthquake snapshot'));

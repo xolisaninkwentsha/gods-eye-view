@@ -50,5 +50,7 @@ export function normalizeEmscSnapshot(geojson) {
     const seen = byId.get(row.stableId);
     if (!seen || rank > seen.rank) byId.set(row.stableId, { rank, row });
   }
-  return [...byId.values()].map((v) => v.row).sort((a, b) => b.timeMs - a.timeMs);
+  return [...byId.values()]
+    .map((v) => v.row)
+    .sort((a, b) => b.timeMs - a.timeMs);
 }
