@@ -122,6 +122,10 @@ export const DATA_CREDITS = [
       '<a href="https://results.elections.org.za/" target="_blank" rel="noopener">Electoral Commission of South Africa</a>',
   },
   {
+    key: 'za-saws',
+    html: 'South African weather warnings: <a href="https://www.weathersa.co.za/" target="_blank" rel="noopener">South African Weather Service</a> CAP feed',
+  },
+  {
     key: 'opensky',
     html:
       'Flights: OpenSky Network — Schäfer et al., ' +

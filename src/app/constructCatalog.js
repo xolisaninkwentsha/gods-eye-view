@@ -36,6 +36,7 @@ import { createApplicationGhostMaps } from './layers/ghostMaps.js';
 import { createApplicationShipwrecks } from './layers/shipwrecks.js';
 import { createApplicationDroneAirspace } from './layers/droneAirspace.js';
 import { createApplicationSaElections } from './layers/saElections.js';
+import { createApplicationSaWeather } from './layers/saWeather.js';
 import { createApplicationNews } from './layers/news.js';
 import { createApplicationWildlifeSightings } from './layers/wildlifeSightings.js';
 import { createApplicationCables } from './layers/submarineCables.js';
@@ -57,6 +58,8 @@ export const LOCAL_ONLY_LAYER_METADATA = Object.freeze([
   // The fork-local South African election map is not shared by link.
   Object.freeze({ id: 'sa-councils-2026', disposition: 'local-only' }),
   Object.freeze({ id: 'sa-wards-2026', disposition: 'local-only' }),
+  // Likewise the fork-local South African weather warnings.
+  Object.freeze({ id: 'sa-weather-warnings', disposition: 'local-only' }),
 ]);
 
 /** Serialization metadata for every layer the application catalog constructs. */
@@ -167,6 +170,9 @@ export function createApplicationCatalog({
         createApplicationSaElections({
           level: 'wards',
           source: sources['sa-elections'],
+        }),
+        createApplicationSaWeather({
+          source: sources['sa-weather-warnings'],
         }),
         // Ages, the window and the counts read the world clock: a host that
         // follows it for the layer shows the news at the time on the timeline.

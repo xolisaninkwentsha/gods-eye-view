@@ -424,3 +424,10 @@ test('the South African election credit names both publishers', () => {
   assert.match(credit.html, /simplified from/);
   assert.match(credit.html, /non-commercial/);
 });
+
+test('the South African weather credit names the Weather Service', () => {
+  const credit = DATA_CREDITS.find((entry) => entry.key === 'za-saws');
+  assert.ok(credit, 'the SA weather warnings layer must be credited');
+  assert.match(credit.html, /South African Weather Service/);
+  assert.match(credit.html, /https:\/\/www\.weathersa\.co\.za\//);
+});
