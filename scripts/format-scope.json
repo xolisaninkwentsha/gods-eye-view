@@ -1742,5 +1742,14 @@
   "src/layers/saWeather/layer.test.mjs",
   "src/layers/saWeather/records.test.mjs",
   "src/layers/saWeather/source.test.mjs",
-  "docs/SOUTH_AFRICA_HAZARDS.md"
+  "docs/SOUTH_AFRICA_HAZARDS.md",
+  "server/providers/saGovernance/audits.test.mjs",
+  "server/providers/saGovernance/provider.test.mjs",
+  "server/providers/saGovernance/tables.test.mjs",
+  "src/layers/saDistricts/cards.test.mjs",
+  "src/layers/saDistricts/layer.test.mjs",
+  "src/layers/saGovernance/records.test.mjs",
+  "src/layers/saGovernance/source.test.mjs",
+  "src/layers/saGovernance/views.test.mjs",
+  "docs/SOUTH_AFRICA_GOVERNANCE.md"
 ]
