@@ -1741,5 +1741,6 @@
   "src/layers/saWeather/cards.test.mjs",
   "src/layers/saWeather/layer.test.mjs",
   "src/layers/saWeather/records.test.mjs",
-  "src/layers/saWeather/source.test.mjs"
+  "src/layers/saWeather/source.test.mjs",
+  "docs/SOUTH_AFRICA_HAZARDS.md"
 ]
