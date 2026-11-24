@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MDB_LAYERS, fetchBoundaries } from './boundaries.js';
+import {
+  MDB_LAYERS,
+  fetchBoundaries,
+  fetchCouncilDistricts,
+} from './boundaries.js';
 
 const ring = [
   [28, -26],
@@ -149,4 +153,130 @@ test('asks ArcGIS for simplified WGS84 GeoJSON', async () => {
   assert.equal(q.get('resultRecordCount'), '2000');
   assert.equal(q.get('where'), '1=1');
   assert.equal(q.get('outFields'), 'CAT_B,MUNICNAME,PROVINCE,CATEGORY');
+});
+
+const district = (code, name = `District ${code}`, geometry = poly) => ({
+  type: 'Feature',
+  properties: {
+    DISTRICT: code,
+    DISTRICT_N: name,
+    CATEGORY: code === 'CPT' ? 'A' : 'C',
+    PROVINCE: 'KwaZulu-Natal',
+  },
+  geometry,
+});
+
+test('fetchBoundaries reads districts', async () => {
+  const { fetchImpl, calls } = fake([
+    page([district('DC21', 'Ugu'), district('DC21', 'dup'), district('CPT')]),
+  ]);
+  const areas = await fetchBoundaries('districts', { fetchImpl });
+  assert.deepEqual(areas, [
+    {
+      id: 'DC21',
+      name: 'Ugu',
+      code: 'DC21',
+      province: 'KwaZulu-Natal',
+      category: 'C',
+      polygons: [[ring]],
+    },
+    {
+      id: 'CPT',
+      name: 'District CPT',
+      code: 'CPT',
+      province: 'KwaZulu-Natal',
+      category: 'A',
+      polygons: [[ring]],
+    },
+  ]);
+  const { url } = calls[0];
+  assert.equal(`${url.origin}${url.pathname}`, `${MDB_LAYERS.districts}/query`);
+  assert.equal(
+    url.searchParams.get('outFields'),
+    'DISTRICT,DISTRICT_N,CATEGORY,PROVINCE',
+  );
+  assert.equal(url.searchParams.get('f'), 'geojson');
+});
+
+const row = (attributes) => ({ attributes });
+const jsonPage = (features, exceeded) => ({
+  features,
+  ...(exceeded ? { exceededTransferLimit: true } : {}),
+});
+
+test('fetchCouncilDistricts maps councils to districts', async () => {
+  const { fetchImpl, calls } = fake([
+    jsonPage(
+      [
+        row({
+          CAT_B: 'KZN212',
+          MUNICNAME: ' Umdoni ',
+          DISTRICT: 'DC21',
+          DISTRICT_N: 'Ugu',
+        }),
+        row({ CAT_B: 'KZN212', MUNICNAME: 'dup', DISTRICT: 'DC99' }),
+        row({ CAT_B: 'CPT', DISTRICT: 'CPT' }),
+        row({ CAT_B: 'NODIST', MUNICNAME: 'x' }),
+        row({ DISTRICT: 'DC1' }),
+        row({ CAT_B: 7, DISTRICT: 'DC1' }),
+      ],
+      true,
+    ),
+    jsonPage([
+      row({ CAT_B: 'KZN213', MUNICNAME: 'Umzumbe', DISTRICT: 'DC21' }),
+    ]),
+  ]);
+  const rows = await fetchCouncilDistricts({ fetchImpl });
+  assert.deepEqual(rows, [
+    { code: 'KZN212', name: 'Umdoni', district: 'DC21', districtName: 'Ugu' },
+    { code: 'CPT', name: 'CPT', district: 'CPT', districtName: 'CPT' },
+    {
+      code: 'KZN213',
+      name: 'Umzumbe',
+      district: 'DC21',
+      districtName: 'DC21',
+    },
+  ]);
+  assert.equal(calls.length, 2);
+  assert.equal(calls[1].url.searchParams.get('resultOffset'), '6');
+  const q = calls[0].url.searchParams;
+  assert.equal(
+    `${calls[0].url.origin}${calls[0].url.pathname}`,
+    `${MDB_LAYERS.councils}/query`,
+  );
+  assert.equal(q.get('outFields'), 'CAT_B,MUNICNAME,DISTRICT,DISTRICT_N');
+  assert.equal(q.get('returnGeometry'), 'false');
+  assert.equal(q.get('f'), 'json');
+  assert.equal(q.get('resultRecordCount'), '2000');
+  assert.equal(calls[0].init.redirect, 'error');
+  assert.equal(
+    calls[0].init.headers['User-Agent'],
+    'GodsEyeView (sa-elections)',
+  );
+});
+
+test('fetchCouncilDistricts refuses an incomplete or empty set', async () => {
+  for (const pages of [
+    [jsonPage([row({ CAT_B: 'A', DISTRICT: 'D' })], true)],
+    [jsonPage([])],
+    [jsonPage([row({ CAT_B: 'A' })])],
+  ])
+    await assert.rejects(
+      fetchCouncilDistricts({ fetchImpl: fake(pages).fetchImpl }),
+      (err) =>
+        err.message === 'incomplete_membership' &&
+        err.code === 'incomplete_membership',
+    );
+  await assert.rejects(
+    fetchCouncilDistricts({
+      fetchImpl: async () => new Response('{}', { status: 200 }),
+    }),
+    (err) => err.code === 'invalid_membership',
+  );
+  await assert.rejects(
+    fetchCouncilDistricts({
+      fetchImpl: async () => new Response('no', { status: 503 }),
+    }),
+    (err) => err.code === 'upstream_unavailable',
+  );
 });

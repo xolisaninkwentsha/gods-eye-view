@@ -1267,7 +1267,13 @@ test('refuses unknown paths, other methods and rate-limited clients', async (t) 
   const post = await request('/councils', { method: 'POST' });
   assert.equal(post.status, 405);
   assert.equal(post.headers.Allow, 'GET');
-  for (const url of ['/', '/nope', '/councils/extra', '/wards/../councils'])
+  for (const url of [
+    '/',
+    '/nope',
+    '/councils/extra',
+    '/wards/../councils',
+    '/districts',
+  ])
     assert.equal((await request(url)).status, 404, url);
   const crossSite = await request('/councils', {
     headers: {

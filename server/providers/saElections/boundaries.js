@@ -7,11 +7,14 @@ export const MDB_LAYERS = Object.freeze({
     'https://services7.arcgis.com/oeoyTUJC8HEeYsRB/arcgis/rest/services/MDB_L_ocal_Municipalities_2026/FeatureServer/0',
   wards:
     'https://services7.arcgis.com/oeoyTUJC8HEeYsRB/arcgis/rest/services/MDB_Wards_2026/FeatureServer/0',
+  districts:
+    'https://services7.arcgis.com/oeoyTUJC8HEeYsRB/arcgis/rest/services/MDB_District_Municipalities_2026/FeatureServer/0',
 });
 
 const OUT_FIELDS = {
   councils: 'CAT_B,MUNICNAME,PROVINCE,CATEGORY',
   wards: 'WardID,CAT_B,WardNo,MUNICNAME,Province',
+  districts: 'DISTRICT,DISTRICT_N,CATEGORY,PROVINCE',
 };
 
 const MAX_PAGES = 5;
@@ -65,6 +68,18 @@ function toArea(level, feature) {
   if (!p || typeof p !== 'object' || Array.isArray(p)) return null;
   const polygons = normalizePolygons(feature.geometry);
   if (!polygons) return null;
+  if (level === 'districts') {
+    const district = textOrNull(p.DISTRICT);
+    if (!district) return null;
+    return {
+      id: district,
+      name: textOrNull(p.DISTRICT_N) ?? district,
+      code: district,
+      province: textOrNull(p.PROVINCE),
+      category: textOrNull(p.CATEGORY),
+      polygons,
+    };
+  }
   const code = textOrNull(p.CAT_B);
   if (level === 'councils') {
     if (!code) return null;
@@ -155,4 +170,72 @@ export async function fetchBoundaries(
   }
   if (!areas.length) throw new Error('incomplete_boundaries');
   return areas;
+}
+
+const coded = (code) => Object.assign(new Error(code), { code });
+
+/**
+ * Attribute-only fetch mapping every council (CAT_B) to its district. Throws
+ * `incomplete_membership` unless the service reports the set complete and at
+ * least one council is valid.
+ */
+export async function fetchCouncilDistricts({
+  fetchImpl = (...args) => globalThis.fetch(...args),
+  signal,
+} = {}) {
+  const base = new URLSearchParams({
+    where: '1=1',
+    outFields: 'CAT_B,MUNICNAME,DISTRICT,DISTRICT_N',
+    returnGeometry: 'false',
+    f: 'json',
+    resultRecordCount: String(PAGE_SIZE),
+  });
+  const rows = [];
+  let complete = false;
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const query = new URLSearchParams(base);
+    query.set('resultOffset', String(rows.length));
+    const timeout = AbortSignal.timeout(PAGE_TIMEOUT_MS);
+    const pageSignal = signal ? AbortSignal.any([signal, timeout]) : timeout;
+    const response = await fetchImpl(`${MDB_LAYERS.councils}/query?${query}`, {
+      signal: pageSignal,
+      redirect: 'error',
+      headers: { 'User-Agent': USER_AGENT },
+    });
+    if (!response.ok) {
+      await response.body?.cancel();
+      throw coded('upstream_unavailable');
+    }
+    const payload = await readResponseJsonCapped(
+      response,
+      PAGE_CAP_BYTES,
+      pageSignal,
+    );
+    if (!Array.isArray(payload?.features)) throw coded('invalid_membership');
+    rows.push(...payload.features);
+    if (!exceededTransferLimit(payload)) {
+      complete = true;
+      break;
+    }
+    if (!payload.features.length) break;
+  }
+  if (!complete) throw coded('incomplete_membership');
+  const seen = new Set();
+  const councils = [];
+  for (const row of rows) {
+    const a = row?.attributes;
+    if (!a || typeof a !== 'object' || Array.isArray(a)) continue;
+    const code = textOrNull(a.CAT_B);
+    const district = textOrNull(a.DISTRICT);
+    if (!code || !district || seen.has(code)) continue;
+    seen.add(code);
+    councils.push({
+      code,
+      name: textOrNull(a.MUNICNAME) ?? code,
+      district,
+      districtName: textOrNull(a.DISTRICT_N) ?? district,
+    });
+  }
+  if (!councils.length) throw coded('incomplete_membership');
+  return councils;
 }
