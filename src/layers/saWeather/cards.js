@@ -101,7 +101,9 @@ export function buildSaWeatherCard(area) {
             level: w.level,
             event: w.event,
           })
-        : `${w.levelText} · ${w.event}`,
+        : w.levelText
+          ? `${w.levelText} · ${w.event}`
+          : w.event,
     );
     details.push(formatSastRange(w.onsetMs ?? w.sentMs, w.expiresMs));
     details.push(t('Issued {time}', { time: formatSastTime(w.sentMs) }));

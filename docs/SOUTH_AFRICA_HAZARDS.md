@@ -24,7 +24,7 @@ SAWS publishes many CAP files, and a new file does not say plainly which older w
 
 - Files from one office and one hazard form an **issue**. A gap of more than 60 minutes between files starts a new issue. Files within one issue never replace each other.
 - An earlier warning stops showing for an area only when a **later issue** has a warning for the **same area**, with an **overlapping time window**, that is itself still shown (not expired and not itself replaced).
-- A **Cancel** always replaces and never shows.
+- A **Cancel** never shows. A Cancel in the **same issue** as its warning replaces nothing; only a Cancel in a **later issue** replaces, whatever its own expiry and even if it is itself superseded.
 - Expired warnings drop.
 
 **Known cost:** SAWS may drop a warning without re-issuing it. On 24 November 2026 the KZN issue of 23 November had Level 2 for 38 areas, while the 24 November issue had only Level 4 for 10. The layer then keeps showing the older warning, labelled with its issue time, until it expires.
@@ -36,7 +36,7 @@ SAWS publishes many CAP files, and a new file does not say plainly which older w
 **SAWS CAP feed:**
 
 - RSS: `https://caps.weathersa.co.za/Home/RssFeed`. Feed links are never followed.
-- CAP files: `https://www.weathersa.co.za/Documents/Warnings/<name>`, rebuilt from a name that matches `^([A-Z]{2,3})_CAP_([A-Za-z]+)_(\d{8})_(\d{6})\.xml$`. Only files from the last 4 days are fetched, at most 60 per refresh.
+- CAP files: `https://www.weathersa.co.za/Documents/Warnings/<name>`, rebuilt from a name that matches `^([A-Z]{2,3})_CAP_([A-Za-z]+)_(\d{8})_(\d{6})\.xml$`. At most 60 listed files from the last 4 days are considered; files already cached are not fetched again.
 - XML is read with hand-written regex; there is no new dependency.
 
 **EMSC FDSN event service:** `https://www.seismicportal.eu/fdsnws/event/1/query`, box latitude −35 to −22, longitude 16 to 33, the last 30 days, at most 500 events. A `204 No Content` answer means no events and is an empty layer, not an error.

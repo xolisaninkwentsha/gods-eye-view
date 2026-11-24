@@ -140,6 +140,8 @@ test('parseCapAlert skips a bad polygon but keeps the others', () => {
     '-28.0,32.0 -28.1,32.1',
     '-28.0,32.0 NaN,32.1 -28.2,32.2 -28.0,32.0',
     '95,32.0 -28.1,32.1 -28.2,32.2 95,32.0',
+    '-28.0, -28.1,32.1 -28.2,32.2 -28.0,',
+    '-28.0,32.0 -28.1,32.1 ,32.2 -28.0,32.0',
   ]) {
     const cap = parseCapAlert(alert(info({ areas: area('Bad', bad) + good })));
     assert.deepEqual(

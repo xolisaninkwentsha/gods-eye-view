@@ -19,6 +19,12 @@ const CAP_CAP = 2 * MIB;
 const TIMEOUT_MS = 20_000;
 const HEADERS = { 'User-Agent': 'GodsEyeView (sa-weather)' };
 
+/** A log label that never carries a body: a string code, else the error name. */
+const errorLabel = (error) =>
+  typeof error?.code === 'string' ? error.code : error?.name || 'error';
+
+const failure = (code) => Object.assign(new Error(code), { code });
+
 /** Fixed-host, bounded South African Weather Service warning route. */
 export function saWeatherWarningsProxy({
   fetchImpl = (...args) => globalThis.fetch(...args),
@@ -54,16 +60,16 @@ export function saWeatherWarningsProxy({
       }
       capCache.set(entry.name, alert);
     } catch (error) {
-      log.warn(
-        '[sa-weather] cap skipped',
-        entry.name,
-        error?.code || error?.message,
-      );
+      log.warn('[sa-weather] cap skipped', entry.name, errorLabel(error));
     }
   }
 
   async function refresh() {
-    const feed = parseSawsFeed(await upstreamText(SAWS_RSS_URL, RSS_CAP));
+    const rssText = await upstreamText(SAWS_RSS_URL, RSS_CAP);
+    // A feed that stops reading is a failure, never "no warnings".
+    if (!/<item[\s>]/i.test(rssText)) throw failure('saws_feed_empty');
+    const feed = parseSawsFeed(rssText);
+    if (!feed.length) throw failure('saws_feed_unrecognised');
     const candidates = recentWarningFiles(feed, now()).sort((a, b) =>
       a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
     );
@@ -85,7 +91,12 @@ export function saWeatherWarningsProxy({
         hazard: e.hazard,
         alert: capCache.get(e.name),
       }));
-    if (candidates.length && !files.length) throw new Error('no_cap_readable');
+    if (candidates.length && !files.length) throw failure('no_cap_readable');
+    if (
+      candidates.length &&
+      files.every((f) => !f.alert.infos.length && f.alert.msgType !== 'Cancel')
+    )
+      throw failure('saws_cap_unusable');
     return { fetchedAt: now(), files, savedAt: now() };
   }
 
@@ -141,7 +152,7 @@ export function saWeatherWarningsProxy({
       json(200, body, stale);
     } catch (error) {
       if (error.status !== 429)
-        log.warn('[sa-weather] refresh failed', error?.code || error?.message);
+        log.warn('[sa-weather] refresh failed', errorLabel(error));
       json(error.status === 429 ? 429 : 502, {
         error: 'sa_weather_unavailable',
       });

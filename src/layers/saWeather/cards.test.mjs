@@ -83,6 +83,13 @@ test('a null level shows the alert text', () => {
   assert.equal(card.accent, '#9aa4ad');
 });
 
+test('a null level with no alert text shows just the event', () => {
+  const card = buildSaWeatherCard(
+    area([{ ...base, level: null, band: null, levelText: '' }]),
+  );
+  assert.equal(card.details[0], 'Disruptive Rain');
+});
+
 test('long text is cut', () => {
   const card = buildSaWeatherCard(
     area([

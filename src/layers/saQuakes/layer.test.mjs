@@ -94,6 +94,7 @@ test('draws a dot per event, newest last, coloured by age', async () => {
   );
   assert.match(h.dots().spec.id, /^sa-earthquakes:\d+:dots$/);
   assert.equal(h.dots().spec.clampTo, 'both');
+  assert.equal(h.dots().spec.horizonCull, true);
   const newest = h.dots().items.get('sa-quake:N');
   assert.ok(Math.abs(newest.color[0] - red) < 1e-9, 'newest is red');
   assert.equal(newest.pixelSize, 6 + 3 * 2.5);

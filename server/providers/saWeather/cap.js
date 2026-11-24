@@ -95,9 +95,12 @@ export function parseSawsFeed(xml) {
 function parsePolygon(text) {
   const ring = [];
   for (const pair of text.split(/\s+/).filter(Boolean)) {
-    const [lat, lon, ...rest] = pair.split(',').map(Number);
+    const parts = pair.split(',');
+    // Number('') is 0, so an empty coordinate would become a vertex on the equator or meridian.
+    if (parts.length !== 2 || parts.some((part) => part.trim() === ''))
+      return null;
+    const [lat, lon] = parts.map(Number);
     if (
-      rest.length ||
       !Number.isFinite(lat) ||
       !Number.isFinite(lon) ||
       Math.abs(lat) > 90 ||

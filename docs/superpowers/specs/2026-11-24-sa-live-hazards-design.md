@@ -94,7 +94,7 @@ SAWS sends no `references`, so the app must infer which warning replaces which. 
 3. **Never replace.** Rejected. It shows yesterday's GP warnings beside today's re-issue for the same areas.
 4. **Replace per area, by issue (chosen).**
    - Files from one office and hazard form *issues*: a gap of more than 60 minutes between consecutive files starts a new issue. Files in one issue never replace each other.
-   - An earlier warning stops showing for an area only when a later issue warns for the same `areaDesc` with an overlapping time window. Only a later warning that is itself shown (unexpired and not replaced) replaces, so an expired or superseded warning never hides an earlier one; a Cancel always replaces.
+   - An earlier warning stops showing for an area only when a later issue warns for the same `areaDesc` with an overlapping time window. Only a later warning that is itself shown (unexpired and not replaced) replaces, so an expired or superseded warning never hides an earlier one. A Cancel in the same issue as its warning replaces nothing; a Cancel in a later issue replaces, whatever its own expiry and even if it is itself superseded.
    - In the replay this kept every warning that was in force. At 23 Nov 12:00, the 14 GP areas upgraded to Level 4 showed Level 4, and the other 22 kept Level 2.
    - **Cost if wrong.** SAWS may drop a warning without re-issuing it. In KZN on 24 Nov, the 23 Nov issue had Level 2 for 38 areas and the 24 Nov issue only Level 4 for 10. The layer then shows the old Level 2 until it expires that night. Every card block says when it was issued, so an older warning reads as older.
 

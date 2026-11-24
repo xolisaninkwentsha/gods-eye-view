@@ -244,8 +244,8 @@ Failures:
       1. `t('{band} · Level {level} · {event}')`, where band is `t('Yellow')`, `t('Orange')` or `t('Red')`; if the level is null, `'{levelText} · {event}'`.
       2. `formatSastRange(onsetMs ?? sentMs, expiresMs)`.
       3. `t('Issued {time}', {time: formatSastTime(sentMs)})`.
-      4. The description, cut to 200 characters.
-      5. The instruction, cut to 160 characters, when present.
+      4. The first impact line of the description, cut to 90 characters.
+      5. The first sentence of the instruction, cut to 90 characters, when present.
     - Last line: `t('Source: South African Weather Service')`.
 
 - [ ] **Step 1: Write the failing tests.**
@@ -293,7 +293,7 @@ Failures:
     - Before drawing, each update drops warnings with `expiresMs <= now()`, and drops areas left empty.
     - Items are pushed yellow, then orange, then red, so red is drawn last.
     - If the selected area has gone, its card is cleared.
-    - `getRowControls()`: the legend is the three bands with counts. Its first item's blurb is `t('SAWS impact-based warnings. Colour is the impact, the number the likelihood. For decisions, check weathersa.co.za.')`. When no area is drawn, it is preceded by `{label: t('No warnings in force'), color: '#9aa4ad', count: 0}`.
+    - `getRowControls()`: the legend is the three bands with counts. Its first item's blurb is `t('SAWS impact-based warnings. Colour is the impact, the number the likelihood. For decisions, check weathersa.co.za.')`. When no area is drawn, it is preceded by `{label: t('No warnings in force'), color: '#9aa4ad', count: null}`.
     - `getAnalystRecords()` gives `{id, name, band, warnings: <count>, events: <unique event names joined by ', '>, lat, lon}`.
 
 - [ ] **Step 1: Write `layer.test.mjs`**, copying the setup of `src/layers/saElections/layer.test.mjs` (`bindFakeDraw`, `fakeInputUnderLabel`). Tests:
@@ -386,8 +386,8 @@ Failures:
     - accent = the age band's accent.
   - `createSaQuakesLayer({source, overlayHost, picking, inputFor, now = () => Date.now()})`.
     - `id: 'sa-earthquakes'`, `name: 'SA earthquakes (30 days)'`, `icon: '〰️'`, `source: 'EMSC'`, `updateInterval: 600000`.
-    - One `draw.points` set `sa-earthquakes:<n>:dots` with `clampTo: 'both'`.
-    - Each item is `{id: 'sa-quake:' + stableId, pos: fromDegrees(lon, lat), pixelSize: saQuakeDotPx(mag), color: <age colour>, outlineColor: [1, 1, 1, 0.9], outlineWidth: 1}`, ordered oldest first so the newest is drawn on top.
+    - One `draw.points` set `sa-earthquakes:<n>:dots` with `clampTo: 'both'` and `horizonCull: true`.
+    - Each item is `{id: 'sa-quake:' + stableId, pos: fromDegrees(lon, lat), height: 'clampGround', disableDepthTest: Number.POSITIVE_INFINITY, pixelSize: saQuakeDotPx(mag), color: <age colour>, outlineColor: [1, 1, 1, 0.9], outlineWidth: 1}`, ordered oldest first so the newest is drawn on top.
     - The click card copies the weather layer's handling.
     - The legend is the three age bands, labelled `t('Last 24 hours')`, `t('1 to 7 days ago')` and `t('7 to 30 days ago')`, with counts. The first item's blurb is `t('Events recorded by the South African seismograph network (SASN), via EMSC. Includes mine tremors, which are not labelled separately. Depth is not measured, so it is not shown.')`.
     - `getAnalystRecords` gives `{id, magnitude, timeMs, region, lat, lon}`.

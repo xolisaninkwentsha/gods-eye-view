@@ -88,16 +88,17 @@ export function currentWarningAreas(files, nowMs) {
           const w = windowOf(info, f.alert.sentMs);
           for (const area of info.areas) {
             if (isCancel) {
+              if (!area.desc) continue;
               added.push({ desc: area.desc, w });
               continue;
             }
             const replaced = replacers.some(
-              (r) => r.desc === area.desc && overlaps(w, r.w),
+              (r) => area.desc && r.desc === area.desc && overlaps(w, r.w),
             );
             if (replaced) continue;
             if (!isExpired(info, nowMs)) {
               pairs.push({ file: f, info, area });
-              added.push({ desc: area.desc, w });
+              if (area.desc) added.push({ desc: area.desc, w });
             }
           }
         }

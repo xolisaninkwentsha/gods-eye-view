@@ -184,11 +184,109 @@ test('a feed whose files all fail answers 502', async () => {
   assert.equal((await get()).status, 502);
 });
 
-test('an empty feed is an empty layer, not an error', async () => {
-  const { get } = setup({ routes: { [RSS_URL]: reply(rss()) } });
+test('a feed with only old files is a quiet layer, not an error', async () => {
+  const old = 'GP_CAP_DamagingWinds_20260101_085823.xml';
+  const { get } = setup({ routes: { [RSS_URL]: reply(rss(BASE + old)) } });
   const res = await get();
   assert.equal(res.status, 200);
   assert.deepEqual(res.body.areas, []);
+  assert.equal(res.body.stale, undefined);
+});
+
+const NO_POLYGON = `<?xml version="1.0"?><alert xmlns="urn:oasis:names:tc:emergency:cap:1.2"><identifier>i</identifier><sent>2026-11-24T08:56:52+02:00</sent><status>Actual</status><msgType>Alert</msgType><info><event>Damaging Winds</event><expires>2026-11-24T22:59:59+02:00</expires><area><areaDesc>Zone A</areaDesc><geocode><valueName>x</valueName><value>1</value></geocode></area></info></alert>`;
+
+// After a good snapshot, a feed that no longer reads must serve it as stale.
+async function staleAfterBreak(breakRoutes) {
+  const routes = {
+    [RSS_URL]: reply(rss(BASE + NAME_A)),
+    [BASE + NAME_A]: reply(cap('Zone A', 4)),
+  };
+  const ctx = setup({ routes });
+  const first = await ctx.get();
+  assert.equal(first.body.areas.length, 1);
+  Object.assign(routes, breakRoutes);
+  ctx.clock.t += RSS_TTL_MS + 1;
+  const second = await ctx.get();
+  assert.equal(second.status, 200);
+  assert.equal(second.body.stale, true);
+  assert.deepEqual(second.body.areas, first.body.areas);
+  return ctx;
+}
+
+test('an RSS with no items serves the last snapshot as stale', async () => {
+  await staleAfterBreak({ [RSS_URL]: reply(rss()) });
+});
+
+test('an RSS whose items no longer parse serves the last snapshot as stale', async () => {
+  await staleAfterBreak({
+    [RSS_URL]: reply(rss(BASE + 'renamed_format.xml')),
+  });
+});
+
+test('CAP files with no usable polygon serve the last snapshot as stale', async () => {
+  await staleAfterBreak({
+    [RSS_URL]: reply(rss(BASE + NAME_B)),
+    [BASE + NAME_B]: reply(NO_POLYGON),
+  });
+});
+
+test('each feed failure has its own log code', async () => {
+  const cases = [
+    ['saws_feed_empty', { [RSS_URL]: reply(rss()) }],
+    [
+      'saws_feed_unrecognised',
+      { [RSS_URL]: reply(rss(BASE + 'renamed_format.xml')) },
+    ],
+    [
+      'saws_cap_unusable',
+      {
+        [RSS_URL]: reply(rss(BASE + NAME_B)),
+        [BASE + NAME_B]: reply(NO_POLYGON),
+      },
+    ],
+  ];
+  for (const [code, routes] of cases) {
+    const { get, logs } = setup({ routes });
+    assert.equal((await get()).status, 502, code);
+    assert.equal(logs.at(-1)[1], code);
+  }
+});
+
+test('an unrecognised feed with no snapshot answers 502', async () => {
+  const { get } = setup({
+    routes: { [RSS_URL]: reply(rss(BASE + 'renamed_format.xml')) },
+  });
+  const res = await get();
+  assert.equal(res.status, 502);
+  assert.deepEqual(res.body, { error: 'sa_weather_unavailable' });
+});
+
+test('a Cancel file with no area is a usable file', async () => {
+  const cancel = `<?xml version="1.0"?><alert xmlns="urn:oasis:names:tc:emergency:cap:1.2"><identifier>i</identifier><sent>2026-11-24T08:56:52+02:00</sent><status>Actual</status><msgType>Cancel</msgType></alert>`;
+  const { get } = setup({
+    routes: {
+      [RSS_URL]: reply(rss(BASE + NAME_A)),
+      [BASE + NAME_A]: reply(cancel),
+    },
+  });
+  const res = await get();
+  assert.equal(res.status, 200);
+  assert.deepEqual(res.body.areas, []);
+});
+
+test('logs carry the code or name, never a message body', async () => {
+  const { logs, get } = setup({
+    routes: {
+      [RSS_URL]: reply(rss(BASE + NAME_A)),
+      [BASE + NAME_A]: () => {
+        throw new SyntaxError('Unexpected token <secret body>');
+      },
+    },
+  });
+  await get();
+  const text = JSON.stringify(logs);
+  assert.ok(!text.includes('secret body'), text);
+  assert.ok(logs[0].includes('SyntaxError'));
 });
 
 test('unknown routes answer 404 and other methods 405', async () => {

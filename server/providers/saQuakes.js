@@ -6,6 +6,10 @@ import {
   SA_QUAKE_WINDOW_MS,
 } from '../../src/layers/saQuakes/records.js';
 
+/** A log label that never carries a body: a string code, else the error name. */
+const errorLabel = (error) =>
+  typeof error?.code === 'string' ? error.code : error?.name || 'error';
+
 const EMSC_URL = 'https://www.seismicportal.eu/fdsnws/event/1/query?';
 const TTL_MS = 600_000;
 /** Longest a failed refresh keeps serving the last snapshot, marked stale. */
@@ -119,7 +123,7 @@ export function saQuakesProxy({
       );
     } catch (error) {
       if (error.status !== 429)
-        log.warn('[sa-quakes] refresh failed', error?.code || error?.message);
+        log.warn('[sa-quakes] refresh failed', errorLabel(error));
       json(error.status === 429 ? 429 : 502, {
         error: 'sa_earthquakes_unavailable',
       });

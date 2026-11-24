@@ -146,6 +146,7 @@ export function createSaQuakesLayer({
       _dots = draw.points({
         id: `${SA_QUAKES_SET_PREFIX}:${++instances}:dots`,
         clampTo: 'both',
+        horizonCull: true,
         show: false,
       });
       _setIds = new Set([_dots.id]);

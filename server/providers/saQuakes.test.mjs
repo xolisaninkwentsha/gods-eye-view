@@ -163,6 +163,15 @@ test('502 without a snapshot', async () => {
   assert.equal(logs.length, 1);
 });
 
+test('a malformed body logs the error name, never its message', async () => {
+  const { get, logs } = setup({
+    respond: () => new Response('{"secret": body', { status: 200 }),
+  });
+  assert.equal((await get()).status, 502);
+  const text = JSON.stringify(logs);
+  assert.ok(!text.includes('secret'), text);
+});
+
 test('a malformed body answers 502', async () => {
   const { get } = setup({ respond: () => new Response('{"a":1}') });
   assert.equal((await get()).status, 502);

@@ -408,3 +408,25 @@ test('the issue gap is measured from the previous file, not the first', () => {
     [4, 3, 2],
   );
 });
+
+test('areas with an empty name never replace or are replaced by each other', () => {
+  const blank = (k) => ({ ...AREAS[k], desc: '' });
+  const g = (sent, level, key) =>
+    file('GP', 'SevereThunderstorms', sent, [
+      {
+        ...info(
+          level,
+          '2026-11-24T00:00:00+02:00',
+          '2026-11-24T23:59:00+02:00',
+          [],
+        ),
+        areas: [blank(key)],
+      },
+    ]);
+  const files = [
+    g('2026-11-23T06:00:00+02:00', 2, 'X'),
+    g('2026-11-24T06:00:00+02:00', 4, 'Y'),
+  ];
+  const areas = currentWarningAreas(files, t('2026-11-24T10:00:00+02:00'));
+  assert.deepEqual(areas.map((a) => a.warnings[0].level).sort(), [2, 4]);
+});
