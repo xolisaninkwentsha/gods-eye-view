@@ -156,6 +156,10 @@ export function createSaDistrictsLayer({
       _lines = draw.lines({
         id: `${prefix}:lines`,
         clampTo: 'both',
+        // Over the council and ward sets (default 0) whichever layer drew
+        // first: under them the outlines vanish and their clicks open
+        // council cards.
+        groundOrder: 1,
         show: false,
       });
       _viewer = viewer;

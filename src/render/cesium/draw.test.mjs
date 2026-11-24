@@ -1881,6 +1881,136 @@ test('reordering by drawOrder leaves the other primitives where they are', () =>
   for (const set of [a, b, c]) set.dispose();
 });
 
+/** A draped line and a clamped polygon over the same ground, for groundOrder. */
+const groundLine = (id) => ({
+  id,
+  positions: [
+    { lon: 28, lat: -26 },
+    { lon: 28.1, lat: -26.1 },
+  ],
+  widthPx: 3,
+  mode: 'draped',
+  style: { kind: 'solid', color: '#eb5757' },
+});
+const groundFill = (id) => ({
+  id,
+  geometry: {
+    kind: 'polygon',
+    rings: [
+      [
+        { lon: 28, lat: -26 },
+        { lon: 28.1, lat: -26 },
+        { lon: 28.1, lat: -26.1 },
+      ],
+    ],
+  },
+  fill: [1, 0, 0, 0.5],
+  height: 'clampGround',
+});
+
+/** The scene's primitives by set id, others by the name given them. */
+function slotNames(scene, others = new Map()) {
+  const out = [];
+  for (let i = 0; i < scene.primitives.length; i++) {
+    const p = scene.primitives.get(i);
+    out.push(others.get(p) ?? p.drawSetId);
+  }
+  return out;
+}
+
+for (const districtsFirst of [true, false]) {
+  test(`a higher groundOrder draws its ground over the rest, drawn ${districtsFirst ? 'first' : 'last'}`, () => {
+    const scene = fakeScene();
+    scene.primitives = new Cesium.PrimitiveCollection();
+    const { draw } = drawOver(scene);
+    const below = scene.primitives.add(new Cesium.PrimitiveCollection());
+    const others = new Map([[below, 'below']]);
+    const districts = draw.lines({
+      id: 'districts',
+      clampTo: 'both',
+      groundOrder: 1,
+    });
+    const fills = draw.shapes({ id: 'fills', clampTo: 'both' });
+    const lines = draw.lines({ id: 'lines', clampTo: 'both' });
+    const drawDistricts = () => districts.set([groundLine('d')]);
+    const drawCouncils = () => {
+      fills.set([groundFill('c')]);
+      lines.set([groundLine('c')]);
+    };
+    if (districtsFirst) drawDistricts();
+    drawCouncils();
+    if (!districtsFirst) drawDistricts();
+    // Ground primitives paint in the order the scene updates them: last on top.
+    assert.deepEqual(slotNames(scene, others), [
+      'below',
+      'fills',
+      'lines',
+      'districts',
+    ]);
+    const host = scene.primitives.get(3);
+    let ground = 0;
+    for (let i = 0; i < host.length; i++)
+      if (host.get(i) instanceof Cesium.GroundPolylinePrimitive) ground++;
+    assert.equal(ground, 1, 'the districts draw a ground polyline');
+    // Rebuilds keep every set where it is.
+    drawDistricts();
+    drawCouncils();
+    assert.deepEqual(slotNames(scene, others), [
+      'below',
+      'fills',
+      'lines',
+      'districts',
+    ]);
+    // Changed live: a council set raised above the districts.
+    lines.setOptions({ groundOrder: 2 });
+    assert.deepEqual(slotNames(scene, others), [
+      'below',
+      'fills',
+      'districts',
+      'lines',
+    ]);
+    for (const set of [districts, fills, lines]) set.dispose();
+  });
+}
+
+test('groundOrder moves only its own sets: the rest keep the order they were drawn in', () => {
+  const scene = fakeScene();
+  scene.primitives = new Cesium.PrimitiveCollection();
+  const { draw } = drawOver(scene);
+  const a = draw.lines({ id: 'A' });
+  const b = draw.shapes({ id: 'B' });
+  // Drawn in the other order from the one they were made in.
+  b.set([groundFill('b')]);
+  const between = scene.primitives.add(new Cesium.PrimitiveCollection());
+  const others = new Map([[between, 'between']]);
+  a.set([groundLine('a')]);
+  const top = draw.lines({ id: 'top', groundOrder: 1 });
+  top.set([groundLine('t')]);
+  assert.deepEqual(slotNames(scene, others), ['B', 'between', 'A', 'top']);
+  const late = draw.shapes({ id: 'late' });
+  late.set([groundFill('l')]);
+  assert.deepEqual(
+    slotNames(scene, others),
+    ['B', 'between', 'A', 'late', 'top'],
+    'a set drawn later still goes under it',
+  );
+  // With a draw order in play, the others stack as drawOrder stacks them,
+  // and a ground order ranks within its draw order.
+  const sprite = draw.points({ id: 'sprite', drawOrder: -1 });
+  sprite.set([
+    { id: 's', pos: { lon: 0, lat: 0 }, pixelSize: 4, color: '#fff' },
+  ]);
+  assert.deepEqual(slotNames(scene, others), [
+    'A',
+    'between',
+    'B',
+    'late',
+    'top',
+    'sprite',
+  ]);
+  for (const set of [a, b, top, late, sprite]) set.dispose();
+});
+
 test('sprite layers stack flights on top, all under a set at the default order', () => {
   const scene = fakeScene();
   scene.primitives = new Cesium.PrimitiveCollection();

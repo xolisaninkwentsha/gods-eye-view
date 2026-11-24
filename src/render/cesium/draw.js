@@ -939,6 +939,7 @@ export function createCesiumDraw({
         const blend = spec.blend;
         const pickable = spec.pickable !== false;
         const drawOrder = spec.drawOrder ?? 0;
+        const groundOrder = spec.groundOrder ?? 0;
         Object.assign(spec, options);
         // What clamped items clamp to, how points blend, and whether ground
         // primitives pick, are built into them. Models clamp nothing, only
@@ -970,6 +971,7 @@ export function createCesiumDraw({
         // No longer culled: what the cull hid comes back.
         if (culled && !spec.horizonCull) uncull(record);
         if ((spec.drawOrder ?? 0) !== drawOrder) orderHosts(true);
+        else if ((spec.groundOrder ?? 0) !== groundOrder) orderHosts();
         requestRender();
       },
       size: () => items.size,
@@ -1252,14 +1254,26 @@ export function createCesiumDraw({
    * nor while the hosts are already in order.
    * Translucent ones blend order-independently, whatever their order, and
    * items in different view frustums stack nearer frustum first.
+   *
+   * `SetSpec.groundOrder`: of one draw order, a higher ground order goes
+   * later. Ground primitives (draped lines, clamped fills) all draw in the
+   * terrain classification pass, in the order the scene's primitives update
+   * and push their commands (`PrimitiveCollection.update`,
+   * `View.createPotentiallyVisibleSet`, `Scene` `performPass`), so the later
+   * paints over the earlier and is picked there. With no draw order set,
+   * sets of one ground order keep the slots they hold: only those with a
+   * ground order move.
    * @param {boolean} [changed]
    */
   function orderHosts(changed = false) {
     if (!live()) return;
-    let ordered = changed;
-    for (const record of sets.values())
-      if ((record.spec.drawOrder ?? 0) !== 0) ordered = true;
-    if (!ordered) return;
+    let byDraw = changed;
+    let byGround = false;
+    for (const record of sets.values()) {
+      if ((record.spec.drawOrder ?? 0) !== 0) byDraw = true;
+      if ((record.spec.groundOrder ?? 0) !== 0) byGround = true;
+    }
+    if (!byDraw && !byGround) return;
     const placed = [];
     for (const record of sets.values()) {
       if (!record.host || record.host.isDestroyed?.()) continue;
@@ -1267,10 +1281,13 @@ export function createCesiumDraw({
       if (slot >= 0) placed.push({ record, slot });
     }
     const slots = placed.map(({ slot }) => slot).sort((a, b) => a - b);
+    const drawOrder = ({ record }) => record.spec.drawOrder ?? 0;
+    const groundOrder = ({ record }) => record.spec.groundOrder ?? 0;
     const wanted = [...placed].sort(
       (a, b) =>
-        (b.record.spec.drawOrder ?? 0) - (a.record.spec.drawOrder ?? 0) ||
-        a.record.seq - b.record.seq,
+        drawOrder(b) - drawOrder(a) ||
+        groundOrder(a) - groundOrder(b) ||
+        (byDraw ? a.record.seq - b.record.seq : a.slot - b.slot),
     );
     if (wanted.every(({ slot }, i) => slot === slots[i])) return;
     // Each slot, lowest first, takes its host by trading places with the

@@ -203,6 +203,13 @@ optional:
   a lower one and is picked first; equal ones keep the order they were
   made in. The Cesium port stacks opaque icons and points by it;
   translucent ones blend order-independently there.
+- `SetSpec.groundOrder` stacks ground sets (draped lines, clamped shapes)
+  among sets of one `drawOrder`: a higher one draws over a lower one and is
+  picked first, whichever was made or drawn first; equal ones stack as they
+  would without it. It changes live. The Cesium port puts the set's
+  primitives later in the scene, as ground primitives paint in the order
+  they update; with no `drawOrder` set, only the sets with a ground order
+  move. The SA districts layer's outlines use it to stay above the councils.
 - A rectangle shape's `rotation` (radians counter-clockwise) turns it about
   its centre in longitude and latitude, as a KML ground overlay turns, and
   its image fill turns with it. The Cesium port drapes image fills too, each

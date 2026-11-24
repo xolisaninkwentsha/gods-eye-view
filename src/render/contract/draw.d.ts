@@ -119,6 +119,13 @@ export interface SetSpec {
    * name them topmost first. Default 0.
    */
   drawOrder?: number;
+  /**
+   * Draped lines and clamped shapes: among sets of one `drawOrder`, a higher
+   * one draws its ground items over a lower one's, and is picked first where
+   * they overlap, whatever order the sets were made or first drawn in; equal
+   * ones stack as they would without it. Default 0. Changes live.
+   */
+  groundOrder?: number;
   /** `false`: the set never takes part in picks. */
   pickable?: boolean;
   /**

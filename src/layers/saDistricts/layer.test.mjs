@@ -127,6 +127,9 @@ test('outlines are red for listed districts and grey for the rest; fills are not
   }
   assert.equal(h.fills().spec.pickable, false, 'the fills set is unpickable');
   assert.notEqual(h.lines().spec.pickable, false, 'the lines set is pickable');
+  // Above the council and ward sets (default 0), whichever layer drew first.
+  assert.ok(h.lines().spec.groundOrder > 0, 'the outlines draw over councils');
+  assert.equal(h.fills().spec.groundOrder ?? 0, 0, 'the fills stay under');
   assert.equal(h.layer.getStats().count, 2);
   assert.equal(h.layer.id, 'sa-districts-2026');
 });
