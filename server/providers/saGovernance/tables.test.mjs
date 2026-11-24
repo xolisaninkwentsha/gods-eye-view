@@ -113,7 +113,9 @@ test('the tables are frozen', () => {
   assert.ok(Object.isFrozen(INTERVENTIONS));
   assert.ok(Object.isFrozen(INTERVENTIONS.rows[0]));
   assert.ok(Object.isFrozen(METROS.rows));
-  assert.ok(Object.isFrozen(METROS.rows[0].coalition ?? []));
+  // Any elected row, wherever it sits: only those carry a coalition.
+  const elected = METROS.rows.find((row) => row.status === 'elected');
+  assert.ok(Object.isFrozen(elected.coalition));
 });
 
 // Literal rows for the bad-row checks, so no edit of the committed tables

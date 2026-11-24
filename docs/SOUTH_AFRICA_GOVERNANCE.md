@@ -93,7 +93,7 @@ An object with `asOf` (ISO month, `YYYY-MM`), `source` (text), `sourceUrl` (`htt
 
 When CoGTA publishes a newer list:
 
-1. Add a new file named for its month, for example `server/providers/saGovernance/interventions-2027-02.json`, in the format above, with the new `asOf`, `source`, `sourceUrl` and rows.
+1. Add a new file named for its month, for example `server/providers/saGovernance/interventions-2027-02.json`, in the format above, with the new `asOf`, `source`, `sourceUrl` and rows. The old file can then be deleted: nothing else reads it.
 2. In `server/providers/saGovernance/tables.js`, change the file name in the `load('interventions-2026-08.json')` call to the new file.
 3. In `server/providers/saGovernance/tables.test.mjs`, update `EXPECTED_CODES` to the new list’s codes, in the file’s order, and the checks next to it that pin this list: its `asOf` month, its row count and its district (`DC…`) codes.
 4. In `DATA_SOURCES.md`, update the CoGTA section 139 row: its count, its “as at” date and the file name. The figures this doc quotes for the list (in “What the views show”, Sources and Known limits) change the same way.
