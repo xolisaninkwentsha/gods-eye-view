@@ -125,6 +125,8 @@ test('outlines are red for listed districts and grey for the rest; fills are not
     assert.equal(fill.fill[3], 0.03);
     assert.equal(fill.geometry.kind, 'polygon');
   }
+  assert.equal(h.fills().spec.pickable, false, 'the fills set is unpickable');
+  assert.notEqual(h.lines().spec.pickable, false, 'the lines set is pickable');
   assert.equal(h.layer.getStats().count, 2);
   assert.equal(h.layer.id, 'sa-districts-2026');
 });
@@ -163,8 +165,10 @@ test('governance failing draws every outline grey and the card says the audit is
   const { legend } = h.layer.getRowControls();
   assert.equal(legend.length, 1);
   assert.equal(legend[0].label, 'District');
-  assert.match(legend[0].blurb, /^Intervention list unavailable/);
-  assert.match(legend[0].blurb, /Click a district outline for its card\.$/);
+  assert.equal(
+    legend[0].blurb,
+    'Intervention list unavailable\nClick a district outline for its card.',
+  );
 });
 
 test('districts failing fails the update and keeps the last drawn set', async (t) => {

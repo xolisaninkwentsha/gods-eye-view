@@ -149,6 +149,8 @@ export function createSaDistrictsLayer({
       _fills = draw.shapes({
         id: `${prefix}:fills`,
         clampTo: 'both',
+        // The set flag is what Cesium honours; the per-item flag stays too.
+        pickable: false,
         show: false,
       });
       _lines = draw.lines({
@@ -321,7 +323,7 @@ export function createSaDistrictsLayer({
               label: t('District'),
               color: SA_DISTRICT_COLOR,
               count: _count,
-              blurb: `${t('Intervention list unavailable')} ${hint}`,
+              blurb: [t('Intervention list unavailable'), hint].join('\n'),
             },
           ]
         : [
