@@ -3,6 +3,7 @@ import { drawOf } from '../../render/rendererOf.js';
 import { cssColor } from '../../render/color.js';
 import { inputFor as defaultInputFor } from '../../input/dispatcher.js';
 import { msg, t } from '../../i18n/index.js';
+import { earthquakeMagnitudeTitle } from '../earthquakes/model.js';
 import {
   SA_QUAKE_AGE_ACCENTS,
   SA_QUAKES_OVERLAY_SOURCE_ID,
@@ -221,6 +222,8 @@ export function createSaQuakesLayer({
           items.push({
             id: `${PICK_PREFIX}${row.stableId}`,
             pos: fromDegrees(row.lon, row.lat),
+            height: 'clampGround',
+            disableDepthTest: Number.POSITIVE_INFINITY,
             pixelSize: saQuakeDotPx(row.mag),
             color: cssColor(SA_QUAKE_AGE_ACCENTS[band]),
             outlineColor: OUTLINE,
@@ -280,6 +283,9 @@ export function createSaQuakesLayer({
         if (result.length >= limit) break;
         result.push({
           id: row.stableId,
+          name: row.region
+            ? `${earthquakeMagnitudeTitle(row.mag)} · ${row.region}`
+            : earthquakeMagnitudeTitle(row.mag),
           magnitude: row.mag,
           timeMs: row.timeMs,
           region: row.region,

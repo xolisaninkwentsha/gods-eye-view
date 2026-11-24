@@ -99,6 +99,8 @@ test('draws a dot per event, newest last, coloured by age', async () => {
   assert.equal(newest.pixelSize, 6 + 3 * 2.5);
   for (const axis of ['x', 'y', 'z'])
     assert.ok(Number.isFinite(newest.pos?.[axis]), `pos.${axis} is finite`);
+  assert.equal(newest.height, 'clampGround');
+  assert.equal(newest.disableDepthTest, Number.POSITIVE_INFINITY);
   assert.equal('position' in newest, false, 'the contract field is pos');
   assert.deepEqual(newest.outlineColor, [1, 1, 1, 0.9]);
   assert.equal(newest.outlineWidth, 1);
@@ -186,11 +188,13 @@ test('the legend counts the age bands and analyst records list events', async ()
   );
   assert.match(legend[0].blurb, /seismograph network/);
   const [record] = h.layer.getAnalystRecords(1);
+  assert.equal(record.name, 'M2.6 · South Africa');
   assert.deepEqual(Object.keys(record).sort(), [
     'id',
     'lat',
     'lon',
     'magnitude',
+    'name',
     'region',
     'timeMs',
   ]);
