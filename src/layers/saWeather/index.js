@@ -299,8 +299,11 @@ export function createSaWeatherLayer({
         _lines.set(nextLines);
         _snapshotSignature = signature;
         // The selected area's warnings have all expired: its card goes.
-        if (_selectedId && !_rowById.has(_selectedId)) clearSelection();
-        else if (_selectedId) publishSelectedCard();
+        if (_selectedId && !_rowById.has(_selectedId)) {
+          // Only the card goes; the source stays visible for the next click.
+          _selectedId = null;
+          overlayHost?.clearSource(SA_WEATHER_OVERLAY_SOURCE_ID);
+        } else if (_selectedId) publishSelectedCard();
         _count = rows.length;
         _lastUpdate = updatedAt;
         _lastError = null;
@@ -384,7 +387,7 @@ export function createSaWeatherLayer({
         legend.unshift({
           label: t('No warnings in force'),
           color: NO_WARNINGS_COLOR,
-          count: 0,
+          count: null,
         });
       return { chips: [], legend };
     },

@@ -172,6 +172,24 @@ test("the selected area's card goes when its warnings expire", async () => {
   assert.ok(h.overlay.cleared >= 1);
 });
 
+test('cards still show for another area after the selected one expires', async () => {
+  const h = harness(
+    sourceOf([
+      area('A', 'red', NOW + HOUR),
+      area('B', 'yellow', NOW + 9 * HOUR),
+    ]),
+  );
+  await h.layer.update();
+  h.click('sa-weather:A:0');
+  h.setNow(NOW + 2 * HOUR);
+  await h.layer.update();
+  h.click('sa-weather:B:0');
+  const entries = h.overlay.entries.get('sa-weather-warnings');
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].id, 'sa-weather-card:B');
+  assert.equal(h.overlay.visible, true, 'the card source stays visible');
+});
+
 test('an unchanged snapshot does not redraw', async () => {
   const h = harness(sourceOf([area('A', 'red')]));
   await h.layer.update();
@@ -206,7 +224,7 @@ test('with no warnings the legend says so', async () => {
   assert.deepEqual(legend[0], {
     label: 'No warnings in force',
     color: '#9aa4ad',
-    count: 0,
+    count: null,
   });
   assert.deepEqual(
     legend.slice(1).map((r) => [r.label, r.count]),
