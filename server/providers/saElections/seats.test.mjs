@@ -147,9 +147,9 @@ const labelRow = (letter, n) => [
 ];
 const noPrTail = (extra) => [
   [null, null, 'Total Party Seats', 231, 100, 131],
-  [null, null, 'Independents', 0],
+  [null, null, 'Independents', null, '0', null, null],
   ...extra,
-  [null, null, 'Total Seats', 37, 36, 73],
+  [null, null, 'Total Seats', null, 37, 36, 73],
 ];
 
 test('parties with no PR list are read from between the totals and Total Seats', () => {
@@ -157,7 +157,9 @@ test('parties with no PR list are read from between the totals and Total Seats',
     ...quotaBlock,
     labelRow('D', 13),
     ...seatTable.slice(0, 5),
-    ...noPrTail([[null, null, 'UNITED DEMOCRATIC MOVEMENT **', '13']]),
+    ...noPrTail([
+      [null, null, 'UNITED DEMOCRATIC MOVEMENT **', null, '13', null, null],
+    ]),
   ];
   const got = parseSeatSheet(rows);
   assert.deepEqual(got.parties.slice(0, 3), expected.parties);
@@ -174,7 +176,7 @@ test('a no-PR-list party merges with a main-table row of the same name', () => {
   const rows = [
     ...quotaBlock,
     ...seatTable.slice(0, 5),
-    ...noPrTail([[null, null, 'DEMOCRATIC ALLIANCE *', 2]]),
+    ...noPrTail([[null, null, 'DEMOCRATIC ALLIANCE *', null, 2, null, null]]),
   ];
   const da = parseSeatSheet(rows).parties.find(
     (p) => p.party === 'DEMOCRATIC ALLIANCE',
@@ -192,7 +194,9 @@ test('the no-PR-list label must agree with the rows read', () => {
     ...quotaBlock,
     labelRow('D', n),
     ...seatTable.slice(0, 5),
-    ...noPrTail([[null, null, 'UNITED DEMOCRATIC MOVEMENT **', 13]]),
+    ...noPrTail([
+      [null, null, 'UNITED DEMOCRATIC MOVEMENT **', null, 13, null, null],
+    ]),
   ];
   assert.doesNotThrow(() => parseSeatSheet(rows(13)));
   assert.throws(() => parseSeatSheet(rows(12)), {
@@ -214,7 +218,9 @@ test('readSeatFile reads the no-PR-list layout over two sheets', () => {
   const sheet0 = [...quotaBlock, labelRow('D', 13)];
   const sheet1 = [
     ...seatTable.slice(0, 5),
-    ...noPrTail([[null, null, 'UNITED DEMOCRATIC MOVEMENT **', 13]]),
+    ...noPrTail([
+      [null, null, 'UNITED DEMOCRATIC MOVEMENT **', null, 13, null, null],
+    ]),
   ];
   const got = readSeatFile(buildXls([sheet0, sheet1]));
   assert.equal(got.parties.at(-1).party, 'UNITED DEMOCRATIC MOVEMENT');
@@ -236,7 +242,9 @@ test('a no-PR-list seat count must be a whole number within the council total', 
     const rows = [
       ...quotaBlock,
       ...seatTable.slice(0, 5),
-      ...noPrTail([[null, null, 'UNITED DEMOCRATIC MOVEMENT **', bad]]),
+      ...noPrTail([
+        [null, null, 'UNITED DEMOCRATIC MOVEMENT **', null, bad, null, null],
+      ]),
     ];
     assert.throws(() => parseSeatSheet(rows), {
       message: 'seat_sheet_unreadable',

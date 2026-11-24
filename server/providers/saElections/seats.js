@@ -92,7 +92,8 @@ export function parseSeatSheet(rows) {
         sawTotalSeats = true;
         break;
       }
-      const n = toNumber(row[totalCol]);
+      // These rows carry their count in the ward-seats column; the total column is empty.
+      const n = toNumber(row[wardCol]) ?? toNumber(row[totalCol]);
       if (name === 'Independents' || n === null || n === 0) continue;
       late.push([name, n]);
       continue;
