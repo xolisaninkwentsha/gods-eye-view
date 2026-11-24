@@ -1252,12 +1252,12 @@ test('boundaries are refreshed after a week, and a failed refresh keeps the last
     async () => (await request('/councils')).body.boundariesAsOf === clock.now,
     'refreshed',
   );
-  const saved = JSON.parse(
-    await fs.promises.readFile(
-      path.join(cacheDir, 'boundaries-councils.json'),
-      'utf8',
-    ),
-  );
+  // The answer changes first; the file is renamed into place after, so wait for it.
+  const file = path.join(cacheDir, 'boundaries-councils.json');
+  const saved = await until(async () => {
+    const value = JSON.parse(await fs.promises.readFile(file, 'utf8'));
+    return value.fetchedAt === clock.now && value;
+  }, 'refreshed file');
   assert.equal(saved.fetchedAt, clock.now);
 });
 
