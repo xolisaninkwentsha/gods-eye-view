@@ -34,6 +34,7 @@ import { shipwrecksProxy } from './shipwrecks.js';
 import { droneAirspaceProxy } from './droneAirspace.js';
 import { saElectionsProxy } from './saElections/index.js';
 import { saWeatherWarningsProxy } from './saWeather/index.js';
+import { saQuakesProxy } from './saQuakes.js';
 import { newsProxy } from './news.js';
 import { inaturalistProxy } from './inaturalist/observations.js';
 import { acartiaProxy } from './acartia.js';
@@ -96,6 +97,7 @@ function localProviderPlugins({
     droneAirspaceProxy(),
     saElectionsProxy(),
     saWeatherWarningsProxy(),
+    saQuakesProxy(),
     newsProxy(),
     inaturalistProxy(),
     acartiaProxy(),
