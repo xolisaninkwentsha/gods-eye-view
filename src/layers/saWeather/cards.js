@@ -6,8 +6,8 @@ import { saWeatherBandAccent, saWeatherBandRank } from './records.js';
 const SAST = 'Africa/Johannesburg';
 const SAST_OFFSET_MS = 2 * 3600 * 1000; // SAST has no daylight saving.
 const DAY_MS = 24 * 3600 * 1000;
-const DESCRIPTION_CAP = 200;
-const INSTRUCTION_CAP = 160;
+// Overlay cards do not wrap lines, so each text line stays short.
+const LINE_CAP = 90;
 
 const DAY_PART = Object.freeze({ weekday: 'short', timeZone: SAST });
 const DATE_NUMBER = Object.freeze({ day: 'numeric', timeZone: SAST });
@@ -39,8 +39,25 @@ export function formatSastRange(startMs, endMs) {
 }
 
 function cut(text, cap) {
-  const s = typeof text === 'string' ? text.trim() : '';
-  return s.length > cap ? `${s.slice(0, cap - 1)}…` : s;
+  return text.length > cap ? `${text.slice(0, cap - 1)}…` : text;
+}
+
+/** The first non-empty line of the description, without its bullet. */
+function firstLine(text) {
+  if (typeof text !== 'string') return '';
+  for (const line of text.split(/\r\n|\r|\n/)) {
+    const bare = line.trim().replace(/^[-•]\s+/, '').trim();
+    if (bare) return cut(bare, LINE_CAP);
+  }
+  return '';
+}
+
+/** The first sentence of the instruction, keeping its full stop. */
+function firstSentence(text) {
+  if (typeof text !== 'string') return '';
+  const flat = text.replace(/\s+/g, ' ').trim();
+  const end = flat.indexOf('. ');
+  return cut(end === -1 ? flat : flat.slice(0, end + 1), LINE_CAP);
 }
 
 function bandWord(band) {
@@ -85,9 +102,9 @@ export function buildSaWeatherCard(area) {
     );
     details.push(formatSastRange(w.onsetMs ?? w.sentMs, w.expiresMs));
     details.push(t('Issued {time}', { time: formatSastTime(w.sentMs) }));
-    const description = cut(w.description, DESCRIPTION_CAP);
+    const description = firstLine(w.description);
     if (description) details.push(description);
-    const instruction = cut(w.instruction, INSTRUCTION_CAP);
+    const instruction = firstSentence(w.instruction);
     if (instruction) details.push(instruction);
   }
   details.push(t('Source: South African Weather Service'));

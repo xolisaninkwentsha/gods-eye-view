@@ -83,10 +83,30 @@ test('long text is cut', () => {
       { ...base, description: 'd'.repeat(500), instruction: 'i'.repeat(300) },
     ]),
   );
-  assert.equal(card.details[3].length, 200);
+  assert.equal(card.details[3].length, 90);
   assert.ok(card.details[3].endsWith('…'));
-  assert.equal(card.details[4].length, 160);
+  assert.equal(card.details[4].length, 90);
   assert.ok(card.details[4].endsWith('…'));
+});
+
+test('a multi-bullet description shows only its first bullet', () => {
+  const card = buildSaWeatherCard(
+    area([{ ...base, description: '- A\n- B\n• C' }]),
+  );
+  assert.equal(card.details[3], 'A');
+  assert.ok(!card.details.some((d) => d.includes('B')));
+  const dotted = buildSaWeatherCard(
+    area([{ ...base, description: '\n\n  • First\nSecond' }]),
+  );
+  assert.equal(dotted.details[3], 'First');
+});
+
+test('a two-sentence instruction shows only the first sentence', () => {
+  const card = buildSaWeatherCard(
+    area([{ ...base, instruction: 'Stay indoors. Avoid rivers.' }]),
+  );
+  assert.equal(card.details[4], 'Stay indoors.');
+  assert.ok(!card.details.some((d) => d.includes('rivers')));
 });
 
 test('missing onset falls back to the issue time', () => {
