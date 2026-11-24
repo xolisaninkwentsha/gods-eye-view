@@ -126,6 +126,10 @@ export const DATA_CREDITS = [
     html: 'South African weather warnings: <a href="https://www.weathersa.co.za/" target="_blank" rel="noopener">South African Weather Service</a> CAP feed',
   },
   {
+    key: 'za-emsc',
+    html: 'SA earthquakes: <a href="https://www.seismicportal.eu/" target="_blank" rel="noopener">EMSC-CSEM SeismicPortal</a> (CC BY 4.0), recorded by the South African National Seismograph Network (Council for Geoscience)',
+  },
+  {
     key: 'opensky',
     html:
       'Flights: OpenSky Network — Schäfer et al., ' +

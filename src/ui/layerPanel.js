@@ -76,7 +76,12 @@ const PANEL_GROUPS = [
   },
   {
     label: msg('South Africa'),
-    ids: ['sa-councils-2026', 'sa-wards-2026', 'sa-weather-warnings'],
+    ids: [
+      'sa-councils-2026',
+      'sa-wards-2026',
+      'sa-weather-warnings',
+      'sa-earthquakes',
+    ],
   },
   {
     label: msg('Events'),

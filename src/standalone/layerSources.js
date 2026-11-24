@@ -26,6 +26,7 @@ import { createShipwrecksSource } from '../layers/shipwrecks/source.js';
 import { createMapillarySource } from '../layers/streetLevel/providers/mapillary/source.js';
 import { createSaElectionsSource } from '../layers/saElections/source.js';
 import { createSaWeatherSource } from '../layers/saWeather/source.js';
+import { createSaQuakesSource } from '../layers/saQuakes/source.js';
 import { createReferenceSources } from '../sources/reference.js';
 export { createReferenceSources as createStandaloneReferenceSources } from '../sources/reference.js';
 
@@ -75,6 +76,8 @@ export function createStandaloneLayerSources(
     'sa-elections': createSaElectionsSource(),
     // Same-origin /api/sa-weather-warnings, served by the local server.
     'sa-weather-warnings': createSaWeatherSource(),
+    // Same-origin /api/sa-earthquakes, served by the local server.
+    'sa-earthquakes': createSaQuakesSource(),
     wind: createWindSource(),
     weather: createWeatherSource(),
     cyclones: createCycloneSource(),

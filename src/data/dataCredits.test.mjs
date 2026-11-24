@@ -431,3 +431,10 @@ test('the South African weather credit names the Weather Service', () => {
   assert.match(credit.html, /South African Weather Service/);
   assert.match(credit.html, /https:\/\/www\.weathersa\.co\.za\//);
 });
+
+test('the South African earthquake credit names EMSC and the licence', () => {
+  const credit = DATA_CREDITS.find((entry) => entry.key === 'za-emsc');
+  assert.ok(credit, 'the SA earthquakes layer must be credited');
+  assert.match(credit.html, /EMSC-CSEM SeismicPortal/);
+  assert.match(credit.html, /CC BY 4\.0/);
+});
