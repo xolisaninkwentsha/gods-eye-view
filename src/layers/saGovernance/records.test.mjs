@@ -86,6 +86,19 @@ test('malformed rows are skipped, not fatal', () => {
   assert.deepEqual([...g.districtOf.keys()], ['KZN212']);
 });
 
+test('a known opinion needs no label; another opinion without one is dropped', () => {
+  const p = good();
+  p.audits.byCode.NOLABEL = { opinion: 'qualified' };
+  p.audits.byCode.BLANK = { opinion: 'disclaimer', label: '  ' };
+  p.audits.byCode.ODD = { opinion: 'other', label: 'Withdrawn' };
+  p.audits.byCode.ODDBLANK = { opinion: 'other', label: '' };
+  const { byCode } = normalizeGovernance(p).audits;
+  assert.equal(byCode.get('NOLABEL').opinion, 'qualified');
+  assert.equal(byCode.get('BLANK').opinion, 'disclaimer');
+  assert.equal(byCode.get('ODD').label, 'Withdrawn');
+  assert.equal(byCode.has('ODDBLANK'), false);
+});
+
 test('audits without a numeric year are dropped', () => {
   const p = good();
   p.audits.year = 'x';

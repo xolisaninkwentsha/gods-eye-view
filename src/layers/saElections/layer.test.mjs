@@ -669,6 +669,38 @@ test('the intervention legend counts listed and not listed', async () => {
   assert.match(legend[0].blurb, /Not listed does not mean no intervention/);
 });
 
+test('the intervention legend takes the date, size and districts from the list', async () => {
+  const listed = (since) => ({ since, type: 'Mandatory' });
+  const h = harness('councils', twoCouncils(), {
+    governanceSource: govSource(
+      gov({
+        interventionsAsOf: '2027-02',
+        interventions: new Map([
+          ['B', listed('2024')],
+          ['NW384', listed('2025')],
+          ['DC9', listed('2026')],
+          ['DC10', listed('2026')],
+        ]),
+      }),
+    ),
+  });
+  await h.layer.update();
+  await tick();
+  h.layer.setParams({ view: 'intervention' });
+  const { legend } = h.layer.getRowControls();
+  assert.deepEqual(
+    legend.map((l) => [l.label, l.count]),
+    [
+      ['Section 139 (CoGTA list, Feb 2027)', 1],
+      ['Not listed', 1],
+    ],
+  );
+  assert.equal(
+    legend[0].blurb,
+    "4 councils on CoGTA's list as at Feb 2027; 2 of them are districts, shown on the districts layer. Not listed does not mean no intervention.",
+  );
+});
+
 test('audit view with governance failed says unavailable, never silent grey', async (t) => {
   t.mock.method(console, 'warn', () => {});
   const h = harness('councils', twoCouncils(), {
@@ -784,6 +816,35 @@ test('audit view: governance failing then recovering fills the councils on the n
   assert.ok(fillOf(h, 'A'), 'A is filled once audits are in');
   assert.ok(near(fillOf(h, 'A').fill[1], 0x9e / 255));
 });
+
+for (const failure of [new Error('down'), null]) {
+  test(`a failed governance poll (${failure ? 'thrown' : 'empty'}) keeps the last good one`, async (t) => {
+    t.mock.method(console, 'warn', () => {});
+    let current = gov();
+    const source = {
+      getSnapshot: async () => {
+        if (current instanceof Error) throw current;
+        return current;
+      },
+      getDistricts: async () => null,
+    };
+    const h = harness('councils', twoCouncils(), { governanceSource: source });
+    h.layer.setParams({ view: 'audit' });
+    await h.layer.update();
+    await tick();
+    assert.ok(near(fillOf(h, 'A').fill[1], 0x9e / 255));
+    current = failure;
+    await h.layer.update();
+    await tick();
+    assert.ok(near(fillOf(h, 'A').fill[1], 0x9e / 255), 'still clean green');
+    assert.ok(near(fillOf(h, 'B').fill[0], 0xeb / 255), 'still disclaimer red');
+    assert.equal(h.layer.getRowControls().legend[0].label, 'Clean audit');
+    h.click('sa-councils:B:0');
+    const card = h.overlay.entries.get('sa-councils-2026')[0];
+    assert.ok(card.details.includes('Audit 2023/24: Disclaimer'));
+    assert.ok(!card.details.includes('Audit: unavailable'));
+  });
+}
 
 test('with governance failed no council is filled in the audit or section 139 view, but outlines stay', async (t) => {
   t.mock.method(console, 'warn', () => {});

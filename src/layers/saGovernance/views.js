@@ -95,7 +95,7 @@ export function formatSaDate(value) {
 }
 
 /** "2026-08" -> "Aug 2026"; anything else comes back unchanged. */
-function formatSaMonth(value) {
+export function formatSaMonth(value) {
   const ms =
     typeof value === 'string' && /^\d{4}-\d{2}$/.test(value)
       ? Date.parse(`${value}-01T00:00:00Z`)
@@ -112,9 +112,13 @@ function auditLine(code, gov) {
   if (!gov.audits) return t('Audit: unavailable');
   const year = auditYearLabel(gov.audits.year);
   const entry = gov.audits.byCode.get(code);
-  return entry
-    ? t('Audit {year}: {opinion}', { year, opinion: entry.label })
-    : t('Audit {year}: no data', { year });
+  if (!entry) return t('Audit {year}: no data', { year });
+  // A known opinion reads as its band, as the legend does, in the user's
+  // language; any other keeps Treasury's own label.
+  const band = BAND_BY_KEY.get(entry.opinion);
+  const opinion =
+    band && band !== NO_DATA_BAND ? t(band.label) : (entry.label ?? '');
+  return t('Audit {year}: {opinion}', { year, opinion });
 }
 
 function mayorLines(row) {

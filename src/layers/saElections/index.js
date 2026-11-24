@@ -21,6 +21,7 @@ import {
   SA_COUNCIL_VIEWS,
   auditBand,
   auditYearLabel,
+  formatSaMonth,
 } from '../saGovernance/views.js';
 export { createSaElectionsSource } from './source.js';
 export * from './records.js';
@@ -234,11 +235,14 @@ export function createSaElectionsLayer({
       if (_govRequest !== request || request.signal.aborted || !_enabled)
         return;
       _govTried = true;
-      if (reason === undefined) _gov = value ?? null;
-      else {
-        console.warn(`[Data:SaElections:${level}] Governance error:`, reason);
-        _gov = null;
-      }
+      // A failed poll keeps the last good governance: only a layer that never
+      // had one shows it as unavailable.
+      if (reason === undefined && value) _gov = value;
+      else
+        console.warn(
+          `[Data:SaElections:${level}] Governance error:`,
+          reason ?? new Error('empty'),
+        );
       if (_fills) {
         drawRows();
         if (_selectedId) publishSelectedCard();
@@ -368,13 +372,21 @@ export function createSaElectionsLayer({
     let listed = 0;
     for (const row of _rowById.values())
       if (_gov.interventions.has(row.code)) listed++;
+    // The list's own date and size, so a newer list needs no code change.
+    const asOf = formatSaMonth(_gov.interventionsAsOf);
+    const codes = [..._gov.interventions.keys()];
     return [
       {
-        label: t('Section 139 (CoGTA list, Aug 2026)'),
+        label: t('Section 139 (CoGTA list, {asOf})', { asOf }),
         color: '#eb5757',
         count: listed,
         blurb: t(
-          "37 councils on CoGTA's list as at Aug 2026; 5 of them are districts, shown on the districts layer. Not listed does not mean no intervention.",
+          "{total} councils on CoGTA's list as at {asOf}; {districts} of them are districts, shown on the districts layer. Not listed does not mean no intervention.",
+          {
+            total: codes.length,
+            asOf,
+            districts: codes.filter((code) => /^DC\d+$/.test(code)).length,
+          },
         ),
       },
       { label: t('Not listed'), color: NEUTRAL, count: _rowById.size - listed },

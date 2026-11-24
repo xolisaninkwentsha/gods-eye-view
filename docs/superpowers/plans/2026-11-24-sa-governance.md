@@ -242,8 +242,8 @@
   - `saGovernanceColor(row, view, gov)` returns `{color, strength: 'strong'|'faint'}`, or `null` in the party view (the caller keeps using `saAreaColor`).
   - `governanceLines(code, gov)` returns `string[]` for cards, each cut to 90 characters:
     - `District: <name> (<code>)`;
-    - `Audit <label>: <opinion label>`, or `Audit: unavailable`;
-    - for listed councils, `Section 139 since <since> (CoGTA list, Aug 2026)` and `Type: <type>`;
+    - `Audit <year label>: <band label>` (the translated `AUDIT_BANDS` label for the six known opinions, which need no Treasury label; Treasury's trimmed label for `other`), or `Audit: unavailable`;
+    - for listed councils, `Section 139 since <since> (CoGTA list, <formatSaMonth(asOf)>)` and `Type: <type>`;
     - for metros, `Mayor: <name> (<party>), elected <19 Nov 2026>` or `Mayor: not yet elected (as of <24 Nov 2026>)`, then `<note>`.
   - `formatSaDate('2026-11-19')` returns `'19 Nov 2026'`, built from parts so the machine zone can't shift it.
 
@@ -276,7 +276,7 @@
 - Polygons are kept for recolouring. The signature includes the view and a governance digest.
 - `getRowControls()`, councils level only, always includes the segmented switch, even on the early-return status branch: `segmented: {id: 'view', label: t('Colour by'), ariaLabel: t('Colour councils by'), options: [{id: 'view-party', label: t('Party')}, {id: 'view-audit', label: t('Audit')}, {id: 'view-intervention', label: t('Section 139')}]}`. Each option has `active` and `params: {view}`, following `src/layers/firms/queries.js:157-168`.
   - The audit view's legend is `AUDIT_BANDS` with counts. Its first-item blurb is `Audit <year label> · Treasury Municipal Money`, or the unavailable/loading line.
-  - The intervention view's legend is `Section 139 (CoGTA list, Aug 2026)` in red, with a count, then `Not listed` in grey. Its blurb is `t('37 councils on CoGTA's list as at Aug 2026; 5 of them are districts, shown on the districts layer. Not listed does not mean no intervention.')`.
+  - The intervention view's legend is `t('Section 139 (CoGTA list, {asOf})', {asOf})` in red, with a count, then `Not listed` in grey, where `asOf = formatSaMonth(gov.interventionsAsOf)`. Its blurb is `t('{total} councils on CoGTA's list as at {asOf}; {districts} of them are districts, shown on the districts layer. Not listed does not mean no intervention.', {total, asOf, districts})`, with `total` the listed codes and `districts` those matching `^DC\d+$`.
 - The card accent follows the view. `buildSaCouncilCard` appends `governanceLines`.
 - `sourceComposition`: `'sa-governance': contract(['sa-councils-2026', 'sa-districts-2026'], ['getSnapshot', 'getDistricts'])`.
 - `layerSources`: `'sa-governance': createSaGovernanceSource()`.
@@ -321,7 +321,7 @@
   - `Councils: a, b, … (+N)`;
   - the district's audit line;
   - section 139 lines when listed.
-- Legend: `Section 139 (CoGTA list, Aug 2026)` in red with a count, then `District` in grey with a count. The blurb is `t('Click a district outline for its card.')`.
+- Legend: `t('Section 139 (CoGTA list, {asOf})', {asOf})` in red with the listed count, then `District` in grey with the unlisted count (all districts when governance never arrived). The blurb is `t('Click a district outline for its card.')`.
 
 - [ ] **Step 1: Write the failing tests:**
   - outlines drawn red for listed districts and grey for others;

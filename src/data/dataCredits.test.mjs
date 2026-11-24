@@ -445,4 +445,6 @@ test('the South African governance credit names its sources', () => {
   assert.match(credit.html, /Municipal Money/);
   assert.match(credit.html, /PMG/);
   assert.match(credit.html, /dated per row/);
+  // The list's date is the data's: the legend and cards show it.
+  assert.doesNotMatch(credit.html, /as at|20\d\d/);
 });

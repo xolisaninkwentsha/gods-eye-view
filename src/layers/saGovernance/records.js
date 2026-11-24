@@ -29,14 +29,26 @@ function validPolygons(polygons) {
   );
 }
 
+/** Treasury's opinion codes; the server sends any other as `other`. */
+const KNOWN_OPINIONS = new Set([
+  'unqualified',
+  'unqualified_emphasis_of_matter',
+  'qualified',
+  'adverse',
+  'disclaimer',
+  'outstanding',
+]);
+
 function normalizeAudits(audits) {
   if (!isObject(audits) || !Number.isFinite(audits.year)) return null;
   if (!isObject(audits.byCode)) return null;
   const byCode = new Map();
   for (const [code, entry] of Object.entries(audits.byCode)) {
-    if (!isObject(entry) || !text(entry.opinion) || !text(entry.label))
-      continue;
-    byCode.set(code, { opinion: entry.opinion, label: entry.label });
+    if (!isObject(entry) || !text(entry.opinion)) continue;
+    const label = text(entry.label) ? entry.label.trim() : null;
+    // A known opinion is named by its band; any other only by Treasury's label.
+    if (!label && !KNOWN_OPINIONS.has(entry.opinion)) continue;
+    byCode.set(code, { opinion: entry.opinion, label });
   }
   return { year: audits.year, byCode };
 }

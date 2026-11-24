@@ -4,6 +4,7 @@ import { cssColor } from '../../render/color.js';
 import { inputFor as defaultInputFor } from '../../input/dispatcher.js';
 import { msg, t } from '../../i18n/index.js';
 import { saAnchorDegrees } from '../saElections/cards.js';
+import { formatSaMonth } from '../saGovernance/views.js';
 import {
   buildSaDistrictCard,
   SA_DISTRICT_COLOR,
@@ -207,13 +208,16 @@ export function createSaDistrictsLayer({
         if (districts.status === 'rejected') throw districts.reason;
         const { areas, stale, fetchedAt } = districts.value;
         _stale = stale === true;
-        _gov = governance.status === 'fulfilled' ? governance.value : null;
-        _govFailed = !_gov;
-        if (_govFailed)
+        // A failed poll keeps the last good governance: only a layer that
+        // never had one shows it as unavailable.
+        if (governance.status === 'fulfilled' && governance.value)
+          _gov = governance.value;
+        else
           console.warn(
             '[Data:SaDistricts] Governance unavailable:',
-            governance.reason,
+            governance.reason ?? new Error('empty'),
           );
+        _govFailed = !_gov;
 
         const nextFills = [];
         const nextLines = [];
@@ -332,12 +336,19 @@ export function createSaDistrictsLayer({
           ]
         : [
             {
-              label: t('Section 139 (CoGTA list, Aug 2026)'),
+              label: t('Section 139 (CoGTA list, {asOf})', {
+                asOf: formatSaMonth(_gov?.interventionsAsOf),
+              }),
               color: SA_DISTRICT_LISTED_COLOR,
               count: _listedCount,
               blurb: hint,
             },
-            { label: t('District'), color: SA_DISTRICT_COLOR, count: _count },
+            // The rest: the listed ones are counted above.
+            {
+              label: t('District'),
+              color: SA_DISTRICT_COLOR,
+              count: _count - _listedCount,
+            },
           ];
       return { chips: [], legend };
     },

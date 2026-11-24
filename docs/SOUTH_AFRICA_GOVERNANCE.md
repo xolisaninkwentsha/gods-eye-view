@@ -10,7 +10,7 @@ The layers are for personal display on this PC. No Treasury or MDB payload is st
 
 - **Party** is the existing view: the party with the most seats.
 - **Audit** colours each council by its Auditor-General opinion in National Treasury’s Municipal Money data, for the latest financial year that has results (see “Audit year rule”). Bands: Clean audit (green), Unqualified with findings (light green), Qualified (yellow), Adverse (orange), Disclaimer (red), Outstanding (purple), No audit data (grey).
-- **Section 139** colours red the 32 local councils and metros on CoGTA’s section 139 intervention list. The legend note says the list has 37 councils as at Aug 2026, 5 of them districts (shown on the districts layer), and that “not listed does not mean no intervention”.
+- **Section 139** colours red the local councils and metros on CoGTA’s section 139 intervention list (32 on the Aug 2026 list). The legend gives the list’s month, how many councils it lists and how many of them are districts (shown on the districts layer), all read from the table, and says that “not listed does not mean no intervention”.
 - Party colours draw first. Governance data is applied when it arrives and never blocks the layer. While it is loading or missing, the legend says so (“Loading audit results…”, “Audit results unavailable”, “Intervention list unavailable”), so councils are never painted grey without saying why. Switching views needs no new fetch, and the Party view keeps working when governance data is unavailable.
 
 ### Council cards
@@ -18,8 +18,8 @@ The layers are for personal display on this PC. No Treasury or MDB payload is st
 Besides the election lines, a council card gains (every line is cut to 90 characters, ending in `…`):
 
 - `District: <name> (<code>)`, except for metros, which have no district.
-- The audit line: opinion and financial year, or `Audit: unavailable` if the governance fetch failed.
-- When listed: `Section 139 since <since> (CoGTA list, Aug 2026)` and `Type: <verbatim type>`.
+- The audit line: financial year and opinion, named as in the legend (for example `Audit 2023/24: Clean audit`; an opinion outside the six bands keeps Treasury’s own label), or `Audit: unavailable` if the governance fetch never succeeded.
+- When listed: `Section 139 since <since> (CoGTA list, <list month>)` and `Type: <verbatim type>`.
 - For the 8 metros: `Mayor: <name> (<party>), elected <date>`, or `Mayor: not yet elected (as of <date>)`, followed by a short note.
 
 Dates are South African; a date-only value such as `2026-11-19` shows as `19 Nov 2026` whatever the machine’s time zone.
@@ -46,11 +46,11 @@ The audit year is the latest Municipal Money year with at least 200 rows whose o
 ## Terms
 
 - **Treasury Municipal Money:** the terms allow reuse, commercial use included, with the source and date credited.
-- **CoGTA list:** a published parliamentary reply, credited to CoGTA via PMG with its “as at” date.
+- **CoGTA list:** a published parliamentary reply, credited to CoGTA via PMG; its “as at” month is shown with the list, in the legend and on the cards.
 - **MDB licence:** the same as for the election boundaries (see `docs/SOUTH_AFRICA_ELECTIONS.md`): value-added use with acknowledgement, no commercial use, geometry simplified here.
 - **Metro table:** public facts from news reports, each row dated and linked.
 - The credit is registered as `za-governance` in `src/data/dataCredits.js` and shown in the Data credits popover.
-- Fetches use fixed hosts only, TLS on, redirects refused, size caps and timeouts, and the User-Agent `GodsEyeView (sa-governance)`. No key is needed and nothing is added to `.env`.
+- Fetches use fixed hosts only, TLS on, redirects refused, size caps and timeouts. The Treasury audit fetches send the User-Agent `GodsEyeView (sa-governance)`; the MDB district outline and membership fetches reuse the election provider’s boundary fetcher and send `GodsEyeView (sa-elections)`. No key is needed and nothing is added to `.env`.
 
 ## Server routes, cache and refresh
 
@@ -64,7 +64,12 @@ The audit year is the latest Municipal Money year with at least 200 rows whose o
 
 ## Updating the curated tables
 
-Both tables are read once when the server starts, and checked then. After editing either file, run `docker compose restart`. A table that fails its checks stops the server from starting, with an error starting `invalid_governance_table:` that names the row and field.
+Both tables are read once when the server starts, and checked then. A table that fails its checks stops the server from starting, with an error starting `invalid_governance_table:` that names the row and field. So after editing either file:
+
+1. Run `node --test server/providers/saGovernance/tables.test.mjs` and fix what it reports. It runs the same checks the server does.
+2. Then run `docker compose restart`.
+
+The legend and card text follow the data by themselves: the list’s month, how many councils it lists and how many of them are districts, and each metro row’s mayor, dates and note. A data update needs no code or translation change.
 
 ### Metro mayors (`server/providers/saGovernance/metros.json`)
 
@@ -78,7 +83,7 @@ An object with a `rows` array, one row per metro. Codes are `CPT`, `BUF`, `JHB`,
 - Elected rows also need `mayor`, `party`, `coalition` (a non-empty list of party names) and `electedOn` (ISO date).
 - An unresolved row must **not** carry `mayor`; the server refuses to start if it does.
 
-To record a result, change `status` to `"elected"`, add `mayor`, `party`, `coalition` and `electedOn`, update `note`, `asOf` and `sourceUrl`, and restart. To re-check a row that is still unresolved, update `asOf`, `note` and `sourceUrl`. Codes must not repeat.
+To record a result, edit `metros.json` only: change `status` to `"elected"`, add `mayor`, `party`, `coalition` and `electedOn`, and update `note`, `asOf` and `sourceUrl`. To re-check a row that is still unresolved, update `asOf`, `note` and `sourceUrl`. Codes must not repeat. Then test and restart as above.
 
 **As of 24 Nov 2026, six rows are unresolved and will need updating within days:** Johannesburg (vote expected Fri 27 Nov), Tshwane, Ekurhuleni, eThekwini, Nelson Mandela Bay and Mangaung. Cape Town (Geordin Hill-Lewis, DA, elected 19 Nov) and Buffalo City (Princess Faku, ANC, elected 24 Nov) are done.
 
@@ -86,7 +91,15 @@ To record a result, change `status` to `"elected"`, add `mayor`, `party`, `coali
 
 An object with `asOf` (ISO month, `YYYY-MM`), `source` (text), `sourceUrl` (`https:`) and a `rows` array. Each row has `code`, `name`, `province`, `type` and `since`, all non-empty text. The `code` must be an MDB code (a local municipality such as `EC139`, a metro such as `MAN`, or a district such as `DC12`) and must not repeat. Copy `type` and `since` verbatim from the source: the cards show them as written.
 
-When CoGTA publishes a newer list, add a new file named for its month (for example `interventions-2027-02.json`), point `tables.js` at it, and change `asOf`, `source` and `sourceUrl`. The “Aug 2026” in the card and legend text comes from `asOf`. Then restart.
+When CoGTA publishes a newer list:
+
+1. Add a new file named for its month, for example `server/providers/saGovernance/interventions-2027-02.json`, in the format above, with the new `asOf`, `source`, `sourceUrl` and rows.
+2. In `server/providers/saGovernance/tables.js`, change the file name in the `load('interventions-2026-08.json')` call to the new file.
+3. In `server/providers/saGovernance/tables.test.mjs`, update `EXPECTED_CODES` to the new list’s codes, in the file’s order, and the checks next to it that pin this list: its `asOf` month, its row count and its district (`DC…`) codes.
+4. In `DATA_SOURCES.md`, update the CoGTA section 139 row: its count, its “as at” date and the file name. The figures this doc quotes for the list (in “What the views show”, Sources and Known limits) change the same way.
+5. Test and restart as above.
+
+The legend’s month, count and districts, and the cards’ “(CoGTA list, …)” month, then follow from the new file’s `asOf` and rows.
 
 ## Local-only behaviour
 

@@ -166,7 +166,7 @@ test('lines for null governance are empty', () => {
 
 test('CPT (elected metro) has audit and mayor lines, no district line', () => {
   assert.deepEqual(governanceLines('CPT', gov()), [
-    'Audit 2023/24: Unqualified - No findings',
+    'Audit 2023/24: Clean audit',
     'Mayor: Geordin Hill-Lewis (DA), elected 19 Nov 2026',
     'Coalition note',
   ]);
@@ -187,6 +187,34 @@ test('a listed council has district, audit and section 139 lines', () => {
     'Section 139 since 2024 (CoGTA list, Aug 2026)',
     'Type: Discretionary intervention',
   ]);
+});
+
+test('the audit line names the band for a known opinion, label or not', () => {
+  const g = gov({
+    audits: {
+      year: 2024,
+      byCode: {
+        CPT: { opinion: 'unqualified_emphasis_of_matter' },
+        KZN212: { opinion: 'outstanding', label: 'Audit outstanding' },
+      },
+    },
+  });
+  assert.equal(
+    governanceLines('CPT', g)[0],
+    'Audit 2023/24: Unqualified with findings',
+  );
+  assert.equal(governanceLines('KZN212', g)[1], 'Audit 2023/24: Outstanding');
+});
+
+test("another opinion keeps Treasury's label", () => {
+  assert.deepEqual(governanceLines('WEIRD', gov()), ['Audit 2023/24: Other']);
+  const g = gov({
+    audits: {
+      year: 2024,
+      byCode: { WEIRD: { opinion: 'other', label: '  Withdrawn  ' } },
+    },
+  });
+  assert.deepEqual(governanceLines('WEIRD', g), ['Audit 2023/24: Withdrawn']);
 });
 
 test('a council with no audit row says no data', () => {

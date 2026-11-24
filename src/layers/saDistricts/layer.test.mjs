@@ -193,7 +193,7 @@ test('districts failing fails the update and keeps the last drawn set', async (t
   assert.equal(h.lines().items.size, 2);
 });
 
-test('the legend counts listed and all districts', async () => {
+test('the legend counts listed and unlisted districts', async () => {
   const h = harness(
     sourceOf({
       districts: [district('DC1'), district('DC2'), district('DC3')],
@@ -206,11 +206,71 @@ test('the legend counts listed and all districts', async () => {
     legend.map((r) => [r.label, r.color, r.count]),
     [
       ['Section 139 (CoGTA list, Aug 2026)', '#eb5757', 1],
-      ['District', '#d0d7de', 3],
+      ['District', '#d0d7de', 2],
     ],
   );
   assert.equal(legend[0].blurb, 'Click a district outline for its card.');
 });
+
+test("the legend's date comes from the list", async () => {
+  const later = normalizeGovernance({
+    audits: { year: 2025, byCode: {} },
+    auditsStatus: 'ok',
+    interventions: {
+      asOf: '2027-02',
+      rows: [{ code: 'DC2', since: '2027', type: 'Section 139(5)' }],
+    },
+  });
+  const h = harness(
+    sourceOf({
+      districts: [district('DC1'), district('DC2')],
+      governance: later,
+    }),
+  );
+  await h.layer.update();
+  const { legend } = h.layer.getRowControls();
+  assert.deepEqual(
+    legend.map((r) => [r.label, r.count]),
+    [
+      ['Section 139 (CoGTA list, Feb 2027)', 1],
+      ['District', 1],
+    ],
+  );
+});
+
+for (const failure of [new Error('down'), null]) {
+  test(`a failed governance poll (${failure ? 'thrown' : 'empty'}) keeps the last good one`, async (t) => {
+    t.mock.method(console, 'warn', () => {});
+    let governance = gov;
+    const h = harness({
+      getDistricts: async () => ({
+        areas: [district('DC1'), district('DC2')],
+        stale: false,
+        fetchedAt: null,
+      }),
+      getSnapshot: async () => {
+        if (governance instanceof Error) throw governance;
+        return governance;
+      },
+    });
+    await h.layer.update();
+    governance = failure;
+    assert.equal(await h.layer.update(), true);
+    const red = h.lines().items.get('sa-district:DC1:0');
+    assert.ok(near(red.style.color[0], 0xeb / 255), 'still outlined red');
+    const { legend } = h.layer.getRowControls();
+    assert.deepEqual(
+      legend.map((r) => [r.color, r.count]),
+      [
+        ['#eb5757', 1],
+        ['#d0d7de', 1],
+      ],
+    );
+    h.click(':lines', 'sa-district:DC1:0');
+    const [card] = h.overlay.entries.get('sa-districts-2026');
+    assert.ok(!card.details.includes('Audit: unavailable'));
+  });
+}
 
 test('disable hides the sets and clears the card', async () => {
   const h = harness(

@@ -125,7 +125,7 @@ export const DATA_CREDITS = [
     key: 'za-governance',
     html:
       'SA governance: audit opinions from <a href="https://municipalmoney.gov.za/" target="_blank" rel="noopener">National Treasury Municipal Money</a> · ' +
-      'section 139 list from CoGTA via <a href="https://pmg.org.za/committee-question/40568/" target="_blank" rel="noopener">PMG</a> (as at Aug 2026) · ' +
+      'section 139 list from CoGTA via <a href="https://pmg.org.za/committee-question/40568/" target="_blank" rel="noopener">PMG</a> · ' +
       'metro mayors kept by hand from news reports, dated per row · district outlines from the Municipal Demarcation Board',
   },
   {
