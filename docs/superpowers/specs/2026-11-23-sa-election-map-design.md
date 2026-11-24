@@ -210,8 +210,14 @@ matching. No spreadsheet reader is installed in the repo.
   party's PR vote share, and turnout.
 - **Ward card:** ward number and municipality, the winner and their vote
   share, the runner-up and their share, the margin, and turnout.
-- When results are `off`, `loading` or `failed`, the areas draw as outlines
-  only, and the card says why.
+- An area that has a result is drawn and carded whatever the status.
+- Areas without a result draw as outlines only, and their card says why.
+- While the status is `loading`, the legend keeps the party key plus a
+  "Downloading…" note, and the client asks again every 30 seconds, also after
+  a failed request.
+- This rule was amended after the final review: it used to draw outlines only
+  whenever results were `off`, `loading` or `failed`, and it now keeps one
+  failing or still-downloading province from hiding the others.
 - **Panel:** a new "South Africa" group in `PANEL_GROUPS` holds both layers.
 - **Refresh:** the client polls hourly; the server answers from its cache.
 - **Render cost:** 4,485 ground fills have never been drawn in this app, so

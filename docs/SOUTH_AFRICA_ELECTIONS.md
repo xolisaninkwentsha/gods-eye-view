@@ -78,4 +78,27 @@ Both layers are local-only, like `local-adsb` and `osm-places`: they get no perm
 
 ## Measured performance
 
-Measured on this PC after the first live download; see the branch’s final commit.
+**Rendering** (Chrome on this Ubuntu PC, 24 November 2026, whole-country view at 3,669 km, frame rate counted while the camera turns):
+
+- No election layers on: 59.7 fps.
+- Wards on: 52.6 to 59.7 fps; the slowest single frame took 46 to 278 ms.
+- Wards on over Johannesburg at 150 km: 59.2 fps.
+- Switching wards on just after a page reload: the data is ready in 0.85 s, the colours are on screen in 3.0 to 4.7 s (two runs), and the ward outlines finish in about 5.5 to 6 s.
+- Outcome: the plan’s limit was under 30 fps or over 5 s to show, so the wards layer has no camera-height limit.
+
+**First download:** with the switch on, the first run (nine province CSVs, about 245 MB, plus 213 seat files) finished in under a minute.
+
+**Data check** (24 November 2026):
+
+- All 213 councils and all 4,485 wards have results. 4,481 wards have a winner; 4 are tied.
+- Seat check: 209 councils match their IEC seat file. The 4 that do not are exactly the councils with a tied ward: Mnquma (EC122), Maluti a Phofung (FS194), Ba-Phalaborwa (LIM334) and Steve Tshwete (MP313). The check compares the ward winners counted from the votes with each party’s ward seats in the seat file. A tied ward has no winner from the votes (the IEC settles it outside the count), so its council cannot match; the check treats this as a mismatch by design.
+- Every council balances: its party seats plus its independent ward winners equal its total seats.
+- 8,805 seats in all. Largest parties: ANC 3,293, DA 1,722, MK 801, EFF 595, IFP 488, ActionSA 319.
+- 74 councils have a majority and 139 have none.
+
+**Seat-file layouts the reader handles** (found in the real files):
+
+- A party name ending in ` *` marks the party that caused an excess seat. The marker is stripped before names are matched.
+- Parties that won wards but have no PR list come after the `Independents` row, as `NAME **`, with their count in the “Ward Seats” column and the total column empty. King Sabata Dalindyebo (EC157) is the case: the UDM’s 13 seats are all ward seats. Its server log line “seat-file parties with no PR votes: UNITED DEMOCRATIC MOVEMENT” is expected, because the UDM had no PR list there.
+
+**Not reconciled:** figures from the IEC’s declaration speech, as quoted second-hand in the research notes, are lower for every large party (ANC 3,164, DA 1,527, MK 701, EFF 505, ActionSA 219), and the IEC’s count of councils with no majority (127) differs from the app’s 139; the IEC’s own 127 plus 72 does not add up to 213. The app’s numbers come straight from the 213 seat files, and every council balances, so the gap most likely lies in what the speech counted. It was not checked against a primary IEC source.
