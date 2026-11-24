@@ -168,6 +168,7 @@ export function createApplicationCatalog({
         createApplicationSaElections({
           level: 'councils',
           source: sources['sa-elections'],
+          governanceSource: sources['sa-governance'],
         }),
         createApplicationSaElections({
           level: 'wards',

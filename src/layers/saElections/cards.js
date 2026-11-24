@@ -4,6 +4,7 @@ import { t, formatNumber } from '../../i18n/index.js';
 import { droneAirspaceAnchorDegrees } from '../droneAirspace/cards.js';
 import { saAreaColor } from './records.js';
 import { partyStyle } from './parties.js';
+import { governanceLines, saGovernanceColor } from '../saGovernance/views.js';
 
 const NEUTRAL = '#9aa4ad';
 const ONE_DIGIT = { maximumFractionDigits: 1, minimumFractionDigits: 1 };
@@ -43,20 +44,38 @@ export function saStatusLine(status) {
 }
 
 /**
+ * The fill of a council in a view. The party view is the election colour. The
+ * audit and section 139 views need governance data: without it (not loaded, or
+ * Treasury down) the council gets no fill rather than a grey that looks like data.
+ */
+export function saCouncilColor(row, view, gov) {
+  if (view === 'audit' && !gov?.audits)
+    return { color: null, strength: 'strong' };
+  if (view === 'intervention' && !gov)
+    return { color: null, strength: 'strong' };
+  return saGovernanceColor(row, view, gov) ?? saAreaColor(row, 'councils');
+}
+
+/**
  * An area with a result shows it whatever the status: while a download runs, the provinces
  * already read are served. Only an area without one says why (or, with results in, that it has none).
  */
-export function buildSaCouncilCard(row, status) {
+export function buildSaCouncilCard(
+  row,
+  status,
+  { view = 'party', gov = null } = {},
+) {
   const title = `${row.name} (${row.code})`;
   const id = `sa-council-card:${row.stableId}`;
-  const accent = saAreaColor(row, 'councils').color ?? NEUTRAL;
+  const accent = saCouncilColor(row, view, gov).color ?? NEUTRAL;
+  const extra = governanceLines(row.code, gov);
   const result = row.result;
   if (!result) {
     const why = statusDetails(status) ?? [t('No result for this council')];
-    return entry(id, title, why, accent);
+    return entry(id, title, [...why, ...extra], accent);
   }
   if (!result.largest)
-    return entry(id, title, [t('Seat count unavailable')], accent);
+    return entry(id, title, [t('Seat count unavailable'), ...extra], accent);
 
   const { party, seats } = result.largest;
   const short = partyStyle(party).short;
@@ -82,6 +101,7 @@ export function buildSaCouncilCard(row, status) {
   }
   if (Number.isFinite(result.turnout))
     details.push(t('Turnout {share}', { share: pct(result.turnout) }));
+  details.push(...extra);
   return entry(id, title, details, accent);
 }
 

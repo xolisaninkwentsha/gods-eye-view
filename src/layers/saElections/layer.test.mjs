@@ -71,6 +71,7 @@ function harness(level, source, options = {}) {
     source,
     maxCameraHeightM: options.maxCameraHeightM ?? null,
     repollMs: options.repollMs,
+    governanceSource: options.governanceSource,
     overlayHost: {
       setEntries: (id, entries) => overlay.entries.set(id, entries),
       setVisible: (id, visible) => {
@@ -506,4 +507,236 @@ test('the row listener fires when a re-poll update completes', async () => {
   } finally {
     mock.timers.reset();
   }
+});
+
+// --- Council views (party / audit / section 139) ---
+const gov = (extra = {}) => ({
+  audits: {
+    year: 2024,
+    byCode: new Map([
+      ['A', { opinion: 'unqualified', label: 'Clean audit' }],
+      ['B', { opinion: 'disclaimer', label: 'Disclaimer' }],
+    ]),
+  },
+  auditsStatus: 'ok',
+  interventions: new Map([['B', { since: '2024', type: 'Mandatory' }]]),
+  interventionsAsOf: '2026-08',
+  interventionsSource: 'CoGTA',
+  metros: new Map(),
+  districtOf: new Map(),
+  ...extra,
+});
+const govSource = (value) => {
+  const calls = { n: 0 };
+  return {
+    calls,
+    getSnapshot: async () => {
+      calls.n++;
+      if (value instanceof Error) throw value;
+      return value;
+    },
+    getDistricts: async () => null,
+  };
+};
+const twoCouncils = () =>
+  sourceOf(
+    payload('councils', [council('A', ANC, true), council('B', DA, false)]),
+  );
+const fillOf = (h, id) => h.fills().items.get(`sa-councils:${id}:0`);
+const near = (a, b) => Math.abs(a - b) < 1e-9;
+
+test('the colour switch is on councils, not on wards', async () => {
+  const c = harness('councils', twoCouncils(), {
+    governanceSource: govSource(gov()),
+  });
+  await c.layer.update();
+  const sw = c.layer.getRowControls().segmented;
+  assert.equal(sw.id, 'view');
+  assert.deepEqual(
+    sw.options.map((o) => [o.id, o.label, o.active, o.params]),
+    [
+      ['view-party', 'Party', true, { view: 'party' }],
+      ['view-audit', 'Audit', false, { view: 'audit' }],
+      ['view-intervention', 'Section 139', false, { view: 'intervention' }],
+    ],
+  );
+  const w = harness('wards', sourceOf(payload('wards', [ward('w1', ANC)])));
+  await w.layer.update();
+  assert.equal(w.layer.getRowControls().segmented, undefined);
+  assert.equal(w.layer.setParams, undefined);
+});
+
+test('the switch is there before results arrive', () => {
+  const h = harness('councils', sourceOf(payload('councils', [], 'loading')));
+  assert.ok(h.layer.getRowControls().segmented);
+});
+
+test('setParams recolours from held rows with no fetch', async () => {
+  const src = twoCouncils();
+  let fetches = 0;
+  const counting = {
+    getSnapshot: (...a) => (fetches++, src.getSnapshot(...a)),
+  };
+  const gs = govSource(gov());
+  const h = harness('councils', counting, { governanceSource: gs });
+  await h.layer.update();
+  assert.deepEqual(h.layer.getParams(), { view: 'party' });
+  assert.ok(near(fillOf(h, 'A').fill[3], 0.5));
+  assert.equal(h.layer.setParams({ view: 'audit' }), true);
+  assert.deepEqual(h.layer.getParams(), { view: 'audit' });
+  assert.equal(fetches, 1);
+  assert.equal(gs.calls.n, 1);
+  assert.ok(near(fillOf(h, 'A').fill[1], 0x9e / 255), 'clean audit green');
+  assert.ok(near(fillOf(h, 'B').fill[0], 0xeb / 255), 'disclaimer red');
+  assert.ok(near(fillOf(h, 'B').fill[3], 0.5), 'audit fill is strong');
+  assert.equal(
+    h.layer.getRowControls().segmented.options.find((o) => o.active).id,
+    'view-audit',
+  );
+  h.layer.setParams({ view: 'intervention' });
+  assert.ok(near(fillOf(h, 'B').fill[0], 0xeb / 255));
+  assert.ok(near(fillOf(h, 'B').fill[3], 0.5));
+  assert.ok(near(fillOf(h, 'A').fill[0], 0x9a / 255), 'not listed is grey');
+  assert.ok(near(fillOf(h, 'A').fill[3], 0.15), 'not listed is faint');
+  h.layer.setParams({ view: 'party' });
+  assert.ok(near(fillOf(h, 'B').fill[3], 0.15), 'party view restored');
+  assert.equal(fetches, 1);
+});
+
+test('an invalid view is rejected and the view stays', async () => {
+  const h = harness('councils', twoCouncils(), {
+    governanceSource: govSource(gov()),
+  });
+  await h.layer.update();
+  assert.equal(h.layer.setParams({ view: 'nope' }), false);
+  assert.equal(h.layer.setParams({}), false);
+  assert.equal(h.layer.setParams({ view: 'audit' }), true);
+  assert.equal(h.layer.setParams({ view: '__proto__' }), false);
+  assert.deepEqual(h.layer.getParams(), { view: 'audit' });
+});
+
+test('the audit legend counts the bands and carries the year', async () => {
+  const h = harness('councils', twoCouncils(), {
+    governanceSource: govSource(gov()),
+  });
+  await h.layer.update();
+  h.layer.setParams({ view: 'audit' });
+  const { legend } = h.layer.getRowControls();
+  assert.deepEqual(
+    legend.map((l) => [l.label, l.count, l.color]),
+    [
+      ['Clean audit', 1, '#2e9e5b'],
+      ['Disclaimer', 1, '#eb5757'],
+    ],
+  );
+  assert.equal(legend[0].blurb, 'Audit 2023/24 · Treasury Municipal Money');
+});
+
+test('a stale audit adds an out-of-date line to the legend', async () => {
+  const h = harness('councils', twoCouncils(), {
+    governanceSource: govSource(gov({ auditsStatus: 'stale' })),
+  });
+  await h.layer.update();
+  h.layer.setParams({ view: 'audit' });
+  assert.equal(
+    h.layer.getRowControls().legend[0].blurb,
+    'Audit 2023/24 · Treasury Municipal Money\nAudit data is out of date',
+  );
+});
+
+test('the intervention legend counts listed and not listed', async () => {
+  const h = harness('councils', twoCouncils(), {
+    governanceSource: govSource(gov()),
+  });
+  await h.layer.update();
+  h.layer.setParams({ view: 'intervention' });
+  const { legend } = h.layer.getRowControls();
+  assert.deepEqual(
+    legend.map((l) => [l.label, l.color, l.count]),
+    [
+      ['Section 139 (CoGTA list, Aug 2026)', '#eb5757', 1],
+      ['Not listed', '#9aa4ad', 1],
+    ],
+  );
+  assert.match(legend[0].blurb, /Not listed does not mean no intervention/);
+});
+
+test('audit view with governance failed says unavailable, never silent grey', async (t) => {
+  t.mock.method(console, 'warn', () => {});
+  const h = harness('councils', twoCouncils(), {
+    governanceSource: govSource(new Error('down')),
+  });
+  await h.layer.update();
+  h.layer.setParams({ view: 'audit' });
+  const { legend } = h.layer.getRowControls();
+  assert.equal(legend.length, 1);
+  assert.equal(legend[0].label, 'Audit results unavailable');
+  assert.equal(legend[0].count, null);
+  h.layer.setParams({ view: 'intervention' });
+  assert.equal(
+    h.layer.getRowControls().legend[0].label,
+    'Intervention list unavailable',
+  );
+});
+
+test('audit view before governance has been tried says loading', () => {
+  const h = harness('councils', twoCouncils(), {
+    governanceSource: govSource(gov()),
+  });
+  h.layer.setParams({ view: 'audit' });
+  assert.equal(
+    h.layer.getRowControls().legend[0].label,
+    'Loading audit results…',
+  );
+});
+
+test('the party view is unchanged when governance failed', async (t) => {
+  t.mock.method(console, 'warn', () => {});
+  const h = harness('councils', twoCouncils(), {
+    governanceSource: govSource(new Error('down')),
+  });
+  assert.equal(await h.layer.update(), true);
+  assert.ok(near(fillOf(h, 'A').fill[3], 0.5));
+  assert.ok(near(fillOf(h, 'B').fill[3], 0.15));
+  assert.equal(h.layer.getStats().error, null);
+  const { legend } = h.layer.getRowControls();
+  assert.equal(legend.at(-1).label, 'Other');
+});
+
+test('audit data with no audits object shows unavailable', async () => {
+  const h = harness('councils', twoCouncils(), {
+    governanceSource: govSource(gov({ audits: null, auditsStatus: 'failed' })),
+  });
+  await h.layer.update();
+  h.layer.setParams({ view: 'audit' });
+  assert.equal(
+    h.layer.getRowControls().legend[0].label,
+    'Audit results unavailable',
+  );
+});
+
+test('the council card carries governance lines and the view accent', async () => {
+  const h = harness('councils', twoCouncils(), {
+    governanceSource: govSource(gov()),
+  });
+  await h.layer.update();
+  h.click('sa-councils:B:0');
+  const party = h.overlay.entries.get('sa-councils-2026')?.[0];
+  assert.ok(party, 'card published');
+  assert.ok(party.details.includes('Audit 2023/24: Disclaimer'));
+  assert.ok(party.details.every((line) => line.length <= 90));
+  h.layer.setParams({ view: 'audit' });
+  const audit = [...h.overlay.entries.values()][0][0];
+  assert.equal(audit.accent, '#eb5757');
+  h.layer.setParams({ view: 'party' });
+  assert.notEqual([...h.overlay.entries.values()][0][0].accent, '#eb5757');
+});
+
+test('wards ignore a governance source and never fetch it', async () => {
+  const gs = govSource(gov());
+  const w = harness('wards', sourceOf(payload('wards', [ward('w1', ANC)])), {
+    governanceSource: gs,
+  });
+  await w.layer.update();
+  assert.equal(gs.calls.n, 0);
 });

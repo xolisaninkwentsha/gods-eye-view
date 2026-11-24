@@ -12,9 +12,16 @@ import {
   buildSaCouncilCard,
   buildSaWardCard,
   saAnchorDegrees,
+  saCouncilColor,
   saStatusLine,
 } from './cards.js';
 import { OTHER_COLOR, partyStyle } from './parties.js';
+import {
+  AUDIT_BANDS,
+  SA_COUNCIL_VIEWS,
+  auditBand,
+  auditYearLabel,
+} from '../saGovernance/views.js';
 export { createSaElectionsSource } from './source.js';
 export * from './records.js';
 export * from './cards.js';
@@ -60,6 +67,7 @@ function geometryHash(polygons) {
 export function createSaElectionsLayer({
   level,
   source,
+  governanceSource = null,
   overlayHost = null,
   inputFor = defaultInputFor,
   picking = null,
@@ -96,6 +104,17 @@ export function createSaElectionsLayer({
   let _selectedId = null;
   /** @type {Map<string, object>} */
   const _rowById = new Map();
+  /** The last rows with their polygons, kept so a view change recolours without a refetch. */
+  let _heldRows = [];
+  let _view = 'party';
+  /** @type {object|null} normalized governance, null when failed or not fetched */
+  let _gov = null;
+  let _govTried = false;
+  const councils = level === 'councils';
+  const colorOf = (row) =>
+    level === 'wards'
+      ? saAreaColor(row, level)
+      : saCouncilColor(row, _view, _gov);
 
   const canSelect = () => overlayHost && inputFor && picking;
 
@@ -139,7 +158,9 @@ export function createSaElectionsLayer({
       return;
     }
     const card = {
-      ...buildCard(row, _status),
+      ...(level === 'wards'
+        ? buildCard(row, _status)
+        : buildCard(row, _status, { view: _view, gov: _gov })),
       position: fromDegrees(row.anchor.lon, row.anchor.lat),
     };
     overlayHost.setEntries(overlaySourceId, [card], CARD_HOST_OPTIONS);
@@ -197,6 +218,154 @@ export function createSaElectionsLayer({
   function removeCameraGate() {
     _removeMoveEnd?.();
     _removeMoveEnd = null;
+  }
+
+  /** A short digest of everything in governance that changes the drawing. */
+  function governanceDigest() {
+    if (!councils || _view === 'party') return null;
+    return {
+      year: _gov?.audits?.year ?? null,
+      audits: _gov?.audits
+        ? [..._gov.audits.byCode].map(([code, v]) => `${code}:${v.opinion}`)
+        : null,
+      listed: _gov ? [..._gov.interventions.keys()].sort() : null,
+    };
+  }
+
+  /**
+   * Draw the held rows. The drawing depends on the areas, the view and the governance
+   * digest, so a status change by itself redraws nothing.
+   */
+  function drawRows() {
+    const rows = _heldRows;
+    const signature = JSON.stringify([
+      _view,
+      governanceDigest(),
+      rows
+        .map(({ polygons, ...facts }) => ({
+          ...facts,
+          geometry: geometryHash(polygons),
+        }))
+        .sort((a, b) => a.stableId.localeCompare(b.stableId)),
+    ]);
+    if (signature === _signature) return;
+    const nextFills = [];
+    const nextLines = [];
+    _rowById.clear();
+    for (const row of rows) {
+      const { color, strength } = colorOf(row);
+      for (const [index, rings] of row.polygons.entries()) {
+        const id = `${pickPrefix}${row.stableId}:${index}`;
+        if (color) {
+          nextFills.push({
+            id,
+            geometry: { kind: 'polygon', rings: rings.map(ringDegrees) },
+            fill: hexColor(
+              color,
+              strength === 'faint' ? FAINT_ALPHA : STRONG_ALPHA,
+            ),
+            height: 'clampGround',
+          });
+        }
+        nextLines.push({
+          id,
+          positions: rings[0].map(([lon, lat]) => fromDegrees(lon, lat)),
+          widthPx: outlineWidthPx,
+          mode: 'draped',
+          style: { kind: 'solid', color: hexColor(color ?? NEUTRAL, 1) },
+        });
+      }
+      const { polygons, ...facts } = row;
+      _rowById.set(row.stableId, {
+        ...facts,
+        anchor: saAnchorDegrees(polygons),
+      });
+    }
+    _fills.set(nextFills);
+    _lines.set(nextLines);
+    _signature = signature;
+    _count = rows.length;
+  }
+
+  /** The legend of a governance view; null in the party view. */
+  function governanceLegend() {
+    if (_view === 'audit') {
+      if (!_gov?.audits) {
+        return [
+          {
+            label: _govTried
+              ? t('Audit results unavailable')
+              : t('Loading audit results…'),
+            color: NEUTRAL,
+            count: null,
+          },
+        ];
+      }
+      const counts = new Map();
+      for (const row of _rowById.values()) {
+        const key = auditBand(_gov.audits.byCode.get(row.code)?.opinion).key;
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+      const legend = AUDIT_BANDS.filter((band) => counts.get(band.key) > 0).map(
+        (band) => ({
+          label: t(band.label),
+          color: band.color,
+          count: counts.get(band.key),
+        }),
+      );
+      const blurbs = [
+        t('Audit {year} · Treasury Municipal Money', {
+          year: auditYearLabel(_gov.audits.year),
+        }),
+        _gov.auditsStatus === 'stale' ? t('Audit data is out of date') : null,
+      ].filter(Boolean);
+      if (legend.length) legend[0].blurb = blurbs.join('\n');
+      return legend;
+    }
+    if (!_gov) {
+      return [
+        {
+          label: _govTried
+            ? t('Intervention list unavailable')
+            : t('Loading intervention list…'),
+          color: NEUTRAL,
+          count: null,
+        },
+      ];
+    }
+    let listed = 0;
+    for (const row of _rowById.values())
+      if (_gov.interventions.has(row.code)) listed++;
+    return [
+      {
+        label: t('Section 139 (CoGTA list, Aug 2026)'),
+        color: '#eb5757',
+        count: listed,
+        blurb: t(
+          "37 councils on CoGTA's list as at Aug 2026; 5 of them are districts, shown on the districts layer. Not listed does not mean no intervention.",
+        ),
+      },
+      { label: t('Not listed'), color: NEUTRAL, count: _rowById.size - listed },
+    ];
+  }
+
+  function viewSwitch() {
+    const option = (id, label) => ({
+      id: `view-${id}`,
+      label,
+      active: _view === id,
+      params: { view: id },
+    });
+    return {
+      id: 'view',
+      label: t('Colour by'),
+      ariaLabel: t('Colour councils by'),
+      options: [
+        option('party', t('Party')),
+        option('audit', t('Audit')),
+        option('intervention', t('Section 139')),
+      ],
+    };
   }
 
   const layer = {
@@ -264,62 +433,35 @@ export function createSaElectionsLayer({
       const request = new AbortController();
       _request = request;
       try {
-        const payload = await source.getSnapshot({
-          signal: request.signal,
-          level,
-        });
+        // Governance rides along with the results; its failure never fails the update.
+        const [resultsOutcome, govOutcome] = await Promise.allSettled([
+          source.getSnapshot({ signal: request.signal, level }),
+          councils && governanceSource
+            ? governanceSource.getSnapshot({ signal: request.signal })
+            : Promise.resolve(null),
+        ]);
         if (request.signal.aborted || _request !== request || !_enabled)
           return false;
-        const { status, rows } = normalizeSaElectionsPayload(payload, level);
-        _status = status;
-        // The drawing depends on the areas alone: any area with a result is filled, whatever
-        // the status, so a status change by itself redraws nothing.
-        const signature = JSON.stringify(
-          rows
-            .map(({ polygons, ...facts }) => ({
-              ...facts,
-              geometry: geometryHash(polygons),
-            }))
-            .sort((a, b) => a.stableId.localeCompare(b.stableId)),
-        );
-        if (signature !== _signature) {
-          const nextFills = [];
-          const nextLines = [];
-          _rowById.clear();
-          for (const row of rows) {
-            const { color, strength } = saAreaColor(row, level);
-            for (const [index, rings] of row.polygons.entries()) {
-              const id = `${pickPrefix}${row.stableId}:${index}`;
-              if (color) {
-                nextFills.push({
-                  id,
-                  geometry: { kind: 'polygon', rings: rings.map(ringDegrees) },
-                  fill: hexColor(
-                    color,
-                    strength === 'faint' ? FAINT_ALPHA : STRONG_ALPHA,
-                  ),
-                  height: 'clampGround',
-                });
-              }
-              nextLines.push({
-                id,
-                positions: rings[0].map(([lon, lat]) => fromDegrees(lon, lat)),
-                widthPx: outlineWidthPx,
-                mode: 'draped',
-                style: { kind: 'solid', color: hexColor(color ?? NEUTRAL, 1) },
-              });
-            }
-            const { polygons, ...facts } = row;
-            _rowById.set(row.stableId, {
-              ...facts,
-              anchor: saAnchorDegrees(polygons),
-            });
+        if (resultsOutcome.status === 'rejected') throw resultsOutcome.reason;
+        if (councils) {
+          _govTried = true;
+          if (govOutcome.status === 'fulfilled') {
+            _gov = govOutcome.value ?? null;
+          } else {
+            console.warn(
+              `[Data:SaElections:${level}] Governance error:`,
+              govOutcome.reason,
+            );
+            _gov = null;
           }
-          _fills.set(nextFills);
-          _lines.set(nextLines);
-          _signature = signature;
-          _count = rows.length;
         }
+        const { status, rows } = normalizeSaElectionsPayload(
+          resultsOutcome.value,
+          level,
+        );
+        _status = status;
+        _heldRows = rows;
+        drawRows();
         applyVisibility();
         if (_selectedId) publishSelectedCard();
         _lastUpdate = Date.now();
@@ -347,6 +489,9 @@ export function createSaElectionsLayer({
       removeClickHandler();
       clearSelection();
       _rowById.clear();
+      _heldRows = [];
+      _gov = null;
+      _govTried = false;
       _signature = null;
       _viewer = null;
       _enabled = false;
@@ -364,9 +509,13 @@ export function createSaElectionsLayer({
       // Null for ok and stale; otherwise why results are missing (off, loading, failed).
       const statusLine = saStatusLine(_status);
       const anyResult = [..._rowById.values()].some((row) => row.result);
+      const segmented = councils ? { segmented: viewSwitch() } : {};
+      if (councils && _view !== 'party')
+        return { chips: [], ...segmented, legend: governanceLegend() };
       if (statusLine && !anyResult) {
         return {
           chips: [],
+          ...segmented,
           legend: [
             {
               label:
@@ -411,7 +560,7 @@ export function createSaElectionsLayer({
           : null,
       ].filter(Boolean);
       if (blurbs.length) legend[0].blurb = blurbs.join('\n');
-      return { chips: [], legend };
+      return { chips: [], ...segmented, legend };
     },
 
     getStats() {
@@ -423,5 +572,21 @@ export function createSaElectionsLayer({
       };
     },
   };
+  if (councils) {
+    /** Recolour from the held rows at once; no refetch. */
+    layer.setParams = (params) => {
+      const view = params?.view;
+      if (typeof view !== 'string' || !SA_COUNCIL_VIEWS.includes(view))
+        return false;
+      _view = view;
+      if (_fills) {
+        drawRows();
+        if (_selectedId) publishSelectedCard();
+      }
+      _rowListener?.();
+      return true;
+    };
+    layer.getParams = () => ({ view: _view });
+  }
   return layer;
 }
