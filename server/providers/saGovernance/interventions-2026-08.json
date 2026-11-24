@@ -1,0 +1,266 @@
+{
+  "asOf": "2026-08",
+  "source": "CoGTA reply to parliamentary question NW4545, Annexure A (published by PMG, 14 Sep 2026)",
+  "sourceUrl": "https://pmg.org.za/committee-question/40568/",
+  "rows": [
+    {
+      "code": "EC139",
+      "name": "Enoch Mgijima LM",
+      "province": "EC",
+      "type": "S139(7) – National intervention",
+      "since": "April 2022"
+    },
+    {
+      "code": "DC12",
+      "name": "Amathole DM",
+      "province": "EC",
+      "type": "S139(5)",
+      "since": "January 2021"
+    },
+    {
+      "code": "EC104",
+      "name": "Makana LM",
+      "province": "EC",
+      "type": "S139(5)",
+      "since": "2019"
+    },
+    {
+      "code": "DC15",
+      "name": "OR Tambo DM",
+      "province": "EC",
+      "type": "S139(5) and (c)",
+      "since": "8 Dec 2021"
+    },
+    {
+      "code": "EC145",
+      "name": "Walter Sisulu LM",
+      "province": "EC",
+      "type": "S139(5)(a)",
+      "since": "23 Feb 2022"
+    },
+    {
+      "code": "MAN",
+      "name": "Mangaung Metropolitan Municipality",
+      "province": "FS",
+      "type": "S139(7) – National intervention",
+      "since": "April 2022"
+    },
+    {
+      "code": "FS205",
+      "name": "Mafube LM",
+      "province": "FS",
+      "type": "S139(5)(a) and (c)",
+      "since": "June 2022"
+    },
+    {
+      "code": "FS182",
+      "name": "Tokologo LM",
+      "province": "FS",
+      "type": "S139(5)(a) and (c)",
+      "since": "June 2022"
+    },
+    {
+      "code": "FS162",
+      "name": "Kopanong LM",
+      "province": "FS",
+      "type": "S139(1)(b), read with S63 of the Water Services Act",
+      "since": "September 2023"
+    },
+    {
+      "code": "FS184",
+      "name": "Matjhabeng LM",
+      "province": "FS",
+      "type": "S139(5)(a) and (c)",
+      "since": "October 2024"
+    },
+    {
+      "code": "FS185",
+      "name": "Nala LM",
+      "province": "FS",
+      "type": "S139(1)(b)",
+      "since": "28 May 2025"
+    },
+    {
+      "code": "FS181",
+      "name": "Masilonyana LM",
+      "province": "FS",
+      "type": "S139(1)(b)",
+      "since": "February 2026"
+    },
+    {
+      "code": "FS203",
+      "name": "Ngwathe LM",
+      "province": "FS",
+      "type": "S139(5)(a) and (b)",
+      "since": "26 June 2026"
+    },
+    {
+      "code": "KZN224",
+      "name": "Impendle LM",
+      "province": "KZN",
+      "type": "S139(1)(b)",
+      "since": "15 June 2026"
+    },
+    {
+      "code": "GT421",
+      "name": "Emfuleni LM",
+      "province": "GT",
+      "type": "S139(5)",
+      "since": "June 2018"
+    },
+    {
+      "code": "GT484",
+      "name": "Merafong LM",
+      "province": "GT",
+      "type": "S139(5)",
+      "since": "September 2022"
+    },
+    {
+      "code": "DC36",
+      "name": "Waterberg DM",
+      "province": "LP",
+      "type": "S139(5)",
+      "since": "December 2025"
+    },
+    {
+      "code": "MP312",
+      "name": "Emalahleni LM",
+      "province": "MP",
+      "type": "S139(5)",
+      "since": "October 2018"
+    },
+    {
+      "code": "MP307",
+      "name": "Govan Mbeki LM",
+      "province": "MP",
+      "type": "S139(5)",
+      "since": "October 2018"
+    },
+    {
+      "code": "MP302",
+      "name": "Msukaligwa LM",
+      "province": "MP",
+      "type": "S139(5)",
+      "since": "October 2018"
+    },
+    {
+      "code": "MP321",
+      "name": "Thaba Chweu LM",
+      "province": "MP",
+      "type": "S139(5)",
+      "since": "October 2018"
+    },
+    {
+      "code": "MP305",
+      "name": "Lekwa LM",
+      "province": "MP",
+      "type": "S139(7) – National intervention",
+      "since": "April 2021"
+    },
+    {
+      "code": "NC094",
+      "name": "Phokwane LM",
+      "province": "NC",
+      "type": "S139(5)",
+      "since": "July 2020"
+    },
+    {
+      "code": "NC075",
+      "name": "Renosterberg LM",
+      "province": "NC",
+      "type": "S139(5)",
+      "since": "August 2020"
+    },
+    {
+      "code": "NC091",
+      "name": "Sol Plaatje LM",
+      "province": "NC",
+      "type": "S139(1)(b)",
+      "since": "May 2026"
+    },
+    {
+      "code": "NW372",
+      "name": "Madibeng LM",
+      "province": "NW",
+      "type": "S139(5)",
+      "since": "January 2022"
+    },
+    {
+      "code": "NW382",
+      "name": "Tswaing LM",
+      "province": "NW",
+      "type": "S139(5)",
+      "since": "January 2022"
+    },
+    {
+      "code": "DC39",
+      "name": "Dr Ruth Segomotsi Mompati DM",
+      "province": "NW",
+      "type": "S139(5)",
+      "since": "January 2022"
+    },
+    {
+      "code": "NW374",
+      "name": "Kgetleng Rivier LM",
+      "province": "NW",
+      "type": "S139(5)",
+      "since": "January 2022"
+    },
+    {
+      "code": "NW385",
+      "name": "Ramotshere LM",
+      "province": "NW",
+      "type": "S139(5)",
+      "since": "January 2022"
+    },
+    {
+      "code": "NW392",
+      "name": "Naledi LM",
+      "province": "NW",
+      "type": "S139(5)",
+      "since": "January 2022"
+    },
+    {
+      "code": "NW384",
+      "name": "Ditsobotla LM",
+      "province": "NW",
+      "type": "S139(5); national intervention under S139(7) approved 3 Sept 2025",
+      "since": "August 2025"
+    },
+    {
+      "code": "NW403",
+      "name": "Matlosana LM",
+      "province": "NW",
+      "type": "S139(5)",
+      "since": "August 2024"
+    },
+    {
+      "code": "WC053",
+      "name": "Beaufort West LM",
+      "province": "WC",
+      "type": "S139(5)(a)",
+      "since": "August 2021"
+    },
+    {
+      "code": "WC041",
+      "name": "Kannaland LM",
+      "province": "WC",
+      "type": "S139(5)(a)",
+      "since": "December 2023"
+    },
+    {
+      "code": "DC4",
+      "name": "Garden Route DM",
+      "province": "WC",
+      "type": "S139(1)(a)",
+      "since": "October 2024"
+    },
+    {
+      "code": "WC031",
+      "name": "Theewaterskloof LM",
+      "province": "WC",
+      "type": "S139(5)(a)",
+      "since": "November 2024"
+    }
+  ]
+}

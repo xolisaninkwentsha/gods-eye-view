@@ -1,0 +1,68 @@
+{
+  "rows": [
+    {
+      "code": "CPT",
+      "status": "elected",
+      "mayor": "Geordin Hill-Lewis",
+      "party": "DA",
+      "coalition": ["DA"],
+      "electedOn": "2026-11-19",
+      "note": "DA holds a majority of seats",
+      "asOf": "2026-11-24",
+      "sourceUrl": "https://www.dailymaverick.co.za/article/2026-11-19-hill-lewis-re-elected-cape-town-mayor-after-pouring-cold-water-on-zille-swap-idea"
+    },
+    {
+      "code": "JHB",
+      "status": "unresolved",
+      "note": "Mayoral vote expected Fri 27 Nov",
+      "asOf": "2026-11-24",
+      "sourceUrl": "https://www.ewn.co.za/2026/11/24/coalition-negotiations-new-joburg-mayor-now-expected-to-be-elected-friday"
+    },
+    {
+      "code": "TSH",
+      "status": "unresolved",
+      "note": "First council sitting set for Thu 26 Nov",
+      "asOf": "2026-11-24",
+      "sourceUrl": "https://www.ewn.co.za/2026/11/24/coalition-negotiations-new-joburg-mayor-now-expected-to-be-elected-friday"
+    },
+    {
+      "code": "EKU",
+      "status": "unresolved",
+      "note": "Council sits Wed 25 Nov",
+      "asOf": "2026-11-24",
+      "sourceUrl": "https://www.ewn.co.za/2026/11/24/coalition-negotiations-new-joburg-mayor-now-expected-to-be-elected-friday"
+    },
+    {
+      "code": "ETH",
+      "status": "unresolved",
+      "note": "24 Nov sitting adjourned without electing a mayor",
+      "asOf": "2026-11-24",
+      "sourceUrl": "https://witness.co.za/news/2026/11/24/ethekwini-council-adjourns-without-electing-mayor-as-anc-mk-party-talks-continue/"
+    },
+    {
+      "code": "NMA",
+      "status": "unresolved",
+      "note": "DA-led coalition deal signed 23 Nov; mayoral vote due 24 Nov",
+      "asOf": "2026-11-24",
+      "sourceUrl": "https://theherald.co.za/politics/2026-11-24-da-led-coalition-clinches-deal-to-take-control-of-nelson-mandela-bay/"
+    },
+    {
+      "code": "BUF",
+      "status": "elected",
+      "mayor": "Princess Faku",
+      "party": "ANC",
+      "coalition": ["ANC", "EFF", "PA", "AIC"],
+      "electedOn": "2026-11-24",
+      "note": "Re-elected 52 votes to 47",
+      "asOf": "2026-11-24",
+      "sourceUrl": "https://www.ewn.co.za/anc-s-princess-faku-re-elected-as-buffalo-city-metro-mayor"
+    },
+    {
+      "code": "MAN",
+      "status": "unresolved",
+      "note": "Coalition talks under way",
+      "asOf": "2026-11-19",
+      "sourceUrl": "https://www.ofm.co.za/article/centralsa/344066/lourier-park-dispute-fuels-ancyl-resistance-to-da-coalition"
+    }
+  ]
+}
