@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test, { mock } from 'node:test';
 import { createSaElectionsLayer } from './index.js';
+import { resolveCatalogSources } from '../../app/sourceComposition.js';
 import { fakeInputUnderLabel } from '../../input/testDoubles.mjs';
 import { bindFakeDraw } from '../../testSupport/fakeDrawPort.mjs';
 import { fakeCameraPort } from '../../testSupport/fakeCameraPort.mjs';
@@ -235,11 +236,13 @@ test('councils while loading: results drawn, the rest wait, and later say so', a
   h.click('sa-councils:C:0');
   assert.deepEqual(h.overlay.entries.get('sa-councils-2026')[0].details, [
     'Downloading results from the IEC…',
+    'Audit: unavailable', // no governance source in this harness
   ]);
   state = 'ok';
   await h.layer.update();
   assert.deepEqual(h.overlay.entries.get('sa-councils-2026')[0].details, [
     'No result for this council',
+    'Audit: unavailable',
   ]);
   assert.equal(
     h.layer.getRowControls().legend[0].blurb,
@@ -543,6 +546,7 @@ const twoCouncils = () =>
     payload('councils', [council('A', ANC, true), council('B', DA, false)]),
   );
 const fillOf = (h, id) => h.fills().items.get(`sa-councils:${id}:0`);
+const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 const near = (a, b) => Math.abs(a - b) < 1e-9;
 
 test('the colour switch is on councils, not on wards', async () => {
@@ -580,6 +584,7 @@ test('setParams recolours from held rows with no fetch', async () => {
   const gs = govSource(gov());
   const h = harness('councils', counting, { governanceSource: gs });
   await h.layer.update();
+  await tick();
   assert.deepEqual(h.layer.getParams(), { view: 'party' });
   assert.ok(near(fillOf(h, 'A').fill[3], 0.5));
   assert.equal(h.layer.setParams({ view: 'audit' }), true);
@@ -620,6 +625,7 @@ test('the audit legend counts the bands and carries the year', async () => {
     governanceSource: govSource(gov()),
   });
   await h.layer.update();
+  await tick();
   h.layer.setParams({ view: 'audit' });
   const { legend } = h.layer.getRowControls();
   assert.deepEqual(
@@ -637,6 +643,7 @@ test('a stale audit adds an out-of-date line to the legend', async () => {
     governanceSource: govSource(gov({ auditsStatus: 'stale' })),
   });
   await h.layer.update();
+  await tick();
   h.layer.setParams({ view: 'audit' });
   assert.equal(
     h.layer.getRowControls().legend[0].blurb,
@@ -649,6 +656,7 @@ test('the intervention legend counts listed and not listed', async () => {
     governanceSource: govSource(gov()),
   });
   await h.layer.update();
+  await tick();
   h.layer.setParams({ view: 'intervention' });
   const { legend } = h.layer.getRowControls();
   assert.deepEqual(
@@ -667,6 +675,7 @@ test('audit view with governance failed says unavailable, never silent grey', as
     governanceSource: govSource(new Error('down')),
   });
   await h.layer.update();
+  await tick();
   h.layer.setParams({ view: 'audit' });
   const { legend } = h.layer.getRowControls();
   assert.equal(legend.length, 1);
@@ -708,6 +717,7 @@ test('audit data with no audits object shows unavailable', async () => {
     governanceSource: govSource(gov({ audits: null, auditsStatus: 'failed' })),
   });
   await h.layer.update();
+  await tick();
   h.layer.setParams({ view: 'audit' });
   assert.equal(
     h.layer.getRowControls().legend[0].label,
@@ -720,6 +730,7 @@ test('the council card carries governance lines and the view accent', async () =
     governanceSource: govSource(gov()),
   });
   await h.layer.update();
+  await tick();
   h.click('sa-councils:B:0');
   const party = h.overlay.entries.get('sa-councils-2026')?.[0];
   assert.ok(party, 'card published');
@@ -739,4 +750,131 @@ test('wards ignore a governance source and never fetch it', async () => {
   });
   await w.layer.update();
   assert.equal(gs.calls.n, 0);
+});
+
+test('an omitted governance source (inert, throws synchronously) leaves the party view drawn', async () => {
+  const inert = resolveCatalogSources({}).sources['sa-governance'];
+  const h = harness('councils', twoCouncils(), { governanceSource: inert });
+  assert.equal(await h.layer.update(), true);
+  assert.ok(near(fillOf(h, 'A').fill[3], 0.5));
+  h.layer.setParams({ view: 'audit' });
+  assert.equal(
+    h.layer.getRowControls().legend[0].label,
+    'Audit results unavailable',
+  );
+});
+
+test('audit view: governance failing then recovering fills the councils on the next update', async (t) => {
+  t.mock.method(console, 'warn', () => {});
+  let current = new Error('down');
+  const source = {
+    getSnapshot: async () => {
+      if (current instanceof Error) throw current;
+      return current;
+    },
+    getDistricts: async () => null,
+  };
+  const h = harness('councils', twoCouncils(), { governanceSource: source });
+  h.layer.setParams({ view: 'audit' });
+  await h.layer.update();
+  await tick();
+  current = gov();
+  await h.layer.update();
+  await tick();
+  assert.ok(fillOf(h, 'A'), 'A is filled once audits are in');
+  assert.ok(near(fillOf(h, 'A').fill[1], 0x9e / 255));
+});
+
+test('with governance failed no council is filled in the audit or section 139 view, but outlines stay', async (t) => {
+  t.mock.method(console, 'warn', () => {});
+  const h = harness('councils', twoCouncils(), {
+    governanceSource: govSource(new Error('down')),
+  });
+  await h.layer.update();
+  await tick();
+  for (const view of ['audit', 'intervention']) {
+    h.layer.setParams({ view });
+    assert.equal(h.fills().items.size, 0, `${view}: no fills`);
+    assert.equal(h.lines().items.size, 2, `${view}: outlines drawn`);
+  }
+});
+
+test('governance lines show on the no-result and no-largest card branches', async () => {
+  const noLargest = council('C', ANC, true);
+  noLargest.result = { ...noLargest.result, largest: null };
+  const h = harness(
+    'councils',
+    sourceOf(payload('councils', [council('B', null), noLargest], 'ok')),
+    { governanceSource: govSource(gov()) },
+  );
+  await h.layer.update();
+  await tick();
+  h.click('sa-councils:B:0');
+  let card = h.overlay.entries.get('sa-councils-2026')[0];
+  assert.ok(card.details.includes('Audit 2023/24: Disclaimer'));
+  assert.ok(card.details.includes('No result for this council'));
+  h.click('sa-councils:C:0');
+  card = h.overlay.entries.get('sa-councils-2026')[0];
+  assert.ok(card.details.includes('Seat count unavailable'));
+  assert.ok(card.details.some((l) => l.startsWith('Audit 2023/24')));
+});
+
+test('a failed governance fetch puts "Audit: unavailable" on the card', async (t) => {
+  t.mock.method(console, 'warn', () => {});
+  const h = harness('councils', twoCouncils(), {
+    governanceSource: govSource(new Error('down')),
+  });
+  await h.layer.update();
+  await tick();
+  h.click('sa-councils:A:0');
+  const card = h.overlay.entries.get('sa-councils-2026')[0];
+  assert.ok(card.details.includes('Audit: unavailable'));
+});
+
+test('slow governance does not delay the first draw, and settling updates the legend', async () => {
+  let release;
+  const slow = {
+    getSnapshot: () =>
+      new Promise((resolve) => {
+        release = resolve;
+      }),
+    getDistricts: async () => null,
+  };
+  const h = harness('councils', twoCouncils(), { governanceSource: slow });
+  let pings = 0;
+  h.layer.setRowControlsListener(() => pings++);
+  h.layer.setParams({ view: 'audit' });
+  pings = 0;
+  assert.equal(await h.layer.update(), true);
+  assert.equal(h.layer.getStats().count, 2);
+  assert.equal(
+    h.layer.getRowControls().legend[0].label,
+    'Loading audit results…',
+  );
+  release(gov());
+  await tick();
+  assert.equal(h.layer.getRowControls().legend[0].label, 'Clean audit');
+  assert.ok(near(fillOf(h, 'A').fill[1], 0x9e / 255));
+  assert.ok(pings >= 1, 'row listener told');
+});
+
+test('governance that settles after disable is ignored', async () => {
+  let release;
+  const slow = {
+    getSnapshot: () =>
+      new Promise((resolve) => {
+        release = resolve;
+      }),
+    getDistricts: async () => null,
+  };
+  const h = harness('councils', twoCouncils(), { governanceSource: slow });
+  await h.layer.update();
+  h.layer.disable();
+  h.layer.setParams({ view: 'audit' });
+  release(gov());
+  await tick();
+  assert.equal(
+    h.layer.getRowControls().legend[0].label,
+    'Loading audit results…',
+  );
 });

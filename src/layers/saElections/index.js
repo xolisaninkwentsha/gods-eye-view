@@ -110,6 +110,7 @@ export function createSaElectionsLayer({
   /** @type {object|null} normalized governance, null when failed or not fetched */
   let _gov = null;
   let _govTried = false;
+  let _govRequest = null;
   const councils = level === 'councils';
   const colorOf = (row) =>
     level === 'wards'
@@ -157,10 +158,15 @@ export function createSaElectionsLayer({
       overlayHost.setEntries(overlaySourceId, [], CARD_HOST_OPTIONS);
       return;
     }
-    const card = {
-      ...(level === 'wards'
+    const built =
+      level === 'wards'
         ? buildCard(row, _status)
-        : buildCard(row, _status, { view: _view, gov: _gov })),
+        : buildCard(row, _status, { view: _view, gov: _gov });
+    // The fetch itself failed: say so, rather than leaving governance out.
+    if (councils && _govTried && !_gov)
+      built.details = [...built.details, t('Audit: unavailable')];
+    const card = {
+      ...built,
       position: fromDegrees(row.anchor.lon, row.anchor.lat),
     };
     overlayHost.setEntries(overlaySourceId, [card], CARD_HOST_OPTIONS);
@@ -220,6 +226,33 @@ export function createSaElectionsLayer({
     _removeMoveEnd = null;
   }
 
+  /** The governance fetch of one update. It never throws and never delays the results. */
+  function startGovernance(request) {
+    _govRequest?.abort();
+    _govRequest = request;
+    const settle = (value, reason) => {
+      if (_govRequest !== request || request.signal.aborted || !_enabled)
+        return;
+      _govTried = true;
+      if (reason === undefined) _gov = value ?? null;
+      else {
+        console.warn(`[Data:SaElections:${level}] Governance error:`, reason);
+        _gov = null;
+      }
+      if (_fills) {
+        drawRows();
+        if (_selectedId) publishSelectedCard();
+      }
+      _rowListener?.();
+    };
+    Promise.resolve()
+      .then(() => governanceSource.getSnapshot({ signal: request.signal }))
+      .then(
+        (value) => settle(value),
+        (reason) => settle(null, reason ?? new Error('unavailable')),
+      );
+  }
+
   /** A short digest of everything in governance that changes the drawing. */
   function governanceDigest() {
     if (!councils || _view === 'party') return null;
@@ -236,8 +269,7 @@ export function createSaElectionsLayer({
    * Draw the held rows. The drawing depends on the areas, the view and the governance
    * digest, so a status change by itself redraws nothing.
    */
-  function drawRows() {
-    const rows = _heldRows;
+  function drawRows(rows = _heldRows) {
     const signature = JSON.stringify([
       _view,
       governanceDigest(),
@@ -418,6 +450,8 @@ export function createSaElectionsLayer({
     disable() {
       _request?.abort();
       _request = null;
+      _govRequest?.abort();
+      _govRequest = null;
       clearRepoll();
       _enabled = false;
       applyVisibility();
@@ -432,36 +466,20 @@ export function createSaElectionsLayer({
       clearRepoll();
       const request = new AbortController();
       _request = request;
+      if (councils && governanceSource) startGovernance(request);
+      else if (councils) _govTried = true;
       try {
-        // Governance rides along with the results; its failure never fails the update.
-        const [resultsOutcome, govOutcome] = await Promise.allSettled([
-          source.getSnapshot({ signal: request.signal, level }),
-          councils && governanceSource
-            ? governanceSource.getSnapshot({ signal: request.signal })
-            : Promise.resolve(null),
-        ]);
+        const payload = await source.getSnapshot({
+          signal: request.signal,
+          level,
+        });
         if (request.signal.aborted || _request !== request || !_enabled)
           return false;
-        if (resultsOutcome.status === 'rejected') throw resultsOutcome.reason;
-        if (councils) {
-          _govTried = true;
-          if (govOutcome.status === 'fulfilled') {
-            _gov = govOutcome.value ?? null;
-          } else {
-            console.warn(
-              `[Data:SaElections:${level}] Governance error:`,
-              govOutcome.reason,
-            );
-            _gov = null;
-          }
-        }
-        const { status, rows } = normalizeSaElectionsPayload(
-          resultsOutcome.value,
-          level,
-        );
+        const { status, rows } = normalizeSaElectionsPayload(payload, level);
         _status = status;
-        _heldRows = rows;
-        drawRows();
+        // Only councils recolour from held rows; wards keep none.
+        _heldRows = councils ? rows : [];
+        drawRows(rows);
         applyVisibility();
         if (_selectedId) publishSelectedCard();
         _lastUpdate = Date.now();
@@ -483,6 +501,8 @@ export function createSaElectionsLayer({
     destroy() {
       _request?.abort();
       _request = null;
+      _govRequest?.abort();
+      _govRequest = null;
       _rowListener = null;
       clearRepoll();
       removeCameraGate();
