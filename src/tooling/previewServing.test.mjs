@@ -17,6 +17,7 @@ test('data providers have both hooks; credential editing stays development-only'
   assert.ok(plugins.some(({ name }) => name === 'ghostmaps'));
   assert.ok(plugins.some(({ name }) => name === 'drone-airspace'));
   assert.ok(plugins.some(({ name }) => name === 'sa-elections'));
+  assert.ok(plugins.some(({ name }) => name === 'sa-weather-warnings'));
   assert.ok(plugins.some(({ name }) => name === 'inaturalist'));
   assert.ok(plugins.some(({ name }) => name === 'acartia'));
   for (const plugin of plugins) {
@@ -121,6 +122,7 @@ test('real dev and built-preview servers serve provider JSON and terminate unkno
         ['/api/acartia/unknown', 404],
         // Answered by the provider itself, before any MDB or IEC request.
         ['/api/sa-elections/unknown', 404],
+        ['/api/sa-weather-warnings/unknown', 404],
         ['/api/terrain/heights?points=invalid', 400],
         ['/api/overpass', 405],
         ['/api/overpass/status', 200],
