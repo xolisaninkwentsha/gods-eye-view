@@ -149,6 +149,7 @@
     "Oldies",
     "OpenStreetMap + optional Google Maps Places",
     "Operator",
+    "Orange",
     "Overlay",
     "PAUSE",
     "PLAY",
@@ -605,6 +606,7 @@
     "ON/OFF",
     "Obs. {licence}",
     "Oldies",
+    "Orange",
     "PAUSE",
     "POSITION {age}",
     "PROJ OFF",
@@ -1315,6 +1317,7 @@
     "3D"
   ],
   "sv": [
+    "Orange",
     "STATION",
     "NAV",
     "GEO",
