@@ -81,6 +81,7 @@ const PANEL_GROUPS = [
       'sa-wards-2026',
       'sa-weather-warnings',
       'sa-earthquakes',
+      'sa-districts-2026',
     ],
   },
   {

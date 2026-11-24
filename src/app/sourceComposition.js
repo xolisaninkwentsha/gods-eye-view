@@ -55,10 +55,13 @@ export const CATALOG_SOURCE_CONTRACTS = Object.freeze({
     ['sa-councils-2026', 'sa-wards-2026'],
     ['getSnapshot'],
   ),
-  // Governance enriches the councils and districts layers; they still work
-  // without it (Audit/Section 139 views say "unavailable"), so none of them
-  // is a consumer whose availability depends on this source.
-  'sa-governance': contract([], ['getSnapshot', 'getDistricts']),
+  // Governance enriches the councils layer, which still works without it
+  // (Audit/Section 139 views say "unavailable"), so it is no consumer here.
+  // The districts layer cannot draw without the district boundaries it serves.
+  'sa-governance': contract(
+    ['sa-districts-2026'],
+    ['getSnapshot', 'getDistricts'],
+  ),
   'sa-weather-warnings': contract(['sa-weather-warnings'], ['getSnapshot']),
   'sa-earthquakes': contract(['sa-earthquakes'], ['getSnapshot']),
   news: contract(['news'], ['getHotspots', 'getFeed', 'getOutline']),

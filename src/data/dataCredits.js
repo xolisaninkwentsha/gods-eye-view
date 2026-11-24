@@ -122,6 +122,13 @@ export const DATA_CREDITS = [
       '<a href="https://results.elections.org.za/" target="_blank" rel="noopener">Electoral Commission of South Africa</a>',
   },
   {
+    key: 'za-governance',
+    html:
+      'SA governance: audit opinions from <a href="https://municipalmoney.gov.za/" target="_blank" rel="noopener">National Treasury Municipal Money</a> · ' +
+      'section 139 list from CoGTA via <a href="https://pmg.org.za/committee-question/40568/" target="_blank" rel="noopener">PMG</a> (as at Aug 2026) · ' +
+      'metro mayors kept by hand from news reports, dated per row · district outlines from the Municipal Demarcation Board',
+  },
+  {
     key: 'za-saws',
     html: 'South African weather warnings: <a href="https://www.weathersa.co.za/" target="_blank" rel="noopener">South African Weather Service</a> CAP feed',
   },

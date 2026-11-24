@@ -438,3 +438,11 @@ test('the South African earthquake credit names EMSC and the licence', () => {
   assert.match(credit.html, /EMSC-CSEM SeismicPortal/);
   assert.match(credit.html, /CC BY 4\.0/);
 });
+
+test('the South African governance credit names its sources', () => {
+  const credit = DATA_CREDITS.find((entry) => entry.key === 'za-governance');
+  assert.ok(credit, 'the governance data must be credited');
+  assert.match(credit.html, /Municipal Money/);
+  assert.match(credit.html, /PMG/);
+  assert.match(credit.html, /dated per row/);
+});

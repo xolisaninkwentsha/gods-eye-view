@@ -484,6 +484,8 @@ export const VOICE_OFF_LAYERS = Object.freeze({
     'fork-local South African election layer; no room in the prompt budget',
   'sa-weather-warnings':
     'fork-local South African weather warnings layer; no room in the prompt budget',
+  'sa-districts-2026':
+    'fork-local South African district outline layer; no room in the prompt budget',
   'sa-earthquakes':
     'fork-local South African earthquake layer; no room in the prompt budget',
   // Same budget: a historical wreck archive waits for room too.

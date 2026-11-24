@@ -36,6 +36,7 @@ import { createApplicationGhostMaps } from './layers/ghostMaps.js';
 import { createApplicationShipwrecks } from './layers/shipwrecks.js';
 import { createApplicationDroneAirspace } from './layers/droneAirspace.js';
 import { createApplicationSaElections } from './layers/saElections.js';
+import { createApplicationSaDistricts } from './layers/saDistricts.js';
 import { createApplicationSaWeather } from './layers/saWeather.js';
 import { createApplicationSaQuakes } from './layers/saQuakes.js';
 import { createApplicationNews } from './layers/news.js';
@@ -61,6 +62,8 @@ export const LOCAL_ONLY_LAYER_METADATA = Object.freeze([
   Object.freeze({ id: 'sa-wards-2026', disposition: 'local-only' }),
   // Likewise the fork-local South African weather warnings.
   Object.freeze({ id: 'sa-weather-warnings', disposition: 'local-only' }),
+  // And the district outlines, which sit beside the councils.
+  Object.freeze({ id: 'sa-districts-2026', disposition: 'local-only' }),
   Object.freeze({ id: 'sa-earthquakes', disposition: 'local-only' }),
 ]);
 
@@ -173,6 +176,9 @@ export function createApplicationCatalog({
         createApplicationSaElections({
           level: 'wards',
           source: sources['sa-elections'],
+        }),
+        createApplicationSaDistricts({
+          source: sources['sa-governance'],
         }),
         createApplicationSaWeather({
           source: sources['sa-weather-warnings'],
