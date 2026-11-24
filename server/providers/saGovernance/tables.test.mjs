@@ -116,49 +116,96 @@ test('the tables are frozen', () => {
   assert.ok(Object.isFrozen(METROS.rows[0].coalition ?? []));
 });
 
+// Literal rows for the bad-row checks, so no edit of the committed tables
+// (a metro elected, a row moved) can make a bad fixture valid.
+const INTERVENTION_ROW = Object.freeze({
+  code: 'EC139',
+  name: 'Enoch Mgijima',
+  province: 'Eastern Cape',
+  type: 'S139(1)(b)',
+  since: '2019',
+});
+const interventions = (...rows) => ({
+  asOf: '2026-08',
+  source: 'CoGTA reply to NW4545',
+  sourceUrl: 'https://pmg.org.za/committee-question/40568/',
+  rows: rows.map((row) => ({ ...INTERVENTION_ROW, ...row })),
+});
+const ELECTED_ROW = Object.freeze({
+  code: 'CPT',
+  status: 'elected',
+  mayor: 'A Mayor',
+  party: 'DA',
+  coalition: ['DA'],
+  electedOn: '2026-11-19',
+  note: 'Elected',
+  asOf: '2026-11-24',
+  sourceUrl: 'https://example.com/elected',
+});
+const UNRESOLVED_ROW = Object.freeze({
+  code: 'JHB',
+  status: 'unresolved',
+  note: 'Vote expected',
+  asOf: '2026-11-24',
+  sourceUrl: 'https://example.com/unresolved',
+});
+const metros = (...rows) => ({ rows: rows.map((row) => clone(row)) });
+
+test('the literal fixtures are valid, so each bad one fails for its own field', () => {
+  assert.doesNotThrow(() =>
+    validateInterventions(interventions({}, { code: 'DC12' })),
+  );
+  assert.doesNotThrow(() =>
+    validateMetros(metros(ELECTED_ROW, UNRESOLVED_ROW)),
+  );
+});
+
 test('validation rejects bad rows', () => {
   const bad = /invalid_governance_table/;
-  const dup = clone(INTERVENTIONS);
-  dup.rows[1].code = dup.rows[0].code;
-  assert.throws(() => validateInterventions(dup), bad);
+  assert.throws(
+    () => validateInterventions(interventions({}, { name: 'Again' })),
+    bad,
+    'a repeated code',
+  );
+  assert.throws(
+    () => validateInterventions(interventions({ type: '' })),
+    bad,
+    'an empty type',
+  );
+  assert.throws(
+    () => validateInterventions(interventions({ code: 'x1' })),
+    bad,
+    'a code that is not an MDB code',
+  );
 
-  const emptyType = clone(INTERVENTIONS);
-  emptyType.rows[0].type = '';
-  assert.throws(() => validateInterventions(emptyType), bad);
+  const elected = (over) => metros({ ...ELECTED_ROW, ...over }, UNRESOLVED_ROW);
+  const unresolved = (over) =>
+    metros(ELECTED_ROW, { ...UNRESOLVED_ROW, ...over });
+  assert.throws(() => validateMetros(elected({ status: 'maybe' })), bad);
+  assert.throws(() => validateMetros(elected({ asOf: '24 Nov' })), bad);
+  assert.throws(() => validateMetros(elected({ asOf: '2026-02-30' })), bad);
+  assert.throws(
+    () => validateMetros(elected({ sourceUrl: 'http://example.com/x' })),
+    bad,
+  );
+  assert.throws(() => validateMetros(unresolved({ code: 'CPT' })), bad);
+  assert.throws(() => validateMetros(elected({ mayor: undefined })), bad);
+  assert.throws(() => validateMetros(elected({ coalition: [] })), bad);
+  assert.throws(() => validateMetros(unresolved({ mayor: 'Someone' })), bad);
+});
 
-  const badCode = clone(INTERVENTIONS);
-  badCode.rows[0].code = 'x1';
-  assert.throws(() => validateInterventions(badCode), bad);
-
-  const maybe = clone(METROS);
-  maybe.rows[0].status = 'maybe';
-  assert.throws(() => validateMetros(maybe), bad);
-
-  const badDate = clone(METROS);
-  badDate.rows[0].asOf = '24 Nov';
-  assert.throws(() => validateMetros(badDate), bad);
-
-  const feb30 = clone(METROS);
-  feb30.rows[0].asOf = '2026-02-30';
-  assert.throws(() => validateMetros(feb30), bad);
-
-  const http = clone(METROS);
-  http.rows[0].sourceUrl = 'http://example.com/x';
-  assert.throws(() => validateMetros(http), bad);
-
-  const dupMetro = clone(METROS);
-  dupMetro.rows[1].code = dupMetro.rows[0].code;
-  assert.throws(() => validateMetros(dupMetro), bad);
-
-  const noMayor = clone(METROS);
-  delete noMayor.rows[0].mayor;
-  assert.throws(() => validateMetros(noMayor), bad);
-
-  const emptyCoalition = clone(METROS);
-  emptyCoalition.rows[0].coalition = [];
-  assert.throws(() => validateMetros(emptyCoalition), bad);
-
-  const unresolvedMayor = clone(METROS);
-  unresolvedMayor.rows[1].mayor = 'Someone';
-  assert.throws(() => validateMetros(unresolvedMayor), bad);
+test('recording a result (JHB elected) is a valid edit of the committed table', () => {
+  const edited = clone(METROS);
+  const jhb = edited.rows.find((row) => row.code === 'JHB');
+  Object.assign(jhb, {
+    status: 'elected',
+    mayor: 'A Mayor',
+    party: 'ANC',
+    coalition: ['ANC', 'EFF'],
+    electedOn: '2026-11-27',
+    note: 'Elected in a council vote',
+    asOf: '2026-11-27',
+    sourceUrl: 'https://example.com/jhb',
+  });
+  assert.doesNotThrow(() => validateMetros(edited));
 });
