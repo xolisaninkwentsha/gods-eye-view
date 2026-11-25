@@ -1,0 +1,43 @@
+{
+  "id": "za-cpt-load-shedding-blocks",
+  "kind": "dataset",
+  "maintainer": "github:xolisaninkwentsha",
+  "family": "infrastructure",
+  "title": "Cape Town load-shedding blocks",
+  "provider": "City of Cape Town",
+  "description": "The City of Cape Town’s load-shedding block areas. The block number is what the City’s schedule refers to.",
+  "icon": "⚡",
+  "coverage": {
+    "countries": [
+      "ZA"
+    ],
+    "bbox": [
+      18.3,
+      -34.4,
+      19,
+      -33.4
+    ]
+  },
+  "source": {
+    "format": "arcgis",
+    "url": "https://esapqa.capetown.gov.za/agsext/rest/services/Theme_Based/ODP_SPLIT_7/FeatureServer/13",
+    "fetch": "browser-direct",
+    "cacheSeconds": 86400,
+    "maxFeatures": 2000,
+    "maxPages": 2
+  },
+  "display": {
+    "color": "#f2c94c",
+    "label": "BlockID"
+  },
+  "licence": {
+    "name": "City of Cape Town Open Data Policy",
+    "url": "https://www.capetown.gov.za/general/city-of-cape-town-open-data-terms-of-use/"
+  },
+  "attribution": {
+    "text": "City of Cape Town",
+    "url": "https://odp-cctegis.opendata.arcgis.com/"
+  },
+  "status": "community",
+  "reviewed": "2026-11-25"
+}

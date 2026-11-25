@@ -105,6 +105,13 @@ import wallonieOrtho from './entries/wallonie-ortho.json' with { type: 'json' };
 import wiStatewideImagery from './entries/wi-statewide-imagery.json' with { type: 'json' };
 import wriGlobalPowerPlants from './entries/wri-global-power-plants.json' with { type: 'json' };
 import wvStatewideImagery from './entries/wv-statewide-imagery.json' with { type: 'json' };
+import zaCptFireStations from './entries/za-cpt-fire-stations.json' with { type: 'json' };
+import zaCptHealthFacilities from './entries/za-cpt-health-facilities.json' with { type: 'json' };
+import zaCptLoadSheddingBlocks from './entries/za-cpt-load-shedding-blocks.json' with { type: 'json' };
+import zaCptMycitiRoutes from './entries/za-cpt-myciti-routes.json' with { type: 'json' };
+import zaCptMycitiStops from './entries/za-cpt-myciti-stops.json' with { type: 'json' };
+import zaDffeMarineProtectedAreas from './entries/za-dffe-marine-protected-areas.json' with { type: 'json' };
+import zaDffeProtectedAreas from './entries/za-dffe-protected-areas.json' with { type: 'json' };
 
 /** Raw manifests in file-name order; the validated form is below. */
 export const LIBRARY_MANIFESTS = Object.freeze([
@@ -204,6 +211,13 @@ export const LIBRARY_MANIFESTS = Object.freeze([
   wiStatewideImagery,
   wriGlobalPowerPlants,
   wvStatewideImagery,
+  zaCptFireStations,
+  zaCptHealthFacilities,
+  zaCptLoadSheddingBlocks,
+  zaCptMycitiRoutes,
+  zaCptMycitiStops,
+  zaDffeMarineProtectedAreas,
+  zaDffeProtectedAreas,
 ]);
 
 const validated = validateLibraryCatalog(LIBRARY_MANIFESTS);

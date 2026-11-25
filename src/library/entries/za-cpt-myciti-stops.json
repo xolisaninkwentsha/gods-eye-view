@@ -1,0 +1,47 @@
+{
+  "id": "za-cpt-myciti-stops",
+  "kind": "dataset",
+  "maintainer": "github:xolisaninkwentsha",
+  "family": "movement",
+  "title": "Cape Town MyCiTi bus stops",
+  "provider": "City of Cape Town",
+  "description": "MyCiTi integrated rapid transit stations and stops in Cape Town.",
+  "icon": "🚏",
+  "coverage": {
+    "countries": [
+      "ZA"
+    ],
+    "bbox": [
+      18.3,
+      -34.4,
+      19,
+      -33.4
+    ]
+  },
+  "source": {
+    "format": "arcgis",
+    "url": "https://esapqa.capetown.gov.za/agsext/rest/services/Theme_Based/ODP_SPLIT_6/FeatureServer/10",
+    "fetch": "browser-direct",
+    "cacheSeconds": 86400,
+    "maxFeatures": 2000,
+    "maxPages": 2
+  },
+  "display": {
+    "color": "#e03c31",
+    "label": "STOP_NAME",
+    "fields": [
+      "STOP_TYPE",
+      "STOP_STS"
+    ]
+  },
+  "licence": {
+    "name": "City of Cape Town Open Data Policy",
+    "url": "https://www.capetown.gov.za/general/city-of-cape-town-open-data-terms-of-use/"
+  },
+  "attribution": {
+    "text": "City of Cape Town",
+    "url": "https://odp-cctegis.opendata.arcgis.com/"
+  },
+  "status": "community",
+  "reviewed": "2026-11-25"
+}

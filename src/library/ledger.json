@@ -91,5 +91,12 @@
   ["kartverket-topo", "2h"],
   ["kartverket-toporaster", "2i"],
   ["mapterhorn-terrain", "2j"],
-  ["amsterdam-traffic-cameras", "2k"]
+  ["amsterdam-traffic-cameras", "2k"],
+  ["za-dffe-protected-areas", "2l"],
+  ["za-dffe-marine-protected-areas", "2m"],
+  ["za-cpt-load-shedding-blocks", "2n"],
+  ["za-cpt-myciti-routes", "2o"],
+  ["za-cpt-myciti-stops", "2p"],
+  ["za-cpt-health-facilities", "2q"],
+  ["za-cpt-fire-stations", "2r"]
 ]

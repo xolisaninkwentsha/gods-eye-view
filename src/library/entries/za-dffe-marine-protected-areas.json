@@ -1,0 +1,69 @@
+{
+  "id": "za-dffe-marine-protected-areas",
+  "kind": "dataset",
+  "maintainer": "github:xolisaninkwentsha",
+  "family": "environment",
+  "title": "SA marine protected area zones (SAMPAZ)",
+  "provider": "DFFE",
+  "description": "Zones inside South Africa’s marine protected areas from the DFFE screening service. Restricted, sanctuary and wilderness zones are coloured; every other zone is a controlled zone.",
+  "icon": "◈",
+  "coverage": {
+    "countries": [
+      "ZA"
+    ],
+    "bbox": [
+      16.3,
+      -35,
+      33,
+      -22
+    ]
+  },
+  "source": {
+    "format": "geojson",
+    "url": "https://screening.environment.gov.za/server/rest/services/OC_CV/Gazetted_Boundaries/MapServer/43/query",
+    "query": {
+      "where": "1=1",
+      "outFields": "CUR_NME,CUR_ZON_NM,CUR_ZON_TY",
+      "f": "geojson",
+      "outSR": "4326",
+      "maxAllowableOffset": "0.0005",
+      "geometryPrecision": "5"
+    },
+    "fetch": "browser-direct",
+    "cacheSeconds": 86400,
+    "maxFeatures": 500
+  },
+  "display": {
+    "color": "#6baed6",
+    "label": "CUR_ZON_NM",
+    "fields": [
+      "CUR_ZON_TY",
+      "CUR_NME"
+    ],
+    "colorBy": {
+      "field": "CUR_ZON_TY",
+      "colors": {
+        "Restricted": "#d7301f",
+        "Sanctuary": "#7f0000",
+        "Wilderness": "#54278f",
+        "Controlled": "#6baed6",
+        "Controlled Large Pelagic": "#6baed6"
+      },
+      "labels": {
+        "Controlled": "Controlled",
+        "Controlled Large Pelagic": "Controlled"
+      }
+    }
+  },
+  "licence": {
+    "name": "No licence stated on the service; display only",
+    "url": "https://screening.environment.gov.za/",
+    "operatorOptIn": true
+  },
+  "attribution": {
+    "text": "Department of Forestry, Fisheries and the Environment (SAMPAZ)",
+    "url": "https://screening.environment.gov.za/"
+  },
+  "status": "community",
+  "reviewed": "2026-11-25"
+}

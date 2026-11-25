@@ -1,0 +1,69 @@
+{
+  "id": "za-dffe-protected-areas",
+  "kind": "dataset",
+  "maintainer": "github:xolisaninkwentsha",
+  "family": "environment",
+  "title": "SA protected areas (SAPAD Q4 2025)",
+  "provider": "DFFE",
+  "description": "Gazetted South African protected areas from the DFFE screening service: national parks, nature reserves, protected environments and World Heritage Sites.",
+  "icon": "◈",
+  "coverage": {
+    "countries": [
+      "ZA"
+    ],
+    "bbox": [
+      16.3,
+      -35,
+      33,
+      -22
+    ]
+  },
+  "source": {
+    "format": "geojson",
+    "url": "https://screening.environment.gov.za/server/rest/services/OC_CV/Gazetted_Boundaries/MapServer/44/query",
+    "query": {
+      "where": "1=1",
+      "outFields": "CUR_NME,SITE_TYPE,D_DCLAR,PROVINCE",
+      "f": "geojson",
+      "outSR": "4326",
+      "maxAllowableOffset": "0.0005",
+      "geometryPrecision": "5"
+    },
+    "fetch": "browser-direct",
+    "cacheSeconds": 86400,
+    "maxFeatures": 2000
+  },
+  "display": {
+    "color": "#3fa34d",
+    "label": "CUR_NME",
+    "fields": [
+      "SITE_TYPE",
+      "D_DCLAR"
+    ],
+    "colorBy": {
+      "field": "SITE_TYPE",
+      "colors": {
+        "National Park": "#1b7837",
+        "Nature Reserve": "#5aae61",
+        "Special Nature Reserve": "#00441b",
+        "Forest Nature Reserve": "#7fbc41",
+        "Forest Wilderness Area": "#4d9221",
+        "Mountain Catchment Area": "#8c6bb1",
+        "Protected Environment": "#a6dba0",
+        "Marine Protected Area": "#2c7fb8",
+        "World Heritage Site": "#f1a340"
+      }
+    }
+  },
+  "licence": {
+    "name": "No licence stated on the service; display only",
+    "url": "https://screening.environment.gov.za/",
+    "operatorOptIn": true
+  },
+  "attribution": {
+    "text": "Department of Forestry, Fisheries and the Environment (SAPAD)",
+    "url": "https://screening.environment.gov.za/"
+  },
+  "status": "community",
+  "reviewed": "2026-11-25"
+}

@@ -1,0 +1,47 @@
+{
+  "id": "za-cpt-health-facilities",
+  "kind": "dataset",
+  "maintainer": "github:xolisaninkwentsha",
+  "family": "infrastructure",
+  "title": "Cape Town clinics and hospitals",
+  "provider": "City of Cape Town",
+  "description": "City and provincial clinics, community health centres and hospitals in Cape Town.",
+  "icon": "✚",
+  "coverage": {
+    "countries": [
+      "ZA"
+    ],
+    "bbox": [
+      18.3,
+      -34.4,
+      19,
+      -33.4
+    ]
+  },
+  "source": {
+    "format": "arcgis",
+    "url": "https://esapqa.capetown.gov.za/agsext/rest/services/Theme_Based/ODP_SPLIT_2/FeatureServer/13",
+    "fetch": "browser-direct",
+    "cacheSeconds": 86400,
+    "maxFeatures": 2000,
+    "maxPages": 2
+  },
+  "display": {
+    "color": "#eb5757",
+    "label": "NAME",
+    "fields": [
+      "TYPE",
+      "ADR"
+    ]
+  },
+  "licence": {
+    "name": "City of Cape Town Open Data Policy",
+    "url": "https://www.capetown.gov.za/general/city-of-cape-town-open-data-terms-of-use/"
+  },
+  "attribution": {
+    "text": "City of Cape Town",
+    "url": "https://odp-cctegis.opendata.arcgis.com/"
+  },
+  "status": "community",
+  "reviewed": "2026-11-25"
+}
