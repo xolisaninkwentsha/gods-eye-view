@@ -22,7 +22,7 @@ Translation source: abiyeenzo (#913).
 - Units: km, m, km/h, m/s, kt, ft, mph, hPa, MW, dB, °, % stay as written, with the English spacing (「250 km」, 「{frp} MW」, 「95 kt」). Code-built cockpit distances follow this too (`cockpitUnitCase` skips the HUD upper-casing for ja, as for zh). The cockpit's own speed caption is the HUD code KT, in 対地速度 · KT and under the readout.
 - Number ranges keep the English en dash, not ～: 「2–6日ごと」, 「50–99%」, 「南緯25°–北緯80°」.
 - Time units are words written straight after the number: 秒, 分, 時間, 日 (「5分前」, 「{count}時間」, 「1時間5分」). `formatQuantity` and `formatRelativeTime` drop the space for Japanese unit words, so code-built values match the catalog.
-- Counters follow the thing counted: 機 (aircraft), 隻 (ships), 基 (satellites), 台 (cameras, vehicles), 局 (stations), 件 (records, results, events), か所 (sites), 個 (generic). Prefer a counter to a bare number.
+- Counters follow the thing counted: 機 (aircraft), 隻 (ships), 基 (satellites), 台 (cameras, vehicles), 局 (stations), 社 (news outlets, media companies), 件 (records, results, events), か所 (sites), 個 (generic). Prefer a counter to a bare number.
 - Dates come from `Intl` and read year first: 2026年8月26日. Coordinates in prose are 北緯 / 東経; HUD hemisphere letters stay N, S, E, W.
 
 ## Plurals

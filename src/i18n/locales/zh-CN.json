@@ -4412,5 +4412,17 @@
   "District: {name} ({code})": "地区：{name}（{code}）",
   "Section 139 since {since} (CoGTA list, {asOf})": "自 {since} 起列入 Section 139（CoGTA 名单，{asOf}）",
   "Type: {type}": "类型：{type}",
-  "SA districts 2026": "南非地区 2026"
+  "SA districts 2026": "南非地区 2026",
+  "Click to open the story ↗": "点击打开新闻 ↗",
+  "Open the story: {title}": "打开新闻：{title}",
+  "GDELT unavailable": "GDELT 不可用",
+  "GDELT: {hours} of 24 h loaded": "GDELT：已加载 24 小时中的 {hours} 小时",
+  "Headlines: {failed} of {total} outlets unavailable": "新闻标题：{total} 家媒体中有 {failed} 家不可用",
+  "Malformed SA news": "南非新闻格式错误",
+  "SA news source unavailable": "南非新闻数据源不可用",
+  "GDELT events placed at city level and SA outlet headlines matched to town names. Click a card to open the story.": "GDELT 事件按城市级别定位，南非媒体新闻标题按城镇名称匹配。点击卡片可打开新闻。",
+  "Violence": "暴力",
+  "Other event": "其他事件",
+  "Headline": "新闻标题",
+  "SA news (24h)": "南非新闻（24 小时）"
 }

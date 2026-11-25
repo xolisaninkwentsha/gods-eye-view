@@ -4730,5 +4730,17 @@
   "District: {name} ({code})": "Округ: {name} ({code})",
   "Section 139 since {since} (CoGTA list, {asOf})": "Section 139 з {since} (список CoGTA, {asOf})",
   "Type: {type}": "Тип: {type}",
-  "SA districts 2026": "Окружні муніципалітети ПАР 2026"
+  "SA districts 2026": "Окружні муніципалітети ПАР 2026",
+  "Click to open the story ↗": "Натисніть, щоб відкрити новину ↗",
+  "Open the story: {title}": "Відкрити новину: {title}",
+  "GDELT unavailable": "GDELT недоступний",
+  "GDELT: {hours} of 24 h loaded": "GDELT: завантажено {hours} із 24 год",
+  "Headlines: {failed} of {total} outlets unavailable": "Заголовки: недоступно {failed} із {total} видань",
+  "Malformed SA news": "Некоректні дані новин ПАР",
+  "SA news source unavailable": "Джерело новин ПАР недоступне",
+  "GDELT events placed at city level and SA outlet headlines matched to town names. Click a card to open the story.": "Події GDELT розміщено на рівні міст, а заголовки південноафриканських ЗМІ зіставлено з назвами населених пунктів. Натисніть на картку, щоб відкрити новину.",
+  "Violence": "Насильство",
+  "Other event": "Інша подія",
+  "Headline": "Заголовок",
+  "SA news (24h)": "Новини в ПАР (24 год)"
 }

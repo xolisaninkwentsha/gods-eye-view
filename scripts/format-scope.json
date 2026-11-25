@@ -1751,5 +1751,15 @@
   "src/layers/saGovernance/records.test.mjs",
   "src/layers/saGovernance/source.test.mjs",
   "src/layers/saGovernance/views.test.mjs",
-  "docs/SOUTH_AFRICA_GOVERNANCE.md"
+  "docs/SOUTH_AFRICA_GOVERNANCE.md",
+  "server/providers/saNews/gdelt.test.mjs",
+  "server/providers/saNews/gdeltWindow.test.mjs",
+  "server/providers/saNews/places.test.mjs",
+  "server/providers/saNews/provider.test.mjs",
+  "server/providers/saNews/rss.test.mjs",
+  "src/layers/saNews/cards.test.mjs",
+  "src/layers/saNews/layer.test.mjs",
+  "src/layers/saNews/records.test.mjs",
+  "src/layers/saNews/source.test.mjs",
+  "docs/SOUTH_AFRICA_NEWS.md"
 ]

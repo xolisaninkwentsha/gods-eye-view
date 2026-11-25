@@ -46,7 +46,7 @@ test('catalogs construct distinct layers and classification from their supplied 
     signal: b.signal,
     surface: fixtureSurface(b.signal),
   });
-  assert.equal(first.layers.length, 46);
+  assert.equal(first.layers.length, 47);
   assert.ok(first.get('local-adsb'), 'Local ADS-B is registered');
   assert.deepEqual(
     first.metadata.find(({ id }) => id === 'osm-places'),
@@ -80,6 +80,7 @@ test('catalogs construct distinct layers and classification from their supplied 
   assert.ok(first.get('sa-councils-2026'));
   assert.ok(first.get('sa-wards-2026'));
   assert.ok(first.get('sa-weather-warnings'));
+  assert.ok(first.get('sa-news'));
   assert.ok(first.get('sa-earthquakes'));
   assert.ok(first.get('sa-districts-2026'));
   assert.ok(first.get('news'));
@@ -183,7 +184,7 @@ test('Mapillary can be omitted or replaced without changing catalog membership',
     surface: fixtureSurface(lifetime.signal),
   };
   const catalog = createApplicationCatalog(options);
-  assert.equal(catalog.layers.length, 46);
+  assert.equal(catalog.layers.length, 47);
   assert.deepEqual(catalog.get('street-level').providerIds, []);
   assert.equal(
     catalogControlServices(catalog).streetLevelLayer,

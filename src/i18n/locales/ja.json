@@ -4412,5 +4412,17 @@
   "District: {name} ({code})": "地区：{name}（{code}）",
   "Section 139 since {since} (CoGTA list, {asOf})": "Section 139：{since}から（CoGTAリスト、{asOf}）",
   "Type: {type}": "種別：{type}",
-  "SA districts 2026": "南アフリカの地区 2026"
+  "SA districts 2026": "南アフリカの地区 2026",
+  "Click to open the story ↗": "クリックで記事を開く ↗",
+  "Open the story: {title}": "記事を開く：{title}",
+  "GDELT unavailable": "GDELTを利用できません",
+  "GDELT: {hours} of 24 h loaded": "GDELT：24時間のうち{hours}時間分を読込済み",
+  "Headlines: {failed} of {total} outlets unavailable": "見出し：{total}社中{failed}社が利用できません",
+  "Malformed SA news": "南アフリカのニュースの形式が不正です",
+  "SA news source unavailable": "南アフリカのニュースのソースは利用できません",
+  "GDELT events placed at city level and SA outlet headlines matched to town names. Click a card to open the story.": "GDELTのイベントは市レベルで、南アフリカの報道機関の見出しは町名に対応づけて配置しています。カードをクリックすると記事を開きます。",
+  "Violence": "暴力",
+  "Other event": "その他のイベント",
+  "Headline": "見出し",
+  "SA news (24h)": "南アフリカのニュース（24時間）"
 }

@@ -39,6 +39,7 @@ import { createApplicationSaElections } from './layers/saElections.js';
 import { createApplicationSaDistricts } from './layers/saDistricts.js';
 import { createApplicationSaWeather } from './layers/saWeather.js';
 import { createApplicationSaQuakes } from './layers/saQuakes.js';
+import { createApplicationSaNews } from './layers/saNews.js';
 import { createApplicationNews } from './layers/news.js';
 import { createApplicationWildlifeSightings } from './layers/wildlifeSightings.js';
 import { createApplicationCables } from './layers/submarineCables.js';
@@ -65,6 +66,7 @@ export const LOCAL_ONLY_LAYER_METADATA = Object.freeze([
   // And the district outlines, which sit beside the councils.
   Object.freeze({ id: 'sa-districts-2026', disposition: 'local-only' }),
   Object.freeze({ id: 'sa-earthquakes', disposition: 'local-only' }),
+  Object.freeze({ id: 'sa-news', disposition: 'local-only' }),
 ]);
 
 /** Serialization metadata for every layer the application catalog constructs. */
@@ -185,6 +187,9 @@ export function createApplicationCatalog({
         }),
         createApplicationSaQuakes({
           source: sources['sa-earthquakes'],
+        }),
+        createApplicationSaNews({
+          source: sources['sa-news'],
         }),
         // Ages, the window and the counts read the world clock: a host that
         // follows it for the layer shows the news at the time on the timeline.

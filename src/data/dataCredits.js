@@ -137,6 +137,13 @@ export const DATA_CREDITS = [
     html: 'SA earthquakes: <a href="https://www.seismicportal.eu/" target="_blank" rel="noopener">EMSC-CSEM SeismicPortal</a> (CC BY 4.0), recorded by the South African National Seismograph Network (Council for Geoscience)',
   },
   {
+    key: 'za-news',
+    html:
+      'SA news: events from the <a href="https://www.gdeltproject.org/" target="_blank" rel="noopener">GDELT Project</a> · ' +
+      'town names from <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a> (CC BY 4.0) · ' +
+      'headlines from IOL, Daily Maverick, TimesLIVE, Mail &amp; Guardian, GroundUp, eNCA, The Citizen and SAnews',
+  },
+  {
     key: 'opensky',
     html:
       'Flights: OpenSky Network — Schäfer et al., ' +

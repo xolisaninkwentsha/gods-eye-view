@@ -82,6 +82,7 @@ const PANEL_GROUPS = [
       'sa-weather-warnings',
       'sa-earthquakes',
       'sa-districts-2026',
+      'sa-news',
     ],
   },
   {

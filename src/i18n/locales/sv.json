@@ -4518,5 +4518,17 @@
   "District: {name} ({code})": "Distrikt: {name} ({code})",
   "Section 139 since {since} (CoGTA list, {asOf})": "Section 139 sedan {since} (CoGTA-lista, {asOf})",
   "Type: {type}": "Typ: {type}",
-  "SA districts 2026": "Sydafrikas distrikt 2026"
+  "SA districts 2026": "Sydafrikas distrikt 2026",
+  "Click to open the story ↗": "Klicka för att öppna nyheten ↗",
+  "Open the story: {title}": "Öppna nyheten: {title}",
+  "GDELT unavailable": "GDELT inte tillgänglig",
+  "GDELT: {hours} of 24 h loaded": "GDELT: {hours} av 24 h laddade",
+  "Headlines: {failed} of {total} outlets unavailable": "Rubriker: {failed} av {total} medier är inte tillgängliga",
+  "Malformed SA news": "Felformaterade nyhetsdata för Sydafrika",
+  "SA news source unavailable": "Källan för nyheter från Sydafrika är inte tillgänglig",
+  "GDELT events placed at city level and SA outlet headlines matched to town names. Click a card to open the story.": "GDELT-händelser placerade på stadsnivå och rubriker från sydafrikanska medier kopplade till ortnamn. Klicka på ett kort för att öppna nyheten.",
+  "Violence": "Våld",
+  "Other event": "Annan händelse",
+  "Headline": "Rubrik",
+  "SA news (24h)": "Nyheter i Sydafrika (24 h)"
 }

@@ -4942,5 +4942,17 @@
   "District: {name} ({code})": "المقاطعة: {name} ({code})",
   "Section 139 since {since} (CoGTA list, {asOf})": "Section 139 منذ {since} (قائمة CoGTA، {asOf})",
   "Type: {type}": "النوع: {type}",
-  "SA districts 2026": "مقاطعات جنوب أفريقيا 2026"
+  "SA districts 2026": "مقاطعات جنوب أفريقيا 2026",
+  "Click to open the story ↗": "انقر لفتح الخبر ↗",
+  "Open the story: {title}": "فتح الخبر: {title}",
+  "GDELT unavailable": "GDELT غير متاح",
+  "GDELT: {hours} of 24 h loaded": "GDELT: تم تحميل {hours} من 24 س",
+  "Headlines: {failed} of {total} outlets unavailable": "العناوين: {failed} من أصل {total} من المنافذ الإخبارية غير متاحة",
+  "Malformed SA news": "بيانات أخبار جنوب أفريقيا مشوّهة",
+  "SA news source unavailable": "مصدر أخبار جنوب أفريقيا غير متاح",
+  "GDELT events placed at city level and SA outlet headlines matched to town names. Click a card to open the story.": "أحداث GDELT محدّدة على مستوى المدينة، وعناوين المنافذ الإخبارية في جنوب أفريقيا مطابقة لأسماء البلدات. انقر على بطاقة لفتح الخبر.",
+  "Violence": "عنف",
+  "Other event": "حدث آخر",
+  "Headline": "عنوان خبر",
+  "SA news (24h)": "أخبار جنوب أفريقيا (24 ساعة)"
 }

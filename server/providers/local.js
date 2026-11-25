@@ -36,6 +36,7 @@ import { saElectionsProxy } from './saElections/index.js';
 import { saWeatherWarningsProxy } from './saWeather/index.js';
 import { saQuakesProxy } from './saQuakes.js';
 import { saGovernanceProxy } from './saGovernance/index.js';
+import { saNewsProxy } from './saNews/index.js';
 import { newsProxy } from './news.js';
 import { inaturalistProxy } from './inaturalist/observations.js';
 import { acartiaProxy } from './acartia.js';
@@ -100,6 +101,7 @@ function localProviderPlugins({
     saWeatherWarningsProxy(),
     saQuakesProxy(),
     saGovernanceProxy(),
+    saNewsProxy(),
     newsProxy(),
     inaturalistProxy(),
     acartiaProxy(),

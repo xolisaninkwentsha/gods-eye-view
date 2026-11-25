@@ -1,0 +1,2529 @@
+{
+  "source": "GeoNames (geonames.org), CC BY 4.0",
+  "generated": "2026-11-24",
+  "towns": [
+    { "name": "Aberdeen", "lat": -32.4759, "lon": 24.0653, "population": 8580 },
+    {
+      "name": "Acornhoek",
+      "lat": -24.5878,
+      "lon": 31.0947,
+      "population": 33529
+    },
+    { "name": "Addo", "lat": -33.5483, "lon": 25.6899, "population": 7475 },
+    {
+      "name": "Adelaide",
+      "lat": -32.7075,
+      "lon": 26.2956,
+      "population": 14606
+    },
+    {
+      "name": "Albert Falls",
+      "lat": -29.4404,
+      "lon": 30.4334,
+      "population": 5434
+    },
+    { "name": "Albertina", "lat": -34.2054, "lon": 21.58, "population": 7634 },
+    {
+      "name": "Alberton",
+      "lat": -26.2679,
+      "lon": 28.1223,
+      "population": 121536
+    },
+    {
+      "name": "Alexandra",
+      "lat": -26.1053,
+      "lon": 28.0988,
+      "population": 179624
+    },
+    {
+      "name": "Alexandria",
+      "lat": -33.6535,
+      "lon": 26.4127,
+      "population": 12084
+    },
+    { "name": "Alice", "lat": -32.7875, "lon": 26.8344, "population": 18141 },
+    {
+      "name": "Aliwal North",
+      "lat": -30.6937,
+      "lon": 26.7114,
+      "population": 44436
+    },
+    {
+      "name": "Allanridge",
+      "lat": -27.7543,
+      "lon": 26.6438,
+      "population": 31700
+    },
+    {
+      "name": "Allemansdrif",
+      "lat": -25.114,
+      "lon": 28.9095,
+      "population": 12670
+    },
+    { "name": "Amalia", "lat": -27.2484, "lon": 25.0458, "population": 6566 },
+    {
+      "name": "Amandelbult",
+      "lat": -24.8181,
+      "lon": 27.2966,
+      "population": 25587
+    },
+    {
+      "name": "Amersfoort",
+      "lat": -27.0094,
+      "lon": 29.8664,
+      "population": 14778
+    },
+    { "name": "Ashton", "lat": -33.8314, "lon": 20.056, "population": 15964 },
+    {
+      "name": "Athlone",
+      "lat": -33.9672,
+      "lon": 18.5021,
+      "population": 237414
+    },
+    {
+      "name": "Atlantis",
+      "lat": -33.5667,
+      "lon": 18.4834,
+      "population": 82736
+    },
+    { "name": "Babirwa", "lat": -23.4297, "lon": 28.609, "population": 5006 },
+    { "name": "Bagale", "lat": -26.0657, "lon": 27.6477, "population": 16087 },
+    { "name": "Balfour", "lat": -26.6633, "lon": 28.5902, "population": 46008 },
+    {
+      "name": "Ballitoville",
+      "lat": -29.539,
+      "lon": 31.2144,
+      "population": 27718
+    },
+    {
+      "name": "Barberton",
+      "lat": -25.7884,
+      "lon": 31.0532,
+      "population": 67927
+    },
+    {
+      "name": "Barkly East",
+      "lat": -30.9683,
+      "lon": 27.5957,
+      "population": 11965
+    },
+    {
+      "name": "Barkly West",
+      "lat": -28.5354,
+      "lon": 24.5215,
+      "population": 11621
+    },
+    { "name": "Bathurst", "lat": -33.4998, "lon": 26.8294, "population": 7630 },
+    {
+      "name": "Beaufort West",
+      "lat": -32.3567,
+      "lon": 22.583,
+      "population": 44737
+    },
+    { "name": "Bedford", "lat": -32.679, "lon": 26.0869, "population": 10506 },
+    {
+      "name": "Bela Bela",
+      "lat": -24.8833,
+      "lon": 28.2833,
+      "population": 90210
+    },
+    { "name": "Belfast", "lat": -25.6899, "lon": 30.035, "population": 20036 },
+    { "name": "Benoni", "lat": -26.1885, "lon": 28.3208, "population": 605344 },
+    { "name": "Berea", "lat": -29.8518, "lon": 30.9934, "population": 15000 },
+    { "name": "Bethal", "lat": -26.4579, "lon": 29.4655, "population": 72821 },
+    {
+      "name": "Bethlehem",
+      "lat": -28.2308,
+      "lon": 28.3071,
+      "population": 91075
+    },
+    { "name": "Bethulie", "lat": -30.4986, "lon": 25.9746, "population": 7783 },
+    { "name": "Bhisho", "lat": -32.8472, "lon": 27.4422, "population": 137287 },
+    { "name": "Bizana", "lat": -30.8591, "lon": 29.8538, "population": 9553 },
+    {
+      "name": "Bloemfontein",
+      "lat": -29.1211,
+      "lon": 26.214,
+      "population": 556637
+    },
+    { "name": "Bloemhof", "lat": -27.6468, "lon": 25.607, "population": 33432 },
+    { "name": "Bochum", "lat": -23.2861, "lon": 29.1396, "population": 12000 },
+    { "name": "Boipelo", "lat": -27.5654, "lon": 24.1849, "population": 5010 },
+    {
+      "name": "Boksburg",
+      "lat": -26.212,
+      "lon": 28.2596,
+      "population": 445168
+    },
+    {
+      "name": "Bolla-Tau",
+      "lat": -24.6328,
+      "lon": 31.1311,
+      "population": 12703
+    },
+    {
+      "name": "Bonnievale",
+      "lat": -33.9322,
+      "lon": 20.0992,
+      "population": 10893
+    },
+    { "name": "Bontrug", "lat": -33.3979, "lon": 25.4828, "population": 10057 },
+    {
+      "name": "Bosfontein",
+      "lat": -25.7424,
+      "lon": 31.618,
+      "population": 7811
+    },
+    { "name": "Boshof", "lat": -28.5391, "lon": 25.2397, "population": 10194 },
+    {
+      "name": "Bothaville",
+      "lat": -27.3887,
+      "lon": 26.617,
+      "population": 71934
+    },
+    {
+      "name": "Botrivier",
+      "lat": -34.2257,
+      "lon": 19.2031,
+      "population": 6594
+    },
+    {
+      "name": "Botshabelo",
+      "lat": -29.2674,
+      "lon": 26.726,
+      "population": 309714
+    },
+    {
+      "name": "Brakpan",
+      "lat": -26.2366,
+      "lon": 28.3694,
+      "population": 305692
+    },
+    {
+      "name": "Bredasdorp",
+      "lat": -34.5321,
+      "lon": 20.0403,
+      "population": 18599
+    },
+    { "name": "Breyten", "lat": -26.3018, "lon": 29.987, "population": 17189 },
+    { "name": "Brits", "lat": -25.6347, "lon": 27.7802, "population": 122497 },
+    {
+      "name": "Bronkhorstspruit",
+      "lat": -25.8101,
+      "lon": 28.7425,
+      "population": 41209
+    },
+    {
+      "name": "Bultfontein",
+      "lat": -28.2876,
+      "lon": 26.15,
+      "population": 27994
+    },
+    {
+      "name": "Burgersdorp",
+      "lat": -30.9977,
+      "lon": 26.3286,
+      "population": 19159
+    },
+    {
+      "name": "Burgersfort",
+      "lat": -24.6755,
+      "lon": 30.3288,
+      "population": 7630
+    },
+    {
+      "name": "Butterworth",
+      "lat": -32.3308,
+      "lon": 28.1498,
+      "population": 53086
+    },
+    {
+      "name": "Buyisonto",
+      "lat": -24.7901,
+      "lon": 31.1303,
+      "population": 10472
+    },
+    { "name": "Cala", "lat": -31.5236, "lon": 27.6952, "population": 15764 },
+    {
+      "name": "Calcutta",
+      "lat": -24.9832,
+      "lon": 31.2349,
+      "population": 35864
+    },
+    { "name": "Caledon", "lat": -34.23, "lon": 19.4265, "population": 16752 },
+    {
+      "name": "Calitzdorp",
+      "lat": -33.5275,
+      "lon": 21.6762,
+      "population": 5133
+    },
+    { "name": "Calvinia", "lat": -31.4707, "lon": 19.776, "population": 8146 },
+    {
+      "name": "Cape Town",
+      "lat": -33.9258,
+      "lon": 18.4232,
+      "population": 4772846
+    },
+    {
+      "name": "Carletonville",
+      "lat": -26.3609,
+      "lon": 27.3977,
+      "population": 182304
+    },
+    { "name": "Carnarvon", "lat": -30.9683, "lon": 22.133, "population": 5785 },
+    {
+      "name": "Carolina",
+      "lat": -26.0693,
+      "lon": 30.1149,
+      "population": 20184
+    },
+    {
+      "name": "Carousel View",
+      "lat": -25.3226,
+      "lon": 28.2896,
+      "population": 8875
+    },
+    { "name": "Cathcart", "lat": -32.2985, "lon": 27.1436, "population": 8818 },
+    {
+      "name": "Cato Ridge",
+      "lat": -29.7333,
+      "lon": 30.5833,
+      "population": 5168
+    },
+    {
+      "name": "Cedarville",
+      "lat": -30.3842,
+      "lon": 29.0416,
+      "population": 5286
+    },
+    {
+      "name": "Centurion",
+      "lat": -25.8589,
+      "lon": 28.1858,
+      "population": 236580
+    },
+    { "name": "Ceres", "lat": -33.3689, "lon": 19.3109, "population": 41596 },
+    {
+      "name": "Charlestown",
+      "lat": -27.4111,
+      "lon": 29.8738,
+      "population": 5262
+    },
+    {
+      "name": "Christiana",
+      "lat": -27.914,
+      "lon": 25.1611,
+      "population": 25019
+    },
+    {
+      "name": "Citrusdal",
+      "lat": -32.5921,
+      "lon": 19.0152,
+      "population": 8598
+    },
+    {
+      "name": "Clanwilliam",
+      "lat": -32.1817,
+      "lon": 18.8922,
+      "population": 9194
+    },
+    {
+      "name": "Claremont",
+      "lat": -33.9806,
+      "lon": 18.4653,
+      "population": 14531
+    },
+    { "name": "Clarens", "lat": -28.5154, "lon": 28.4199, "population": 7644 },
+    {
+      "name": "Clydesdale",
+      "lat": -30.2983,
+      "lon": 29.9377,
+      "population": 18357
+    },
+    {
+      "name": "Cofimvaba",
+      "lat": -32.0011,
+      "lon": 27.5805,
+      "population": 10523
+    },
+    { "name": "Colenso", "lat": -28.7393, "lon": 29.8258, "population": 7653 },
+    { "name": "Colesberg", "lat": -30.72, "lon": 25.0972, "population": 12423 },
+    { "name": "Coligny", "lat": -26.3317, "lon": 26.3207, "population": 20701 },
+    {
+      "name": "Constantia",
+      "lat": -34.0314,
+      "lon": 18.4183,
+      "population": 6922
+    },
+    {
+      "name": "Cookhouse",
+      "lat": -32.7432,
+      "lon": 25.8004,
+      "population": 6837
+    },
+    { "name": "Cradock", "lat": -32.1642, "lon": 25.6192, "population": 43936 },
+    {
+      "name": "Craigieburn",
+      "lat": -30.1971,
+      "lon": 30.7522,
+      "population": 13543
+    },
+    {
+      "name": "Cullinan",
+      "lat": -25.6709,
+      "lon": 28.5236,
+      "population": 34087
+    },
+    {
+      "name": "Daggakraal",
+      "lat": -27.1325,
+      "lon": 29.9764,
+      "population": 15793
+    },
+    {
+      "name": "Daniëlskuil",
+      "lat": -28.1887,
+      "lon": 23.5395,
+      "population": 10123
+    },
+    {
+      "name": "Dannhauser",
+      "lat": -28.0151,
+      "lon": 30.0566,
+      "population": 10378
+    },
+    { "name": "Darling", "lat": -33.3782, "lon": 18.3794, "population": 12484 },
+    { "name": "Darnall", "lat": -29.2668, "lon": 31.3576, "population": 10106 },
+    { "name": "De Aar", "lat": -30.6497, "lon": 24.0123, "population": 32318 },
+    {
+      "name": "De Doorns",
+      "lat": -33.4771,
+      "lon": 19.6663,
+      "population": 12679
+    },
+    {
+      "name": "Dealesville",
+      "lat": -28.6749,
+      "lon": 25.7668,
+      "population": 6524
+    },
+    {
+      "name": "Delareyville",
+      "lat": -26.6864,
+      "lon": 25.4591,
+      "population": 12736
+    },
+    { "name": "Delmas", "lat": -26.1466, "lon": 28.6832, "population": 92046 },
+    {
+      "name": "Deneysville",
+      "lat": -26.8908,
+      "lon": 28.0971,
+      "population": 23337
+    },
+    {
+      "name": "Despatch",
+      "lat": -33.8017,
+      "lon": 25.4628,
+      "population": 39619
+    },
+    { "name": "Devon", "lat": -26.3558, "lon": 28.7784, "population": 11476 },
+    {
+      "name": "Dewetsdorp",
+      "lat": -29.5827,
+      "lon": 26.6651,
+      "population": 11379
+    },
+    {
+      "name": "Diepsloot",
+      "lat": -25.9331,
+      "lon": 28.0121,
+      "population": 350000
+    },
+    { "name": "Dimbaza", "lat": -32.8348, "lon": 27.2174, "population": 26099 },
+    { "name": "Doornkop", "lat": -25.6083, "lon": 29.4312, "population": 6037 },
+    {
+      "name": "Dordrecht",
+      "lat": -31.372,
+      "lon": 27.0488,
+      "population": 12292
+    },
+    {
+      "name": "Driefontein",
+      "lat": -26.965,
+      "lon": 30.4357,
+      "population": 28127
+    },
+    {
+      "name": "Driekoppies",
+      "lat": -25.6978,
+      "lon": 31.564,
+      "population": 18498
+    },
+    {
+      "name": "Duiwelskloof",
+      "lat": -23.6934,
+      "lon": 30.14,
+      "population": 24572
+    },
+    {
+      "name": "Dullstroom",
+      "lat": -25.4167,
+      "lon": 30.1061,
+      "population": 6256
+    },
+    { "name": "Dundee", "lat": -28.1668, "lon": 30.2337, "population": 84413 },
+    {
+      "name": "Durban",
+      "lat": -29.8579,
+      "lon": 31.0292,
+      "population": 3338026
+    },
+    {
+      "name": "Durbanville",
+      "lat": -33.8308,
+      "lon": 18.6486,
+      "population": 54286
+    },
+    { "name": "Dutywa", "lat": -32.0962, "lon": 28.3049, "population": 13270 },
+    {
+      "name": "Dwarsloop",
+      "lat": -24.7946,
+      "lon": 31.1028,
+      "population": 35397
+    },
+    {
+      "name": "Dysselsdorp",
+      "lat": -33.5757,
+      "lon": 22.4439,
+      "population": 15029
+    },
+    {
+      "name": "East London",
+      "lat": -33.0153,
+      "lon": 27.9116,
+      "population": 478676
+    },
+    {
+      "name": "Eastleigh",
+      "lat": -26.1297,
+      "lon": 28.1554,
+      "population": 6988
+    },
+    {
+      "name": "Eden Glen",
+      "lat": -26.1323,
+      "lon": 28.1686,
+      "population": 7345
+    },
+    {
+      "name": "Eden Glen Ext 60",
+      "lat": -26.1259,
+      "lon": 28.165,
+      "population": 5494
+    },
+    { "name": "Edenburg", "lat": -29.7366, "lon": 25.9364, "population": 7739 },
+    {
+      "name": "Edenvale",
+      "lat": -26.1409,
+      "lon": 28.1525,
+      "population": 49292
+    },
+    {
+      "name": "Edenville",
+      "lat": -27.5518,
+      "lon": 27.6763,
+      "population": 7540
+    },
+    {
+      "name": "Edinburgh A",
+      "lat": -24.6898,
+      "lon": 31.1796,
+      "population": 7305
+    },
+    { "name": "Ekangala", "lat": -25.668, "lon": 28.73, "population": 58099 },
+    {
+      "name": "Ekulindeni",
+      "lat": -26.046,
+      "lon": 31.0232,
+      "population": 5416
+    },
+    {
+      "name": "Ekuvukeni",
+      "lat": -28.4675,
+      "lon": 30.1551,
+      "population": 14331
+    },
+    {
+      "name": "Elandskraal",
+      "lat": -24.7209,
+      "lon": 29.4078,
+      "population": 7621
+    },
+    {
+      "name": "Emalahleni",
+      "lat": -25.8713,
+      "lon": 29.2332,
+      "population": 373403
+    },
+    {
+      "name": "Embhojeni",
+      "lat": -25.7179,
+      "lon": 31.4793,
+      "population": 12589
+    },
+    { "name": "Emgwenya", "lat": -25.6368, "lon": 30.324, "population": 7410 },
+    {
+      "name": "Empangeni",
+      "lat": -28.762,
+      "lon": 31.8933,
+      "population": 33075
+    },
+    { "name": "Empuluzu", "lat": -26.305, "lon": 30.7737, "population": 15008 },
+    {
+      "name": "Emtfuntini",
+      "lat": -25.6841,
+      "lon": 31.637,
+      "population": 11323
+    },
+    { "name": "Ermelo", "lat": -26.5333, "lon": 29.9833, "population": 100324 },
+    { "name": "Eshowe", "lat": -28.8865, "lon": 31.4699, "population": 17663 },
+    {
+      "name": "Estcourt",
+      "lat": -29.0127,
+      "lon": 29.8662,
+      "population": 26444
+    },
+    {
+      "name": "Etwatwa",
+      "lat": -26.1252,
+      "lon": 28.4547,
+      "population": 151866
+    },
+    { "name": "Evander", "lat": -26.4706, "lon": 29.1097, "population": 12180 },
+    { "name": "Evaton", "lat": -26.5333, "lon": 27.85, "population": 725468 },
+    {
+      "name": "Excelsior",
+      "lat": -28.9409,
+      "lon": 27.0607,
+      "population": 7594
+    },
+    { "name": "Fernie", "lat": -26.3901, "lon": 30.7874, "population": 15693 },
+    {
+      "name": "Ficksburg",
+      "lat": -28.872,
+      "lon": 27.8751,
+      "population": 49420
+    },
+    {
+      "name": "Fisantekraal",
+      "lat": -33.7854,
+      "lon": 18.7141,
+      "population": 14819
+    },
+    {
+      "name": "Flagstaff",
+      "lat": -31.0804,
+      "lon": 29.4952,
+      "population": 12280
+    },
+    {
+      "name": "Fochville",
+      "lat": -26.4886,
+      "lon": 27.4939,
+      "population": 62416
+    },
+    { "name": "Folweni", "lat": -29.9957, "lon": 30.8072, "population": 36425 },
+    {
+      "name": "Fort Beaufort",
+      "lat": -32.7748,
+      "lon": 26.6338,
+      "population": 58419
+    },
+    {
+      "name": "Fouriesburg",
+      "lat": -28.6196,
+      "lon": 28.2097,
+      "population": 15544
+    },
+    {
+      "name": "Frankfort",
+      "lat": -27.2789,
+      "lon": 28.497,
+      "population": 31323
+    },
+    {
+      "name": "Franschhoek",
+      "lat": -33.9107,
+      "lon": 19.1198,
+      "population": 20000
+    },
+    {
+      "name": "Frischgewaagd",
+      "lat": -27.3898,
+      "lon": 30.9547,
+      "population": 16192
+    },
+    {
+      "name": "Ga-Kgapane",
+      "lat": -23.6438,
+      "lon": 30.2232,
+      "population": 13000
+    },
+    {
+      "name": "Ga-Malakhe",
+      "lat": -30.8063,
+      "lon": 30.3348,
+      "population": 16891
+    },
+    {
+      "name": "Ga-Rankuwa",
+      "lat": -25.6169,
+      "lon": 27.9947,
+      "population": 90945
+    },
+    {
+      "name": "GaSekhaolelo",
+      "lat": -23.9552,
+      "lon": 28.9834,
+      "population": 5232
+    },
+    { "name": "Gansbaai", "lat": -34.583, "lon": 19.3505, "population": 15957 },
+    {
+      "name": "Gemsbokspruit",
+      "lat": -25.4034,
+      "lon": 28.8786,
+      "population": 8138
+    },
+    {
+      "name": "Genadendal",
+      "lat": -34.0378,
+      "lon": 19.5622,
+      "population": 6784
+    },
+    { "name": "George", "lat": -33.963, "lon": 22.4617, "population": 188580 },
+    {
+      "name": "Germiston",
+      "lat": -26.215,
+      "lon": 28.164,
+      "population": 255863
+    },
+    { "name": "Giyani", "lat": -23.3025, "lon": 30.7187, "population": 37024 },
+    { "name": "Glencoe", "lat": -28.1783, "lon": 30.147, "population": 21024 },
+    {
+      "name": "Glenharvie",
+      "lat": -26.3899,
+      "lon": 27.6159,
+      "population": 11763
+    },
+    { "name": "Glenmore", "lat": -26.2647, "lon": 30.8436, "population": 7180 },
+    { "name": "Godide", "lat": -24.729, "lon": 31.237, "population": 6291 },
+    { "name": "Gonubie", "lat": -32.9443, "lon": 28.015, "population": 23733 },
+    {
+      "name": "Gqeberha",
+      "lat": -33.9611,
+      "lon": 25.6149,
+      "population": 1050078
+    },
+    {
+      "name": "Graaff Reinet",
+      "lat": -32.2521,
+      "lon": 24.5308,
+      "population": 62896
+    },
+    { "name": "Grabouw", "lat": -34.1515, "lon": 19.0151, "population": 37490 },
+    {
+      "name": "Grahamstown",
+      "lat": -33.3042,
+      "lon": 26.5328,
+      "population": 91548
+    },
+    {
+      "name": "Greytown",
+      "lat": -29.0641,
+      "lon": 30.5928,
+      "population": 23139
+    },
+    {
+      "name": "Groot-Brakrivier",
+      "lat": -34.0437,
+      "lon": 22.2257,
+      "population": 18008
+    },
+    {
+      "name": "Grootvlei",
+      "lat": -26.7625,
+      "lon": 28.4838,
+      "population": 6487
+    },
+    {
+      "name": "Hammanskraal",
+      "lat": -25.4089,
+      "lon": 28.287,
+      "population": 112950
+    },
+    { "name": "Hankey", "lat": -33.8331, "lon": 24.8836, "population": 14091 },
+    { "name": "Harding", "lat": -30.5764, "lon": 29.884, "population": 11434 },
+    {
+      "name": "Harrismith",
+      "lat": -28.2728,
+      "lon": 29.1295,
+      "population": 33390
+    },
+    {
+      "name": "Hartbeesfontein",
+      "lat": -26.7657,
+      "lon": 26.4202,
+      "population": 22294
+    },
+    {
+      "name": "Hartbeespoort",
+      "lat": -25.7287,
+      "lon": 27.87,
+      "population": 26732
+    },
+    {
+      "name": "Hartbeestfontein-A",
+      "lat": -25.4414,
+      "lon": 27.5111,
+      "population": 31554
+    },
+    {
+      "name": "Hazelmere",
+      "lat": -29.5966,
+      "lon": 31.0436,
+      "population": 10605
+    },
+    { "name": "Hazyview", "lat": -25.044, "lon": 31.1277, "population": 5074 },
+    {
+      "name": "Heidelberg",
+      "lat": -26.5048,
+      "lon": 28.3592,
+      "population": 85858
+    },
+    {
+      "name": "Heilbron",
+      "lat": -27.2811,
+      "lon": 27.9709,
+      "population": 32836
+    },
+    {
+      "name": "Hendrina",
+      "lat": -26.1588,
+      "lon": 29.7153,
+      "population": 27300
+    },
+    {
+      "name": "Hennenman",
+      "lat": -27.9765,
+      "lon": 27.0242,
+      "population": 22847
+    },
+    {
+      "name": "Hermanus",
+      "lat": -34.4187,
+      "lon": 19.2345,
+      "population": 56139
+    },
+    {
+      "name": "Hertzogville",
+      "lat": -28.1276,
+      "lon": 25.5039,
+      "population": 11289
+    },
+    {
+      "name": "Hlanganani",
+      "lat": -24.9591,
+      "lon": 31.1703,
+      "population": 21506
+    },
+    {
+      "name": "Hlohlolwane",
+      "lat": -28.9159,
+      "lon": 27.5696,
+      "population": 21089
+    },
+    { "name": "Hluvukani", "lat": -24.6453, "lon": 31.341, "population": 9631 },
+    {
+      "name": "Hoopstad",
+      "lat": -27.8327,
+      "lon": 25.9083,
+      "population": 19209
+    },
+    {
+      "name": "Hopefield",
+      "lat": -33.0625,
+      "lon": 18.3491,
+      "population": 7457
+    },
+    {
+      "name": "Hopewell",
+      "lat": -29.7917,
+      "lon": 30.3959,
+      "population": 13321
+    },
+    { "name": "Howick", "lat": -29.4779, "lon": 30.2306, "population": 32453 },
+    {
+      "name": "Humansdorp",
+      "lat": -34.029,
+      "lon": 24.7691,
+      "population": 34733
+    },
+    { "name": "Ilinge", "lat": -31.9768, "lon": 27.0427, "population": 12806 },
+    { "name": "Ilitha", "lat": -32.8924, "lon": 27.5305, "population": 9757 },
+    { "name": "Inanda", "lat": -29.6139, "lon": 30.9282, "population": 10032 },
+    { "name": "Indwe", "lat": -31.4667, "lon": 27.3333, "population": 9505 },
+    { "name": "Itekeng", "lat": -26.3593, "lon": 25.9069, "population": 6740 },
+    {
+      "name": "Itsoseng",
+      "lat": -26.0816,
+      "lon": 25.8812,
+      "population": 23913
+    },
+    {
+      "name": "Ivory Park",
+      "lat": -26.002,
+      "lon": 28.19,
+      "population": 184383
+    },
+    { "name": "Ixopo", "lat": -30.15, "lon": 30.0833, "population": 14929 },
+    {
+      "name": "Jacobsdal",
+      "lat": -29.1279,
+      "lon": 24.7738,
+      "population": 10497
+    },
+    {
+      "name": "Jagersfontein",
+      "lat": -29.7613,
+      "lon": 25.4271,
+      "population": 6865
+    },
+    {
+      "name": "James Calata",
+      "lat": -31.1214,
+      "lon": 26.8067,
+      "population": 5590
+    },
+    {
+      "name": "Jan Kempdorp",
+      "lat": -27.9225,
+      "lon": 24.8305,
+      "population": 13485
+    },
+    {
+      "name": "Jansenville",
+      "lat": -32.9431,
+      "lon": 24.6722,
+      "population": 6723
+    },
+    {
+      "name": "Jeffreys Bay",
+      "lat": -34.0453,
+      "lon": 24.9215,
+      "population": 32477
+    },
+    {
+      "name": "Johannesburg",
+      "lat": -26.2023,
+      "lon": 28.0436,
+      "population": 9418183
+    },
+    {
+      "name": "Joubertina",
+      "lat": -33.8255,
+      "lon": 23.8562,
+      "population": 7472
+    },
+    { "name": "Justicia", "lat": -24.88, "lon": 31.4132, "population": 6221 },
+    {
+      "name": "Ka-Mhinga",
+      "lat": -22.7577,
+      "lon": 30.8998,
+      "population": 12609
+    },
+    { "name": "Kakamas", "lat": -28.7734, "lon": 20.6147, "population": 9538 },
+    {
+      "name": "Kamalamule",
+      "lat": -24.8758,
+      "lon": 31.3118,
+      "population": 8766
+    },
+    {
+      "name": "Kamaqhekeza",
+      "lat": -25.6703,
+      "lon": 31.8629,
+      "population": 25390
+    },
+    {
+      "name": "Kamhlushwa",
+      "lat": -25.6636,
+      "lon": 31.6834,
+      "population": 7917
+    },
+    {
+      "name": "Kareedouw",
+      "lat": -33.9528,
+      "lon": 24.2905,
+      "population": 5972
+    },
+    {
+      "name": "Kariega",
+      "lat": -33.7556,
+      "lon": 25.4007,
+      "population": 291052
+    },
+    { "name": "Kathu", "lat": -27.6957, "lon": 23.0493, "population": 9219 },
+    { "name": "Kenton", "lat": -33.6667, "lon": 26.65, "population": 13539 },
+    { "name": "Kestell", "lat": -28.3109, "lon": 28.7036, "population": 9907 },
+    {
+      "name": "Kgapamadi",
+      "lat": -24.6086,
+      "lon": 31.0177,
+      "population": 5049
+    },
+    {
+      "name": "Kgwaripe",
+      "lat": -28.3701,
+      "lon": 32.3488,
+      "population": 11519
+    },
+    {
+      "name": "Khaya Mnandi",
+      "lat": -33.8263,
+      "lon": 25.4538,
+      "population": 5500
+    },
+    {
+      "name": "Khokhamoya",
+      "lat": -24.9537,
+      "lon": 31.3214,
+      "population": 9466
+    },
+    { "name": "Khowa", "lat": -31.3331, "lon": 27.85, "population": 17224 },
+    {
+      "name": "Kimberley",
+      "lat": -28.7323,
+      "lon": 24.7623,
+      "population": 142089
+    },
+    { "name": "Kinross", "lat": -26.4166, "lon": 29.0867, "population": 18266 },
+    {
+      "name": "Kirkwood",
+      "lat": -33.3983,
+      "lon": 25.4428,
+      "population": 10148
+    },
+    { "name": "Klapmuts", "lat": -33.8111, "lon": 18.8642, "population": 9229 },
+    { "name": "Klawer", "lat": -31.7759, "lon": 18.625, "population": 7469 },
+    {
+      "name": "Kleinmond",
+      "lat": -34.3394,
+      "lon": 19.0341,
+      "population": 7948
+    },
+    {
+      "name": "Klerksdorp",
+      "lat": -26.8521,
+      "lon": 26.6667,
+      "population": 227039
+    },
+    { "name": "Knysna", "lat": -34.0363, "lon": 23.0471, "population": 68659 },
+    {
+      "name": "Koffiefontein",
+      "lat": -29.4066,
+      "lon": 25.0031,
+      "population": 12464
+    },
+    { "name": "Kokstad", "lat": -30.5472, "lon": 29.4241, "population": 61751 },
+    {
+      "name": "Komatipoort",
+      "lat": -25.4332,
+      "lon": 31.9548,
+      "population": 20508
+    },
+    { "name": "Komga", "lat": -32.577, "lon": 27.892, "population": 9692 },
+    { "name": "Koppies", "lat": -27.2418, "lon": 27.5742, "population": 16537 },
+    { "name": "Koster", "lat": -25.863, "lon": 26.8976, "population": 23361 },
+    {
+      "name": "Kraaifontein",
+      "lat": -33.8481,
+      "lon": 18.7172,
+      "population": 57911
+    },
+    {
+      "name": "Kranshoek",
+      "lat": -34.0878,
+      "lon": 23.2833,
+      "population": 6705
+    },
+    { "name": "Kriel", "lat": -26.25, "lon": 29.26, "population": 18255 },
+    {
+      "name": "Kroonstad",
+      "lat": -27.6504,
+      "lon": 27.2349,
+      "population": 117152
+    },
+    {
+      "name": "Krugersdorp",
+      "lat": -26.0858,
+      "lon": 27.7752,
+      "population": 378821
+    },
+    {
+      "name": "Kruisfontein",
+      "lat": -34.0033,
+      "lon": 24.7314,
+      "population": 18991
+    },
+    {
+      "name": "Kuils River",
+      "lat": -33.9421,
+      "lon": 18.7066,
+      "population": 46685
+    },
+    { "name": "Kumana", "lat": -24.7503, "lon": 31.2211, "population": 5235 },
+    { "name": "Kuruman", "lat": -27.4635, "lon": 23.4355, "population": 9093 },
+    {
+      "name": "Kutloanong",
+      "lat": -27.8333,
+      "lon": 26.75,
+      "population": 95008
+    },
+    {
+      "name": "KwaDukuza",
+      "lat": -29.3282,
+      "lon": 31.2895,
+      "population": 161177
+    },
+    {
+      "name": "KwaThandeka",
+      "lat": -26.6537,
+      "lon": 30.678,
+      "population": 7289
+    },
+    {
+      "name": "Kwaggafontein",
+      "lat": -25.3273,
+      "lon": 28.9422,
+      "population": 54040
+    },
+    { "name": "Kwamhlanga", "lat": -25.43, "lon": 28.7122, "population": 8535 },
+    { "name": "Kylemore", "lat": -33.9151, "lon": 18.9503, "population": 5185 },
+    {
+      "name": "Ladismith",
+      "lat": -33.4933,
+      "lon": 21.2676,
+      "population": 8539
+    },
+    {
+      "name": "Lady Frere",
+      "lat": -31.7031,
+      "lon": 27.2329,
+      "population": 25041
+    },
+    {
+      "name": "Lady Grey",
+      "lat": -30.7108,
+      "lon": 27.2161,
+      "population": 8414
+    },
+    {
+      "name": "Ladybrand",
+      "lat": -29.1945,
+      "lon": 27.4574,
+      "population": 30930
+    },
+    {
+      "name": "Ladysmith",
+      "lat": -28.5587,
+      "lon": 29.779,
+      "population": 143446
+    },
+    {
+      "name": "Laingsburg",
+      "lat": -33.1949,
+      "lon": 20.8587,
+      "population": 6789
+    },
+    {
+      "name": "Lamberts Bay",
+      "lat": -32.0969,
+      "lon": 18.3085,
+      "population": 7332
+    },
+    {
+      "name": "Langebaan",
+      "lat": -33.0975,
+      "lon": 18.0315,
+      "population": 9940
+    },
+    {
+      "name": "Languedoc",
+      "lat": -33.8973,
+      "lon": 18.9673,
+      "population": 5138
+    },
+    {
+      "name": "Lansdowne",
+      "lat": -33.9873,
+      "lon": 18.4975,
+      "population": 17399
+    },
+    { "name": "Le Roux", "lat": -33.8906, "lon": 19.1033, "population": 17432 },
+    {
+      "name": "Lebohang",
+      "lat": -26.3794,
+      "lon": 28.9211,
+      "population": 31553
+    },
+    {
+      "name": "Lebowakgomo",
+      "lat": -24.3146,
+      "lon": 29.5008,
+      "population": 42040
+    },
+    {
+      "name": "Leeudoringstad",
+      "lat": -27.2371,
+      "lon": 26.2351,
+      "population": 16042
+    },
+    {
+      "name": "Leeuwfontein-C",
+      "lat": -25.1705,
+      "lon": 28.9036,
+      "population": 9773
+    },
+    {
+      "name": "Lehurutshe",
+      "lat": -25.4812,
+      "lon": 25.9651,
+      "population": 8252
+    },
+    {
+      "name": "Lenyenye",
+      "lat": -23.9706,
+      "lon": 30.2697,
+      "population": 14496
+    },
+    {
+      "name": "Lephalale",
+      "lat": -23.6661,
+      "lon": 27.7448,
+      "population": 21133
+    },
+    { "name": "Leslie", "lat": -26.3674, "lon": 28.9189, "population": 39514 },
+    {
+      "name": "Letlhabile",
+      "lat": -25.4824,
+      "lon": 27.8393,
+      "population": 49718
+    },
+    { "name": "Libode", "lat": -31.5433, "lon": 29.0164, "population": 5464 },
+    {
+      "name": "Lichtenburg",
+      "lat": -26.152,
+      "lon": 26.1597,
+      "population": 65863
+    },
+    { "name": "Lidgetton", "lat": -29.4405, "lon": 30.1, "population": 5416 },
+    {
+      "name": "Lillydale",
+      "lat": -24.8664,
+      "lon": 31.3689,
+      "population": 6799
+    },
+    { "name": "Lindley", "lat": -27.8791, "lon": 27.9135, "population": 14377 },
+    { "name": "Lothair", "lat": -26.3894, "lon": 30.4353, "population": 7306 },
+    {
+      "name": "Louis Trichardt",
+      "lat": -23.0438,
+      "lon": 29.9032,
+      "population": 86854
+    },
+    {
+      "name": "Louterwater",
+      "lat": -33.8001,
+      "lon": 23.6638,
+      "population": 5785
+    },
+    { "name": "Ludlow", "lat": -24.6692, "lon": 31.2793, "population": 5766 },
+    {
+      "name": "Lukwatini",
+      "lat": -26.055,
+      "lon": 30.8229,
+      "population": 37362
+    },
+    {
+      "name": "Lusikisiki",
+      "lat": -31.362,
+      "lon": 29.5733,
+      "population": 7396
+    },
+    { "name": "Lutzville", "lat": -31.5599, "lon": 18.344, "population": 6268 },
+    {
+      "name": "Lydenburg",
+      "lat": -25.096,
+      "lon": 30.4439,
+      "population": 49605
+    },
+    { "name": "Maboke", "lat": -24.7254, "lon": 31.0183, "population": 12752 },
+    { "name": "Mabopane", "lat": -25.509, "lon": 28.064, "population": 110972 },
+    {
+      "name": "Machadodorp",
+      "lat": -25.6688,
+      "lon": 30.2497,
+      "population": 10712
+    },
+    { "name": "Maclear", "lat": -31.071, "lon": 28.3518, "population": 12604 },
+    { "name": "Madras A", "lat": -24.9911, "lon": 31.1484, "population": 6635 },
+    {
+      "name": "Madyembeni",
+      "lat": -24.7697,
+      "lon": 31.0282,
+      "population": 7210
+    },
+    {
+      "name": "Mafemani",
+      "lat": -24.7886,
+      "lon": 31.0794,
+      "population": 20389
+    },
+    {
+      "name": "Mafikeng",
+      "lat": -25.8652,
+      "lon": 25.6442,
+      "population": 77110
+    },
+    { "name": "Magabeni", "lat": -30.1724, "lon": 30.7657, "population": 5904 },
+    {
+      "name": "Magaliesburg",
+      "lat": -25.9936,
+      "lon": 27.5562,
+      "population": 7623
+    },
+    { "name": "Magogeni", "lat": -25.7884, "lon": 31.6076, "population": 7396 },
+    { "name": "Maile", "lat": -25.4415, "lon": 27.2817, "population": 10000 },
+    {
+      "name": "Makwassie",
+      "lat": -27.3156,
+      "lon": 25.995,
+      "population": 15996
+    },
+    {
+      "name": "Malamulele",
+      "lat": -22.9711,
+      "lon": 30.6736,
+      "population": 15659
+    },
+    {
+      "name": "Malmesbury",
+      "lat": -33.4608,
+      "lon": 18.7271,
+      "population": 43009
+    },
+    { "name": "Maluti", "lat": -30.2621, "lon": 28.7924, "population": 8654 },
+    {
+      "name": "Mamafubedu",
+      "lat": -27.6661,
+      "lon": 28.1313,
+      "population": 15447
+    },
+    { "name": "Mamre", "lat": -33.5127, "lon": 18.4737, "population": 10840 },
+    { "name": "Mandeni", "lat": -29.1469, "lon": 31.414, "population": 37533 },
+    { "name": "Manguzi", "lat": -26.991, "lon": 32.751, "population": 5534 },
+    { "name": "Mankoeng", "lat": -23.9, "lon": 29.8167, "population": 12499 },
+    {
+      "name": "Mankweng",
+      "lat": -23.8838,
+      "lon": 29.7056,
+      "population": 49480
+    },
+    { "name": "Marapong", "lat": -23.6551, "lon": 27.625, "population": 31424 },
+    { "name": "Margate", "lat": -30.8636, "lon": 30.3705, "population": 34407 },
+    { "name": "Marikana", "lat": -25.699, "lon": 27.4748, "population": 23389 },
+    { "name": "Marite", "lat": -24.9716, "lon": 31.1125, "population": 8657 },
+    {
+      "name": "Marquard",
+      "lat": -28.6645,
+      "lon": 27.4305,
+      "population": 18573
+    },
+    {
+      "name": "Matatiele",
+      "lat": -30.3436,
+      "lon": 28.8116,
+      "population": 14935
+    },
+    {
+      "name": "Mathibela",
+      "lat": -24.3125,
+      "lon": 29.3125,
+      "population": 6943
+    },
+    { "name": "Matsavana", "lat": -24.8219, "lon": 31.26, "population": 5157 },
+    { "name": "Matsulu", "lat": -25.523, "lon": 31.3569, "population": 47306 },
+    {
+      "name": "Maviljan A",
+      "lat": -24.8482,
+      "lon": 31.0883,
+      "population": 6829
+    },
+    {
+      "name": "Mbombela",
+      "lat": -25.4751,
+      "lon": 30.9694,
+      "population": 110159
+    },
+    {
+      "name": "Mdantsane",
+      "lat": -32.9332,
+      "lon": 27.7766,
+      "population": 205504
+    },
+    {
+      "name": "Melkbosstrand",
+      "lat": -33.7261,
+      "lon": 18.4429,
+      "population": 13542
+    },
+    { "name": "Melmoth", "lat": -28.5866, "lon": 31.3978, "population": 9362 },
+    { "name": "Memel", "lat": -27.6816, "lon": 29.5669, "population": 8556 },
+    {
+      "name": "Merry Pebble Stream",
+      "lat": -24.7665,
+      "lon": 31.2187,
+      "population": 6905
+    },
+    {
+      "name": "Mhlambanyatsi",
+      "lat": -25.662,
+      "lon": 31.5159,
+      "population": 9219
+    },
+    {
+      "name": "Middelburg",
+      "lat": -25.7751,
+      "lon": 29.4648,
+      "population": 196263
+    },
+    { "name": "Midrand", "lat": -25.976, "lon": 28.118, "population": 87387 },
+    {
+      "name": "Midstream",
+      "lat": -25.9185,
+      "lon": 28.1988,
+      "population": 25000
+    },
+    { "name": "Mkhuhlu", "lat": -24.9878, "lon": 31.2385, "population": 42969 },
+    { "name": "Mmabatho", "lat": -25.85, "lon": 25.6333, "population": 76754 },
+    {
+      "name": "Mmametlhake",
+      "lat": -25.1122,
+      "lon": 28.5528,
+      "population": 9450
+    },
+    { "name": "Modimolle", "lat": -24.7, "lon": 28.4, "population": 50306 },
+    { "name": "Mogwase", "lat": -25.185, "lon": 27.2665, "population": 12871 },
+    {
+      "name": "Mokopane",
+      "lat": -24.1944,
+      "lon": 29.0097,
+      "population": 101090
+    },
+    {
+      "name": "Moloto South",
+      "lat": -25.4628,
+      "lon": 28.6504,
+      "population": 22076
+    },
+    { "name": "Molteno", "lat": -31.3967, "lon": 26.3625, "population": 13840 },
+    { "name": "Mondlo", "lat": -27.983, "lon": 30.7177, "population": 53892 },
+    {
+      "name": "Monnakato",
+      "lat": -25.3513,
+      "lon": 27.2738,
+      "population": 9676
+    },
+    { "name": "Montagu", "lat": -33.7866, "lon": 20.1211, "population": 18182 },
+    {
+      "name": "Mooi River",
+      "lat": -29.2082,
+      "lon": 29.9946,
+      "population": 21730
+    },
+    { "name": "Mooinooi", "lat": -25.7489, "lon": 27.5556, "population": 5670 },
+    {
+      "name": "Mookgophong",
+      "lat": -24.5167,
+      "lon": 28.7167,
+      "population": 29778
+    },
+    {
+      "name": "Moorreesburg",
+      "lat": -33.1539,
+      "lon": 18.6603,
+      "population": 15428
+    },
+    { "name": "Morgenzon", "lat": -26.737, "lon": 29.6177, "population": 9162 },
+    {
+      "name": "Mossel Bay",
+      "lat": -34.1831,
+      "lon": 22.1461,
+      "population": 78940
+    },
+    {
+      "name": "Motetema",
+      "lat": -25.0947,
+      "lon": 29.4619,
+      "population": 10090
+    },
+    {
+      "name": "Motherwell",
+      "lat": -33.7943,
+      "lon": 25.5858,
+      "population": 140351
+    },
+    {
+      "name": "Mount Ayliff",
+      "lat": -30.8082,
+      "lon": 29.3664,
+      "population": 6431
+    },
+    {
+      "name": "Mount Frere",
+      "lat": -30.9017,
+      "lon": 28.9924,
+      "population": 11842
+    },
+    {
+      "name": "Mpophomeni",
+      "lat": -29.5682,
+      "lon": 30.1862,
+      "population": 30830
+    },
+    {
+      "name": "Mpumalanga",
+      "lat": -29.8129,
+      "lon": 30.6365,
+      "population": 140121
+    },
+    {
+      "name": "Mthatha",
+      "lat": -31.5889,
+      "lon": 28.7844,
+      "population": 164848
+    },
+    {
+      "name": "Mtubatuba",
+      "lat": -28.4179,
+      "lon": 32.1848,
+      "population": 33182
+    },
+    {
+      "name": "Muizenberg",
+      "lat": -34.097,
+      "lon": 18.4797,
+      "population": 36857
+    },
+    {
+      "name": "Murraysburg",
+      "lat": -31.9605,
+      "lon": 23.762,
+      "population": 6073
+    },
+    { "name": "Musina", "lat": -22.3488, "lon": 30.0407, "population": 51132 },
+    { "name": "Nababeep", "lat": -29.5917, "lon": 17.7862, "population": 5374 },
+    {
+      "name": "Namakgale",
+      "lat": -23.934,
+      "lon": 31.0312,
+      "population": 14588
+    },
+    { "name": "Napier", "lat": -34.4745, "lon": 19.8981, "population": 5048 },
+    { "name": "Ncotshane", "lat": -27.342, "lon": 31.58, "population": 19562 },
+    { "name": "Ndevana", "lat": -32.9077, "lon": 27.5097, "population": 18151 },
+    {
+      "name": "New Brighton",
+      "lat": -33.8991,
+      "lon": 25.6034,
+      "population": 47917
+    },
+    {
+      "name": "Newcastle",
+      "lat": -27.758,
+      "lon": 29.9318,
+      "population": 404838
+    },
+    { "name": "Newlands", "lat": -33.9785, "lon": 18.4481, "population": 5343 },
+    { "name": "Ngcobo", "lat": -31.6754, "lon": 27.9966, "population": 11783 },
+    {
+      "name": "Ngema Tribal Trust",
+      "lat": -27.0731,
+      "lon": 30.542,
+      "population": 5590
+    },
+    {
+      "name": "Nhlazatje",
+      "lat": -26.0403,
+      "lon": 30.7927,
+      "population": 28224
+    },
+    { "name": "Nigel", "lat": -26.4314, "lon": 28.4771, "population": 140644 },
+    {
+      "name": "Nkowakowa",
+      "lat": -23.8878,
+      "lon": 30.2871,
+      "population": 51350
+    },
+    {
+      "name": "Nomathamasanqa",
+      "lat": -33.5228,
+      "lon": 25.7104,
+      "population": 12815
+    },
+    { "name": "Nondweni", "lat": -28.1923, "lon": 30.8196, "population": 6691 },
+    { "name": "Nongoma", "lat": -27.9097, "lon": 31.6482, "population": 9140 },
+    { "name": "Northam", "lat": -24.9577, "lon": 27.2654, "population": 15598 },
+    { "name": "Nqutu", "lat": -28.2122, "lon": 30.6754, "population": 6533 },
+    {
+      "name": "Nthabalala",
+      "lat": -23.2196,
+      "lon": 29.9927,
+      "population": 5969
+    },
+    {
+      "name": "Nthrowane",
+      "lat": -26.7478,
+      "lon": 28.7502,
+      "population": 8336
+    },
+    { "name": "Ntuzuma", "lat": -29.739, "lon": 30.949, "population": 125394 },
+    {
+      "name": "Nuwerus NC",
+      "lat": -28.4744,
+      "lon": 21.2704,
+      "population": 8531
+    },
+    { "name": "Oakglen", "lat": -31.0507, "lon": 24.4326, "population": 5504 },
+    { "name": "Oakley", "lat": -24.9268, "lon": 31.2289, "population": 12064 },
+    {
+      "name": "Odendaalsrus",
+      "lat": -27.8739,
+      "lon": 26.6907,
+      "population": 76371
+    },
+    {
+      "name": "Orange Farm",
+      "lat": -26.4833,
+      "lon": 27.8667,
+      "population": 10000
+    },
+    {
+      "name": "Oranjeville",
+      "lat": -26.9938,
+      "lon": 28.2097,
+      "population": 6189
+    },
+    {
+      "name": "Orinoco A",
+      "lat": -24.7626,
+      "lon": 31.0652,
+      "population": 5884
+    },
+    { "name": "Orkney", "lat": -26.9802, "lon": 26.6727, "population": 110052 },
+    {
+      "name": "Ottosdal",
+      "lat": -26.8091,
+      "lon": 26.0054,
+      "population": 22011
+    },
+    {
+      "name": "Oudtshoorn",
+      "lat": -33.6005,
+      "lon": 22.1996,
+      "population": 73694
+    },
+    { "name": "Paarl", "lat": -33.7338, "lon": 18.9752, "population": 236910 },
+    {
+      "name": "Pampierstad",
+      "lat": -27.7832,
+      "lon": 24.6877,
+      "population": 21707
+    },
+    { "name": "Parys", "lat": -26.9033, "lon": 27.4573, "population": 71319 },
+    { "name": "Patensie", "lat": -33.7601, "lon": 24.8138, "population": 6304 },
+    { "name": "Paterson", "lat": -33.4406, "lon": 25.9741, "population": 6687 },
+    {
+      "name": "Paul Roux",
+      "lat": -28.2975,
+      "lon": 27.9504,
+      "population": 7370
+    },
+    {
+      "name": "Paulpietersburg",
+      "lat": -27.4243,
+      "lon": 30.8169,
+      "population": 13123
+    },
+    { "name": "Pearston", "lat": -32.5822, "lon": 25.1383, "population": 5410 },
+    { "name": "Peddie", "lat": -33.2006, "lon": 27.1139, "population": 5580 },
+    { "name": "Perdekop", "lat": -27.1657, "lon": 29.6236, "population": 6087 },
+    {
+      "name": "Petrusburg",
+      "lat": -29.116,
+      "lon": 25.4144,
+      "population": 10106
+    },
+    {
+      "name": "Phakamisa",
+      "lat": -32.9333,
+      "lon": 27.4571,
+      "population": 8806
+    },
+    {
+      "name": "Phalaborwa",
+      "lat": -23.943,
+      "lon": 31.1411,
+      "population": 109468
+    },
+    { "name": "Phatsima", "lat": -25.3946, "lon": 27.0149, "population": 8796 },
+    { "name": "Phola", "lat": -26.002, "lon": 29.034, "population": 38202 },
+    {
+      "name": "Phomolong",
+      "lat": -28.0127,
+      "lon": 27.0823,
+      "population": 24635
+    },
+    {
+      "name": "Phuthaditjhaba",
+      "lat": -28.5242,
+      "lon": 28.8158,
+      "population": 84258
+    },
+    {
+      "name": "Piet Retief",
+      "lat": -27.0071,
+      "lon": 30.8132,
+      "population": 84349
+    },
+    {
+      "name": "Pietermaritzburg",
+      "lat": -29.6168,
+      "lon": 30.3928,
+      "population": 839327
+    },
+    {
+      "name": "Piketberg",
+      "lat": -32.9032,
+      "lon": 18.757,
+      "population": 14862
+    },
+    {
+      "name": "Pinetown",
+      "lat": -29.8207,
+      "lon": 30.8867,
+      "population": 144026
+    },
+    {
+      "name": "Plettenberg Bay",
+      "lat": -34.0527,
+      "lon": 23.3716,
+      "population": 38126
+    },
+    {
+      "name": "Polokwane",
+      "lat": -23.9045,
+      "lon": 29.4689,
+      "population": 272461
+    },
+    { "name": "Poortje", "lat": -26.4595, "lon": 27.7673, "population": 13362 },
+    {
+      "name": "Port Alfred",
+      "lat": -33.586,
+      "lon": 26.8833,
+      "population": 30981
+    },
+    {
+      "name": "Port Edward",
+      "lat": -31.0507,
+      "lon": 30.228,
+      "population": 6872
+    },
+    {
+      "name": "Port Saint John’s",
+      "lat": -31.6229,
+      "lon": 29.5448,
+      "population": 5939
+    },
+    {
+      "name": "Port Shepstone",
+      "lat": -30.7414,
+      "lon": 30.455,
+      "population": 52793
+    },
+    {
+      "name": "Porterville",
+      "lat": -33.0182,
+      "lon": 18.9928,
+      "population": 8455
+    },
+    {
+      "name": "Postmasburg",
+      "lat": -28.3339,
+      "lon": 23.0654,
+      "population": 30089
+    },
+    {
+      "name": "Potchefstroom",
+      "lat": -26.7167,
+      "lon": 27.1,
+      "population": 178285
+    },
+    {
+      "name": "Praktiseer",
+      "lat": -24.584,
+      "lon": 30.3168,
+      "population": 26675
+    },
+    {
+      "name": "Pretoria",
+      "lat": -25.7449,
+      "lon": 28.1878,
+      "population": 2112693
+    },
+    { "name": "Prieska", "lat": -29.668, "lon": 22.7425, "population": 11236 },
+    {
+      "name": "Prince Albert",
+      "lat": -33.2248,
+      "lon": 22.0267,
+      "population": 13136
+    },
+    {
+      "name": "Prince Alfred Hamlet",
+      "lat": -33.3039,
+      "lon": 19.3247,
+      "population": 8159
+    },
+    { "name": "Qonce", "lat": -32.8808, "lon": 27.3938, "population": 93072 },
+    {
+      "name": "Queensdale",
+      "lat": -31.871,
+      "lon": 26.9786,
+      "population": 20009
+    },
+    {
+      "name": "Queenstown",
+      "lat": -31.8976,
+      "lon": 26.8753,
+      "population": 118599
+    },
+    { "name": "Qumbu", "lat": -31.163, "lon": 28.8706, "population": 5904 },
+    {
+      "name": "Randburg",
+      "lat": -26.0941,
+      "lon": 28.0012,
+      "population": 337053
+    },
+    {
+      "name": "Randfontein",
+      "lat": -26.1844,
+      "lon": 27.702,
+      "population": 133654
+    },
+    {
+      "name": "Reddersburg",
+      "lat": -29.653,
+      "lon": 26.1677,
+      "population": 5854
+    },
+    { "name": "Redhill", "lat": -26.2607, "lon": 30.8255, "population": 23153 },
+    { "name": "Reitz", "lat": -27.8014, "lon": 28.4273, "population": 24181 },
+    {
+      "name": "Rethabiseng",
+      "lat": -25.7229,
+      "lon": 28.7169,
+      "population": 13136
+    },
+    { "name": "Retreat", "lat": -34.0551, "lon": 18.4762, "population": 25745 },
+    {
+      "name": "Richards Bay",
+      "lat": -28.783,
+      "lon": 32.0377,
+      "population": 252968
+    },
+    { "name": "Richmond", "lat": -29.872, "lon": 30.2724, "population": 32445 },
+    {
+      "name": "Riebeek West",
+      "lat": -33.3504,
+      "lon": 18.8702,
+      "population": 5211
+    },
+    {
+      "name": "Riebeek-Kasteel",
+      "lat": -33.3844,
+      "lon": 18.8995,
+      "population": 5704
+    },
+    { "name": "Ritchie", "lat": -29.038, "lon": 24.6028, "population": 9960 },
+    {
+      "name": "Riversdale",
+      "lat": -34.0934,
+      "lon": 21.2573,
+      "population": 19382
+    },
+    {
+      "name": "Riviersonderend",
+      "lat": -34.1498,
+      "lon": 19.9143,
+      "population": 6284
+    },
+    {
+      "name": "Robertson",
+      "lat": -33.8034,
+      "lon": 19.8854,
+      "population": 33204
+    },
+    {
+      "name": "Rondebosch",
+      "lat": -33.9633,
+      "lon": 18.4764,
+      "population": 15158
+    },
+    {
+      "name": "Roodepoort",
+      "lat": -26.1625,
+      "lon": 27.8725,
+      "population": 326416
+    },
+    {
+      "name": "Rosebank",
+      "lat": -33.9556,
+      "lon": 18.4742,
+      "population": 10000
+    },
+    {
+      "name": "Rouxville",
+      "lat": -30.4183,
+      "lon": 26.8366,
+      "population": 8759
+    },
+    {
+      "name": "Rustenburg",
+      "lat": -25.6676,
+      "lon": 27.2421,
+      "population": 373695
+    },
+    { "name": "Sabie", "lat": -25.0999, "lon": 30.78, "population": 18903 },
+    {
+      "name": "Saint Helena Bay",
+      "lat": -32.7667,
+      "lon": 18.0333,
+      "population": 13813
+    },
+    {
+      "name": "Saldanha",
+      "lat": -33.0117,
+      "lon": 17.9442,
+      "population": 68284
+    },
+    { "name": "Sandown", "lat": -26.1058, "lon": 28.0618, "population": 6354 },
+    { "name": "Sandton", "lat": -26.104, "lon": 28.054, "population": 222415 },
+    {
+      "name": "Sannieshof",
+      "lat": -26.5295,
+      "lon": 25.8089,
+      "population": 13198
+    },
+    { "name": "Saron", "lat": -33.1808, "lon": 19.0089, "population": 9396 },
+    {
+      "name": "Sasolburg",
+      "lat": -26.8136,
+      "lon": 27.817,
+      "population": 135828
+    },
+    {
+      "name": "Schoemansdal",
+      "lat": -25.7087,
+      "lon": 31.5103,
+      "population": 23257
+    },
+    {
+      "name": "Schweizer-Reneke",
+      "lat": -27.1887,
+      "lon": 25.3293,
+      "population": 70214
+    },
+    {
+      "name": "Scottburgh",
+      "lat": -30.2867,
+      "lon": 30.7532,
+      "population": 23949
+    },
+    {
+      "name": "Sebayeng",
+      "lat": -23.7583,
+      "lon": 29.6671,
+      "population": 10917
+    },
+    { "name": "Secunda", "lat": -26.55, "lon": 29.1667, "population": 20418 },
+    {
+      "name": "Sedgefield",
+      "lat": -34.0211,
+      "lon": 22.8055,
+      "population": 10069
+    },
+    { "name": "Senekal", "lat": -28.3197, "lon": 27.6208, "population": 39584 },
+    {
+      "name": "Senwamokgope",
+      "lat": -23.4092,
+      "lon": 30.1604,
+      "population": 5328
+    },
+    {
+      "name": "Shakaskraal",
+      "lat": -29.4493,
+      "lon": 31.2153,
+      "population": 27345
+    },
+    { "name": "Shatale", "lat": -24.7957, "lon": 31.0471, "population": 9155 },
+    {
+      "name": "Simon's Town",
+      "lat": -34.1934,
+      "lon": 18.4358,
+      "population": 6569
+    },
+    {
+      "name": "Siyabuswa",
+      "lat": -25.1132,
+      "lon": 29.0445,
+      "population": 44189
+    },
+    {
+      "name": "Smithfield",
+      "lat": -30.2137,
+      "lon": 26.5307,
+      "population": 5725
+    },
+    {
+      "name": "Somaroboro",
+      "lat": -25.346,
+      "lon": 28.8343,
+      "population": 114369
+    },
+    {
+      "name": "Somerset East",
+      "lat": -32.7217,
+      "lon": 25.588,
+      "population": 22553
+    },
+    {
+      "name": "Somerset West",
+      "lat": -34.084,
+      "lon": 18.8211,
+      "population": 225289
+    },
+    {
+      "name": "Soshanguve",
+      "lat": -25.4729,
+      "lon": 28.0992,
+      "population": 872309
+    },
+    {
+      "name": "Soweto",
+      "lat": -26.2678,
+      "lon": 27.8585,
+      "population": 1695047
+    },
+    {
+      "name": "Springbok",
+      "lat": -29.6643,
+      "lon": 17.8865,
+      "population": 10438
+    },
+    { "name": "Springs", "lat": -26.25, "lon": 28.4, "population": 186394 },
+    {
+      "name": "St Francis Bay",
+      "lat": -34.1603,
+      "lon": 24.8262,
+      "population": 5910
+    },
+    {
+      "name": "Standerton",
+      "lat": -26.9337,
+      "lon": 29.2415,
+      "population": 101101
+    },
+    { "name": "Stanford", "lat": -34.4394, "lon": 19.4562, "population": 5747 },
+    { "name": "Stella", "lat": -26.553, "lon": 24.8668, "population": 5620 },
+    {
+      "name": "Stellenbosch",
+      "lat": -33.9346,
+      "lon": 18.8668,
+      "population": 96228
+    },
+    {
+      "name": "Sterkstroom",
+      "lat": -31.5571,
+      "lon": 26.5542,
+      "population": 8584
+    },
+    {
+      "name": "Steynsburg",
+      "lat": -31.2956,
+      "lon": 25.8234,
+      "population": 8642
+    },
+    {
+      "name": "Steynsrus",
+      "lat": -27.9533,
+      "lon": 27.5639,
+      "population": 10910
+    },
+    { "name": "Stilbaai", "lat": -34.3693, "lon": 21.4075, "population": 8000 },
+    {
+      "name": "Stilfontein",
+      "lat": -26.8449,
+      "lon": 26.7683,
+      "population": 93110
+    },
+    {
+      "name": "Struisbaai",
+      "lat": -34.8036,
+      "lon": 20.0547,
+      "population": 5301
+    },
+    {
+      "name": "Stutterheim",
+      "lat": -32.5708,
+      "lon": 27.424,
+      "population": 35510
+    },
+    {
+      "name": "Sundumbili",
+      "lat": -29.1337,
+      "lon": 31.3975,
+      "population": 12455
+    },
+    {
+      "name": "Swartruggens",
+      "lat": -25.6502,
+      "lon": 26.6886,
+      "population": 12639
+    },
+    {
+      "name": "Swellendam",
+      "lat": -34.0226,
+      "lon": 20.4417,
+      "population": 20993
+    },
+    {
+      "name": "Tarkastad",
+      "lat": -32.0089,
+      "lon": 26.2594,
+      "population": 7260
+    },
+    { "name": "Tekwane", "lat": -25.4778, "lon": 31.1456, "population": 17846 },
+    {
+      "name": "Thaba Nchu",
+      "lat": -29.2093,
+      "lon": 26.839,
+      "population": 72721
+    },
+    {
+      "name": "Thabakgolo",
+      "lat": -24.8005,
+      "lon": 31.0319,
+      "population": 5939
+    },
+    {
+      "name": "Thabazimbi",
+      "lat": -24.5916,
+      "lon": 27.4116,
+      "population": 34561
+    },
+    {
+      "name": "Thembisa",
+      "lat": -25.9964,
+      "lon": 28.2268,
+      "population": 511655
+    },
+    {
+      "name": "Theunissen",
+      "lat": -28.411,
+      "lon": 26.7011,
+      "population": 34718
+    },
+    {
+      "name": "Thohoyandou",
+      "lat": -22.9456,
+      "lon": 30.485,
+      "population": 107144
+    },
+    {
+      "name": "Thornhill",
+      "lat": -33.8951,
+      "lon": 25.1391,
+      "population": 5000
+    },
+    {
+      "name": "Thubelihle",
+      "lat": -26.2155,
+      "lon": 29.2916,
+      "population": 15876
+    },
+    {
+      "name": "Thulamahashe",
+      "lat": -24.7245,
+      "lon": 31.2118,
+      "population": 13333
+    },
+    {
+      "name": "Thulamahashi",
+      "lat": -24.7246,
+      "lon": 31.1994,
+      "population": 15974
+    },
+    { "name": "Tjakastad", "lat": -25.989, "lon": 30.823, "population": 12711 },
+    {
+      "name": "Tlokoeng",
+      "lat": -30.6927,
+      "lon": 28.5061,
+      "population": 15884
+    },
+    { "name": "Tokoza", "lat": -26.36, "lon": 28.129, "population": 106000 },
+    { "name": "Tongaat", "lat": -29.5737, "lon": 31.1155, "population": 64829 },
+    {
+      "name": "Touwsrivier",
+      "lat": -33.3383,
+      "lon": 20.0309,
+      "population": 9735
+    },
+    {
+      "name": "Trichardt",
+      "lat": -26.4915,
+      "lon": 29.2288,
+      "population": 52776
+    },
+    {
+      "name": "Trompsburg",
+      "lat": -30.0336,
+      "lon": 25.7804,
+      "population": 6395
+    },
+    {
+      "name": "Trust Feed",
+      "lat": -29.3997,
+      "lon": 30.5428,
+      "population": 6901
+    },
+    { "name": "Tsakani", "lat": -24.6193, "lon": 31.0513, "population": 8907 },
+    {
+      "name": "Tshandama",
+      "lat": -22.7457,
+      "lon": 30.5093,
+      "population": 5842
+    },
+    { "name": "Tshiame", "lat": -28.3306, "lon": 28.9909, "population": 17800 },
+    {
+      "name": "Tshitereke",
+      "lat": -22.8842,
+      "lon": 30.4936,
+      "population": 19092
+    },
+    { "name": "Tsolo", "lat": -31.3078, "lon": 28.7554, "population": 6860 },
+    {
+      "name": "Tukakgomo",
+      "lat": -24.7433,
+      "lon": 30.1076,
+      "population": 13472
+    },
+    { "name": "Tulbagh", "lat": -33.286, "lon": 19.1412, "population": 10745 },
+    { "name": "Tweeling", "lat": -27.5551, "lon": 28.5161, "population": 7745 },
+    {
+      "name": "Tweespruit",
+      "lat": -29.1852,
+      "lon": 27.0319,
+      "population": 6939
+    },
+    { "name": "Tzaneen", "lat": -23.8332, "lon": 30.1635, "population": 17457 },
+    { "name": "Ugie", "lat": -31.1981, "lon": 28.2335, "population": 16133 },
+    { "name": "Ulundi", "lat": -28.3352, "lon": 31.4162, "population": 31795 },
+    { "name": "Umzimhle", "lat": -26.935, "lon": 26.7307, "population": 7352 },
+    {
+      "name": "Uniondale",
+      "lat": -33.6589,
+      "lon": 23.1232,
+      "population": 5421
+    },
+    {
+      "name": "Upington",
+      "lat": -28.4478,
+      "lon": 21.2561,
+      "population": 71373
+    },
+    { "name": "Utrecht", "lat": -27.6586, "lon": 30.3217, "population": 8486 },
+    {
+      "name": "Vaalbank",
+      "lat": -25.1523,
+      "lon": 28.8556,
+      "population": 19517
+    },
+    {
+      "name": "Vaalwater",
+      "lat": -24.2957,
+      "lon": 28.1142,
+      "population": 19723
+    },
+    {
+      "name": "Vanderbijlpark",
+      "lat": -26.7117,
+      "lon": 27.838,
+      "population": 246754
+    },
+    {
+      "name": "Vanrhynsdorp",
+      "lat": -31.6089,
+      "lon": 18.7397,
+      "population": 7515
+    },
+    {
+      "name": "Velddrif",
+      "lat": -32.7852,
+      "lon": 18.1786,
+      "population": 13199
+    },
+    {
+      "name": "Ventersburg",
+      "lat": -28.0856,
+      "lon": 27.1381,
+      "population": 13490
+    },
+    {
+      "name": "Ventersdorp",
+      "lat": -26.314,
+      "lon": 26.8222,
+      "population": 26446
+    },
+    {
+      "name": "Venterstad",
+      "lat": -30.7762,
+      "lon": 25.7992,
+      "population": 5977
+    },
+    {
+      "name": "Vereeniging",
+      "lat": -26.6731,
+      "lon": 27.9262,
+      "population": 474681
+    },
+    { "name": "Verena", "lat": -25.4825, "lon": 29.0276, "population": 21252 },
+    {
+      "name": "Victoria West",
+      "lat": -31.4036,
+      "lon": 23.1146,
+      "population": 8254
+    },
+    {
+      "name": "Viljoenskroon",
+      "lat": -27.2084,
+      "lon": 26.9486,
+      "population": 54955
+    },
+    {
+      "name": "Villiers",
+      "lat": -27.0303,
+      "lon": 28.6006,
+      "population": 20745
+    },
+    {
+      "name": "Villiersdorp",
+      "lat": -33.9912,
+      "lon": 19.2922,
+      "population": 11986
+    },
+    {
+      "name": "Virginia",
+      "lat": -28.1039,
+      "lon": 26.8659,
+      "population": 122502
+    },
+    {
+      "name": "Volksrust",
+      "lat": -27.3654,
+      "lon": 29.8818,
+      "population": 43378
+    },
+    { "name": "Vrede", "lat": -27.4257, "lon": 29.1659, "population": 21193 },
+    {
+      "name": "Vredefort",
+      "lat": -27.008,
+      "lon": 27.3646,
+      "population": 17515
+    },
+    {
+      "name": "Vredenburg",
+      "lat": -32.9072,
+      "lon": 17.99,
+      "population": 45986
+    },
+    {
+      "name": "Vredendal",
+      "lat": -31.6683,
+      "lon": 18.5012,
+      "population": 21769
+    },
+    { "name": "Vryburg", "lat": -26.9566, "lon": 24.7284, "population": 55879 },
+    {
+      "name": "Vryheid",
+      "lat": -27.7695,
+      "lon": 30.7917,
+      "population": 150012
+    },
+    {
+      "name": "Wakkerstroom",
+      "lat": -27.3549,
+      "lon": 30.1438,
+      "population": 8209
+    },
+    {
+      "name": "Walkerville",
+      "lat": -26.4209,
+      "lon": 27.9525,
+      "population": 7981
+    },
+    { "name": "Warden", "lat": -27.8545, "lon": 28.9653, "population": 13152 },
+    {
+      "name": "Warrenton",
+      "lat": -28.114,
+      "lon": 24.8475,
+      "population": 17946
+    },
+    { "name": "Weenen", "lat": -28.8492, "lon": 30.0772, "population": 8183 },
+    { "name": "Welkom", "lat": -27.9774, "lon": 26.7351, "population": 431944 },
+    {
+      "name": "Wellington",
+      "lat": -33.6398,
+      "lon": 19.0112,
+      "population": 55543
+    },
+    {
+      "name": "Welverdiend",
+      "lat": -24.5801,
+      "lon": 31.3256,
+      "population": 7601
+    },
+    { "name": "Wembesi", "lat": -29.0491, "lon": 29.7823, "population": 33849 },
+    { "name": "Wepener", "lat": -29.7287, "lon": 27.0381, "population": 11446 },
+    {
+      "name": "Wesselsbron",
+      "lat": -27.8549,
+      "lon": 26.3658,
+      "population": 42552
+    },
+    {
+      "name": "Westonaria",
+      "lat": -26.319,
+      "lon": 27.6486,
+      "population": 156831
+    },
+    {
+      "name": "White River",
+      "lat": -25.3318,
+      "lon": 31.0117,
+      "population": 25607
+    },
+    {
+      "name": "Whittlesea",
+      "lat": -32.1759,
+      "lon": 26.8244,
+      "population": 33844
+    },
+    {
+      "name": "Wilderness",
+      "lat": -33.9938,
+      "lon": 22.5757,
+      "population": 7385
+    },
+    {
+      "name": "Willowmore",
+      "lat": -33.2926,
+      "lon": 23.4895,
+      "population": 9199
+    },
+    { "name": "Winburg", "lat": -28.518, "lon": 27.0093, "population": 16862 },
+    {
+      "name": "Winnie Mandela",
+      "lat": -28.7002,
+      "lon": 26.4581,
+      "population": 15454
+    },
+    {
+      "name": "Winterton",
+      "lat": -28.8123,
+      "lon": 29.5412,
+      "population": 7224
+    },
+    {
+      "name": "Wolmaransstad",
+      "lat": -27.1974,
+      "lon": 25.9831,
+      "population": 49366
+    },
+    { "name": "Wolseley", "lat": -33.414, "lon": 19.2005, "population": 14533 },
+    {
+      "name": "Worcester",
+      "lat": -33.6465,
+      "lon": 19.4485,
+      "population": 127597
+    },
+    {
+      "name": "Xikhusese",
+      "lat": -24.6024,
+      "lon": 31.1346,
+      "population": 13324
+    },
+    { "name": "Zastron", "lat": -30.3022, "lon": 27.084, "population": 18699 },
+    { "name": "Zeerust", "lat": -25.5369, "lon": 26.0751, "population": 19154 },
+    { "name": "Zoar", "lat": -33.4956, "lon": 21.4437, "population": 5582 },
+    {
+      "name": "eMakhazeni B",
+      "lat": -24.9512,
+      "lon": 31.3717,
+      "population": 6118
+    },
+    { "name": "eManzana", "lat": -25.9541, "lon": 30.5627, "population": 8293 },
+    {
+      "name": "eManzimtoti",
+      "lat": -30.0522,
+      "lon": 30.8853,
+      "population": 13813
+    },
+    {
+      "name": "eMbalenhle",
+      "lat": -26.5333,
+      "lon": 29.0667,
+      "population": 142443
+    },
+    {
+      "name": "eMkhomazi",
+      "lat": -30.2067,
+      "lon": 30.7964,
+      "population": 20410
+    },
+    { "name": "eMkhuze", "lat": -27.6205, "lon": 32.0339, "population": 5288 },
+    {
+      "name": "eMuziwezinto",
+      "lat": -30.31,
+      "lon": 30.6628,
+      "population": 19415
+    },
+    { "name": "eMvelo", "lat": -26.6245, "lon": 30.6623, "population": 8110 },
+    { "name": "eNduli", "lat": -33.3564, "lon": 19.341, "population": 11203 },
+    {
+      "name": "eSikhaleni",
+      "lat": -28.871,
+      "lon": 31.8996,
+      "population": 49265
+    }
+  ]
+}

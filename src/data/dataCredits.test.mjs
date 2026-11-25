@@ -448,3 +448,26 @@ test('the South African governance credit names its sources', () => {
   // The list's date is the data's: the legend and cards show it.
   assert.doesNotMatch(credit.html, /as at|20\d\d/);
 });
+
+test('the South African news credit names GDELT, GeoNames and the outlets', () => {
+  const credit = DATA_CREDITS.find((entry) => entry.key === 'za-news');
+  assert.ok(credit, 'the SA news layer must be credited');
+  assert.match(credit.html, /GDELT Project/);
+  assert.match(credit.html, /GeoNames/);
+  assert.match(credit.html, /CC BY 4\.0/);
+  for (const outlet of [
+    'IOL',
+    'Daily Maverick',
+    'TimesLIVE',
+    'Mail &amp; Guardian',
+    'GroundUp',
+    'eNCA',
+    'The Citizen',
+    'SAnews',
+  ])
+    assert.ok(credit.html.includes(outlet), outlet);
+  const hrefs = [...credit.html.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(hrefs.includes('https://www.gdeltproject.org/'));
+  assert.ok(hrefs.includes('https://www.geonames.org/'));
+  for (const href of hrefs) assert.match(href, /^https:\/\//);
+});

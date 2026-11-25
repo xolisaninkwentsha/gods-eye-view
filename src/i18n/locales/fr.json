@@ -4624,5 +4624,17 @@
   "District: {name} ({code})": "District : {name} ({code})",
   "Section 139 since {since} (CoGTA list, {asOf})": "Section 139 depuis {since} (liste de la CoGTA, {asOf})",
   "Type: {type}": "Type : {type}",
-  "SA districts 2026": "Districts d'Afrique du Sud 2026"
+  "SA districts 2026": "Districts d'Afrique du Sud 2026",
+  "Click to open the story ↗": "Cliquer pour ouvrir l'article ↗",
+  "Open the story: {title}": "Ouvrir l'article : {title}",
+  "GDELT unavailable": "GDELT indisponible",
+  "GDELT: {hours} of 24 h loaded": "GDELT : {hours} sur 24 h chargées",
+  "Headlines: {failed} of {total} outlets unavailable": "Titres de presse : {failed} sur {total} médias indisponibles",
+  "Malformed SA news": "Données d'actualités d'Afrique du Sud mal formées",
+  "SA news source unavailable": "Source des actualités d'Afrique du Sud indisponible",
+  "GDELT events placed at city level and SA outlet headlines matched to town names. Click a card to open the story.": "Événements GDELT placés au niveau de la ville et titres des médias sud-africains rattachés aux noms de localités. Cliquez sur une fiche pour ouvrir l'article.",
+  "Violence": "Violence",
+  "Other event": "Autre événement",
+  "Headline": "Titre de presse",
+  "SA news (24h)": "Actualités d'Afrique du Sud (24 h)"
 }
