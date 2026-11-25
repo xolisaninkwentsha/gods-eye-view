@@ -1767,6 +1767,8 @@
   "src/layers/saPopulation/cards.test.mjs",
   "src/layers/saPopulation/layer.test.mjs",
   "docs/SOUTH_AFRICA_NEWS.md",
+  "docs/SOUTH_AFRICA_DATASETS.md",
+  "src/library/zaEntries.test.mjs",
   "server/providers/saFacilities/hdx.js",
   "server/providers/saFacilities/hdx.test.mjs",
   "server/providers/saFacilities/index.js",
