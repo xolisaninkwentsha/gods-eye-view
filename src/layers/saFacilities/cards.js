@@ -22,10 +22,9 @@ export function buildSaFacilityCard(set, record) {
   let cls;
   if (set === 'health') {
     cls = classes.find((c) => c.key === record.kind);
-    const label = cls ? t(cls.label) : '';
-    title =
-      text(record.name) ||
-      t('Unnamed {kind}', { kind: label.toLocaleLowerCase() });
+    const label = cls ? cls.label() : '';
+    // The label as translated: German nouns keep their capital.
+    title = text(record.name) || t('{kind} (unnamed)', { kind: label });
     if (label) details.push(label);
     const who = text(record.operator) || text(record.city);
     if (who) details.push(who);
@@ -38,12 +37,12 @@ export function buildSaFacilityCard(set, record) {
     if (level && level !== 'Unknown')
       details.push(
         Object.hasOwn(SCHOOL_LEVEL_LABELS, level)
-          ? t(SCHOOL_LEVEL_LABELS[level])
+          ? SCHOOL_LEVEL_LABELS[level]()
           : level,
       );
     details.push(
       t('Internet: {state}', {
-        state: cls ? t(cls.label).toLocaleLowerCase() : '',
+        state: cls ? cls.label().toLocaleLowerCase() : '',
       }),
     );
     details.push(t('Giga school data (ITU–UNICEF)'));

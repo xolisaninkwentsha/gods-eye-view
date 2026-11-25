@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { FACILITY_CLASSES, normaliseFacilities } from './records.js';
+import {
+  FACILITY_CLASSES,
+  SCHOOL_LEVEL_LABELS,
+  normaliseFacilities,
+} from './records.js';
+import { setMessageOverrides } from '../../i18n/index.js';
 
 const base = {
   fetchedAt: '2026-11-25T08:00:00.000Z',
@@ -27,7 +32,7 @@ const school = (id, extra = {}) => ({
 
 test('the classes are fixed, in order, with their colours', () => {
   assert.deepEqual(
-    FACILITY_CLASSES.health.map((c) => [c.key, c.label, c.color]),
+    FACILITY_CLASSES.health.map((c) => [c.key, c.label(), c.color]),
     [
       ['hospital', 'Hospital', '#eb5757'],
       ['clinic', 'Clinic', '#f2994a'],
@@ -38,13 +43,54 @@ test('the classes are fixed, in order, with their colours', () => {
     ],
   );
   assert.deepEqual(
-    FACILITY_CLASSES.schools.map((c) => [c.key, c.label, c.color]),
+    FACILITY_CLASSES.schools.map((c) => [c.key, c.label(), c.color]),
     [
       ['yes', 'Connected', '#27ae60'],
       ['no', 'Not connected', '#eb5757'],
       ['unknown', 'Unknown', '#9e9e9e'],
     ],
   );
+});
+
+test('every label reads its own context, not the plain key another feature owns', async (t) => {
+  t.after(() => setMessageOverrides({}));
+  // The plain keys hold other features' words (the draw tool's "Primary"
+  // colour); a label that read them would show "WRONG".
+  const plain = ['Hospital', 'Clinic', 'Doctor', 'Pharmacy', 'Dentist'];
+  const shared = ['Other', 'Unknown', 'Primary', 'Connected', 'Not connected'];
+  const levels = Object.keys(SCHOOL_LEVEL_LABELS);
+  const own = (context, texts) =>
+    texts.map((text) => [`${context}|${text}`, `${context}: ${text}`]);
+  setMessageOverrides({
+    en: Object.fromEntries([
+      ...[...plain, ...shared, ...levels].map((text) => [text, 'WRONG']),
+      ...own('health facility', [...plain, 'Other']),
+      ...own('internet access', ['Connected', 'Not connected', 'Unknown']),
+      ...own('school level', levels),
+    ]),
+  });
+  assert.deepEqual(
+    FACILITY_CLASSES.health.map((c) => c.label()),
+    [...plain, 'Other'].map((text) => `health facility: ${text}`),
+  );
+  assert.deepEqual(
+    FACILITY_CLASSES.schools.map((c) => c.label()),
+    ['Connected', 'Not connected', 'Unknown'].map(
+      (text) => `internet access: ${text}`,
+    ),
+  );
+  assert.deepEqual(
+    levels.map((level) => SCHOOL_LEVEL_LABELS[level]()),
+    levels.map((level) => `school level: ${level}`),
+  );
+  assert.deepEqual(levels, [
+    'Primary',
+    'Secondary',
+    'Primary and Secondary',
+    'Pre-Primary',
+    'Other',
+    'Unknown',
+  ]);
 });
 
 test('a good health payload is normalised', () => {

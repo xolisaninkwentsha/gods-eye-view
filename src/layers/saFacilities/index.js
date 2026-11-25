@@ -70,12 +70,20 @@ const SETS = Object.freeze({
 
 const instances = { health: 0, schools: 0 };
 
-/** "25 Nov 2026" in South African time, whatever the machine's zone. */
+const SAST_DATE = Object.freeze({
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  timeZone: SAST,
+});
+
+/**
+ * The day in South African time, whatever the machine's zone, in the
+ * locale's own order ("Nov 25, 2026", "2026年11月25日"); '' when not a time.
+ */
 function sastCalendarDate(iso) {
   const ms = Date.parse(iso);
-  if (!Number.isFinite(ms)) return '';
-  const part = (options) => formatDate(ms, { ...options, timeZone: SAST });
-  return `${part({ day: 'numeric' })} ${part({ month: 'short' })} ${part({ year: 'numeric' })}`;
+  return Number.isFinite(ms) ? formatDate(ms, SAST_DATE) : '';
 }
 
 /**
@@ -327,18 +335,20 @@ export function createSaFacilitiesLayer({
     getRowControls() {
       const counts = _counts;
       const legend = classes.map((cls, index) => ({
-        label: t(cls.label),
+        label: cls.label(),
         color: cls.color,
         count: counts.get(cls.key) ?? 0,
         ...(index === 0 ? { blurb: t(config.blurb) } : {}),
       }));
       const lines = [];
-      if (_stale)
+      if (_stale) {
+        const date = sastCalendarDate(_fetchedAt);
         lines.push(
-          t('Showing the last copy from {date}; refresh failed', {
-            date: sastCalendarDate(_fetchedAt),
-          }),
+          date
+            ? t('Showing the last copy from {date}; refresh failed', { date })
+            : t('Showing the last copy; refresh failed'),
         );
+      }
       if (_unavailable) lines.push(t('Data unavailable'));
       return {
         chips: [],

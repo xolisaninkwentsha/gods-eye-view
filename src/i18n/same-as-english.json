@@ -502,7 +502,7 @@
     "{seconds} s",
     "Section 139",
     "Internet: {state}",
-    "Hospital"
+    "health facility|Hospital"
   ],
   "fr": [
     "1 min/s",
@@ -1288,7 +1288,7 @@
     "Section 139",
     "OpenStreetMap via healthsites.io",
     "Internet: {state}",
-    "Hospital"
+    "health facility|Hospital"
   ],
   "ru": [
     "1900–1945",

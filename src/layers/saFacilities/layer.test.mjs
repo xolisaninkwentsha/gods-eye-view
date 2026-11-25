@@ -5,7 +5,7 @@ import { fakeInputUnderLabel } from '../../input/testDoubles.mjs';
 import { createStubRenderer } from '../../render/stub/index.js';
 import { bindRenderer } from '../../render/rendererOf.js';
 import { fromDegrees, positionToEcef } from '../../geo/ellipsoid.js';
-import { setMessageOverrides } from '../../i18n/index.js';
+import { setLocale, setMessageOverrides } from '../../i18n/index.js';
 import { bindFakeDraw } from '../../testSupport/fakeDrawPort.mjs';
 
 const FETCHED = '2026-11-25T08:00:00.000Z';
@@ -342,8 +342,50 @@ test('a stale payload says when the copy was made, in SAST', async () => {
   await h.layer.update();
   assert.equal(
     h.layer.getRowControls().info,
-    'Showing the last copy from 25 Nov 2026; refresh failed',
+    'Showing the last copy from Nov 25, 2026; refresh failed',
   );
+});
+
+test('the stale date is one locale-aware date, in that locale’s own order', async (t) => {
+  t.after(() => {
+    setLocale('en');
+    setMessageOverrides({});
+  });
+  const h = harness(
+    'health',
+    sourceOf(
+      payload('health', [health('a')], {
+        stale: true,
+        fetchedAt: '2026-11-24T23:30:00.000Z',
+      }),
+    ),
+  );
+  await h.layer.update();
+  setLocale('ja');
+  setMessageOverrides({
+    ja: { 'Showing the last copy from {date}; refresh failed': '{date}' },
+  });
+  // Year first, as Japanese writes it; not "25日 11月 2026年".
+  assert.equal(h.layer.getRowControls().info, '2026年11月25日');
+  setLocale('de');
+  setMessageOverrides({
+    de: { 'Showing the last copy from {date}; refresh failed': '{date}' },
+  });
+  assert.equal(h.layer.getRowControls().info, '25. Nov. 2026');
+});
+
+test('a stale payload without a usable fetchedAt drops the date, not the line', async () => {
+  for (const fetchedAt of [null, 'nope']) {
+    const h = harness(
+      'health',
+      sourceOf(payload('health', [health('a')], { stale: true, fetchedAt })),
+    );
+    await h.layer.update();
+    assert.equal(
+      h.layer.getRowControls().info,
+      'Showing the last copy; refresh failed',
+    );
+  }
 });
 
 test('a source that fails with nothing held says the data is unavailable', async (t) => {
@@ -400,15 +442,30 @@ test('the normaliser drops bad records before they are drawn', async () => {
   assert.equal(h.layer.getStats().count, 1);
 });
 
-test('legend class names go through t()', async (t) => {
+test('legend class names read their own contexts, not the shared keys', async (t) => {
   t.after(() => setMessageOverrides({}));
-  setMessageOverrides({ en: { Hospital: 'Hospitaal', Connected: 'Gekoppel' } });
+  setMessageOverrides({
+    en: {
+      Hospital: 'WRONG',
+      Other: 'WRONG',
+      Connected: 'WRONG',
+      Unknown: 'WRONG',
+      'health facility|Hospital': 'Hospitaal',
+      'health facility|Other': 'Ander',
+      'internet access|Connected': 'Gekoppel',
+      'internet access|Unknown': 'Onbekend',
+    },
+  });
   const a = harness('health', sourceOf(payload('health', [health('a')])));
   await a.layer.update();
-  assert.equal(a.layer.getRowControls().legend[0].label, 'Hospitaal');
+  const healthRows = a.layer.getRowControls().legend;
+  assert.equal(healthRows[0].label, 'Hospitaal');
+  assert.equal(healthRows[5].label, 'Ander');
   const b = harness('schools', sourceOf(payload('schools', [schools('a')])));
   await b.layer.update();
-  assert.equal(b.layer.getRowControls().legend[0].label, 'Gekoppel');
+  const schoolRows = b.layer.getRowControls().legend;
+  assert.equal(schoolRows[0].label, 'Gekoppel');
+  assert.equal(schoolRows[2].label, 'Onbekend');
 });
 
 test('records of one class share one sprite, built once per colour', async () => {

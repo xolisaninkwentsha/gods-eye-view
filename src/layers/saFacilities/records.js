@@ -1,33 +1,75 @@
 /** Records for the SA health and schools layers: classes and normaliser. No Cesium. */
 
-import { msg } from '../../i18n/index.js';
+import { t } from '../../i18n/index.js';
 
 export const FACILITY_SETS = Object.freeze(['health', 'schools']);
 
+// Each `label()` is a literal t() call with its own context, so "Other",
+// "Unknown" and "Primary" here never take another feature's translation
+// (the draw tool's "Primary" colour, say). The catalogs key them
+// `context|text`; English shows the text.
+
 export const FACILITY_CLASSES = Object.freeze({
   health: Object.freeze([
-    { key: 'hospital', label: msg('Hospital'), color: '#eb5757' },
-    { key: 'clinic', label: msg('Clinic'), color: '#f2994a' },
-    { key: 'doctors', label: msg('Doctor'), color: '#bb6bd9' },
-    { key: 'pharmacy', label: msg('Pharmacy'), color: '#27ae60' },
-    { key: 'dentist', label: msg('Dentist'), color: '#56ccf2' },
-    { key: 'other', label: msg('Other'), color: '#bdbdbd' },
+    {
+      key: 'hospital',
+      label: () => t('Hospital', { context: 'health facility' }),
+      color: '#eb5757',
+    },
+    {
+      key: 'clinic',
+      label: () => t('Clinic', { context: 'health facility' }),
+      color: '#f2994a',
+    },
+    {
+      key: 'doctors',
+      label: () => t('Doctor', { context: 'health facility' }),
+      color: '#bb6bd9',
+    },
+    {
+      key: 'pharmacy',
+      label: () => t('Pharmacy', { context: 'health facility' }),
+      color: '#27ae60',
+    },
+    {
+      key: 'dentist',
+      label: () => t('Dentist', { context: 'health facility' }),
+      color: '#56ccf2',
+    },
+    {
+      key: 'other',
+      label: () => t('Other', { context: 'health facility' }),
+      color: '#bdbdbd',
+    },
   ]),
   schools: Object.freeze([
-    { key: 'yes', label: msg('Connected'), color: '#27ae60' },
-    { key: 'no', label: msg('Not connected'), color: '#eb5757' },
-    { key: 'unknown', label: msg('Unknown'), color: '#9e9e9e' },
+    {
+      key: 'yes',
+      label: () => t('Connected', { context: 'internet access' }),
+      color: '#27ae60',
+    },
+    {
+      key: 'no',
+      label: () => t('Not connected', { context: 'internet access' }),
+      color: '#eb5757',
+    },
+    {
+      key: 'unknown',
+      label: () => t('Unknown', { context: 'internet access' }),
+      color: '#9e9e9e',
+    },
   ]),
 });
 
-/** The closed set of school levels the provider sends; each name goes through t(). */
+/** The closed set of school levels the provider sends, each with its label. */
 export const SCHOOL_LEVEL_LABELS = Object.freeze({
-  Primary: msg('Primary'),
-  Secondary: msg('Secondary'),
-  'Primary and Secondary': msg('Primary and Secondary'),
-  'Pre-Primary': msg('Pre-Primary'),
-  Other: msg('Other'),
-  Unknown: msg('Unknown'),
+  Primary: () => t('Primary', { context: 'school level' }),
+  Secondary: () => t('Secondary', { context: 'school level' }),
+  'Primary and Secondary': () =>
+    t('Primary and Secondary', { context: 'school level' }),
+  'Pre-Primary': () => t('Pre-Primary', { context: 'school level' }),
+  Other: () => t('Other', { context: 'school level' }),
+  Unknown: () => t('Unknown', { context: 'school level' }),
 });
 
 /** The field of a record that holds its class, per set. */
