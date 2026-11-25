@@ -3,8 +3,8 @@ import test from 'node:test';
 import { FACILITY_SETS, fetchHdxResource } from './hdx.js';
 
 // Everything below is synthetic: a stubbed HDX with made-up resources.
-const ID = 'a4d76cfe-798d-4db7-ba8f-110282d613b2';
-const OTHER_ID = 'b5e87dfe-898e-5ec8-cb90-221393e724c3';
+const ID = '11111111-2222-4333-8444-555555555555';
+const OTHER_ID = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
 const DOWNLOAD = `https://data.humdata.org/dataset/d1/resource/${ID}/download/south-africa.geojson`;
 const SIGNED = `https://s3.us-east-1.amazonaws.com/hdx-production-filestore/resources/${ID}/south-africa.geojson?X-Amz-Signature=secret`;
 const SET = FACILITY_SETS.health;

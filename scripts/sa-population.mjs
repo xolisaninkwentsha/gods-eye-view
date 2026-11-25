@@ -22,9 +22,12 @@ const OUT = new URL(
 const MAX_BYTES = 48 * 1024 * 1024;
 const TIMEOUT_MS = 300_000;
 
+// A guard message holds only a count or a status, so it is safe to print.
+const guardError = (message) =>
+  Object.assign(new Error(message), { guard: true });
 // Each guard throws, so nothing is written when a range is missed.
 function assertRange(name, n, min, max) {
-  if (!(n >= min && n <= max)) throw new Error(`unexpected ${name} ${n}`);
+  if (!(n >= min && n <= max)) throw guardError(`unexpected ${name} ${n}`);
 }
 const checkRows = (n) => assertRange('row count', n, 450_000, 560_000);
 const checkTotal = (n) => assertRange('total', n, 55_000_000, 66_000_000);
@@ -37,12 +40,12 @@ async function download(url) {
     signal: AbortSignal.timeout(TIMEOUT_MS),
     headers: { 'User-Agent': 'GodsEyeView (sa-population)' },
   });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  if (!res.ok) throw guardError(`HTTP ${res.status}`);
   const chunks = [];
   let size = 0;
   for await (const chunk of res.body) {
     size += chunk.length;
-    if (size > MAX_BYTES) throw new Error('download too large');
+    if (size > MAX_BYTES) throw guardError('download too large');
     chunks.push(chunk);
   }
   return Buffer.concat(chunks);
@@ -99,6 +102,12 @@ try {
     }),
   );
   console.log(`rows ${rows}, total ${total}, cells ${kept.length}`);
+} catch (error) {
+  // Never the raw message or cause of a fetch or sqlite failure.
+  console.error(
+    `sa-population failed: ${error?.guard ? error.message : (error?.code ?? error?.name ?? 'Error')}`,
+  );
+  process.exitCode = 1;
 } finally {
   rmSync(dir, { recursive: true, force: true });
 }

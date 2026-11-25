@@ -24,7 +24,7 @@ All three are local-only and in `VOICE_OFF_LAYERS` (see “Local-only behaviour�
 
 - **What it shows:** a fill of about 10 km squares in five bands by population. The grid has 6,294 drawn squares; 60.5 million people in all.
 - **Source:** Kontur Population: South Africa, 2023-11-01. Licence CC BY 4.0 (`za-population`). Committed as `src/layers/saPopulation/sa-population-grid.json`, so nothing is fetched at run time.
-- **Not drawn:** squares with fewer than 100 people are left out. That is 178,183 people, **0.29%** of the total, The layer itself states only the under-100 rule (“Squares with fewer than 100 people are not drawn.”); the 0.29% figure is given here.
+- **Not drawn:** squares with fewer than 100 people are left out. That is 178,183 people, **0.29%** of the total. The layer itself states only the under-100 rule (“Squares with fewer than 100 people are not drawn.”); the 0.29% figure is given here.
 - **Card:** “About N people in this 10 km square” (rounded to two significant figures) and “Kontur Population 2023 (modelled)”.
 - **Regenerate the grid:** `node scripts/sa-population.mjs`. It downloads Kontur’s 39 MB file to a temporary folder, checks the row count, the population total and the cell count, and writes the committed grid only if the guards pass. It is the only code that fetches Kontur.
 
@@ -36,10 +36,10 @@ Health and schools draw as GPU icons, not as ordinary ground-clamped points. Aft
 
 `/api/sa-facilities?set=health|schools` serves both point layers.
 
-- **Resolving:** each HDX dataset is resolved through HDX’s CKAN `package_show`, so the layer keeps working when HDX publishes a new file name.
+- **Resolving:** each HDX dataset is resolved through HDX’s CKAN `package_show`, so the layer keeps working when HDX uploads a new file under the same resource name.
 - **One pinned redirect:** HDX answers the download with a redirect. The provider follows exactly one, and only when it points at HDX’s S3 file store. Every other redirect is refused.
 - **Size caps:** health 8 MiB, schools 4 MiB.
-- **Cache:** in memory and in `.gev-cache/sa-facilities/` (gitignored). The data is refreshed every 24 hours. If a refresh fails, the stale copy is served, marked stale, for up to 30 days. A refresh with fewer than half the previous records is refused as damaged.
+- **Cache:** in memory and in `.gev-cache/sa-facilities/` (gitignored). The data is refreshed every 24 hours. If a refresh fails, the last good copy is served for up to 30 days and the layer says the refresh failed. A refresh with fewer than half the previous records is refused as damaged.
 - **Speed:** the first fetch takes about 10 to 13 seconds; after that, and after a restart, it is instant from the cache.
 - **Logging:** only a code or name is logged, never a signed URL, a body or an error message.
 
