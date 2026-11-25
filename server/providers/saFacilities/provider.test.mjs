@@ -303,8 +303,9 @@ test('stale data is served at once and refreshed in the background', async (t) =
   h.up.clock.now += 25 * HOUR;
   const stale = await h.request();
   assert.equal(stale.status, 200);
-  assert.equal(stale.body.stale, true);
-  assert.equal(stale.headers['X-Data-Stale'], 'true');
+  // Past the TTL but no refresh has failed: not reported as stale.
+  assert.equal(stale.body.stale, false);
+  assert.equal(stale.headers['X-Data-Stale'], undefined);
   assert.equal(stale.body.records.length, 10);
   await settle(() => h.up.fetched.health === 2);
   let fresh;
@@ -324,7 +325,7 @@ test('a refresh that shrinks is refused and the old records are kept', async (t)
   h.up.bodies.health = geo(4); // 40 percent of 10
   h.up.clock.now += 25 * HOUR;
   const stale = await h.request();
-  assert.equal(stale.body.stale, true);
+  assert.equal(stale.body.stale, false);
   await settle(() => h.logs.length > 0);
   assert.deepEqual(h.logs, [['[sa-facilities] health shrunk']]);
   const after = await h.request();
@@ -361,6 +362,7 @@ test('a refresh that fails keeps serving the held set, retrying no sooner than a
   const calls = h.up.calls.length;
   const res = await h.request();
   assert.equal(res.body.stale, true);
+  assert.equal(res.headers['X-Data-Stale'], 'true');
   assert.equal(h.up.calls.length, calls, 'backed off');
 });
 

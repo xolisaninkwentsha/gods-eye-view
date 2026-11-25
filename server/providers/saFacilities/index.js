@@ -146,10 +146,14 @@ export function saFacilitiesProxy({
     const age = () => (held[set] ? now() - held[set].fetchedAt : Infinity);
     const backedOff = () => now() - failedAt[set] < MINUTE;
     if (age() <= TTL) return { value: held[set], stale: false };
+    // `stale` means the last refresh attempt failed and the copy is past its
+    // TTL. A copy merely past the TTL, with a refresh in flight or not yet
+    // tried, is not stale: the refresh usually fixes it before anyone looks.
+    const failed = () => lastError[set] != null || backedOff();
     if (age() <= STALE_MAX) {
       // Serve what is held; the refresh runs on its own and never rejects.
       if (!loads[set] && !backedOff() && !closed) refresh(set);
-      return { value: held[set], stale: true };
+      return { value: held[set], stale: failed() };
     }
     if (loads[set] || (!backedOff() && !closed)) {
       // The first read waits for the fetch, but not past `firstWaitMs`.
@@ -167,7 +171,7 @@ export function saFacilitiesProxy({
       }
     }
     if (age() <= TTL) return { value: held[set], stale: false };
-    if (age() <= STALE_MAX) return { value: held[set], stale: true };
+    if (age() <= STALE_MAX) return { value: held[set], stale: failed() };
     return null;
   }
 
