@@ -302,7 +302,8 @@
     "Stream",
     "{seconds} s",
     "Mode",
-    "Section 139"
+    "Section 139",
+    "Internet: {state}"
   ],
   "es": [
     "1 min/s",
@@ -499,7 +500,9 @@
     "KT",
     "Manual",
     "{seconds} s",
-    "Section 139"
+    "Section 139",
+    "Internet: {state}",
+    "Hospital"
   ],
   "fr": [
     "1 min/s",
@@ -763,7 +766,8 @@
     "District",
     "Audit",
     "Audit {year} · Treasury Municipal Money",
-    "Violence"
+    "Violence",
+    "OpenStreetMap via healthsites.io"
   ],
   "it": [
     "1 min/s",
@@ -998,7 +1002,8 @@
     "3D",
     "KT",
     "{seconds} s",
-    "Section 139"
+    "Section 139",
+    "Internet: {state}"
   ],
   "ja": [
     "1090 MHz",
@@ -1280,7 +1285,10 @@
     "KT",
     "Manual",
     "{seconds} s",
-    "Section 139"
+    "Section 139",
+    "OpenStreetMap via healthsites.io",
+    "Internet: {state}",
+    "Hospital"
   ],
   "ru": [
     "1900–1945",
@@ -1521,7 +1529,9 @@
     "3D",
     "KT",
     "{seconds} s",
-    "Section 139"
+    "Section 139",
+    "OpenStreetMap via healthsites.io",
+    "Internet: {state}"
   ],
   "uk": [
     "1900–1945",
