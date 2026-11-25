@@ -471,3 +471,21 @@ test('the South African news credit names GDELT, GeoNames and the outlets', () =
   assert.ok(hrefs.includes('https://www.geonames.org/'));
   for (const href of hrefs) assert.match(href, /^https:\/\//);
 });
+
+test('the South African health and schools credits link their HDX datasets', () => {
+  const health = DATA_CREDITS.find((entry) => entry.key === 'za-health');
+  const schools = DATA_CREDITS.find((entry) => entry.key === 'za-schools');
+  assert.ok(health && schools, 'both layers must be credited');
+  assert.match(health.html, /OpenStreetMap contributors \(ODbL\)/);
+  assert.match(health.html, /healthsites\.io and HDX/);
+  assert.match(schools.html, /Giga \(ITU–UNICEF\)/);
+  assert.match(schools.html, /Department of Basic Education, CC BY 4\.0/);
+  const hrefs = (credit) =>
+    [...credit.html.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(hrefs(health), [
+    'https://data.humdata.org/dataset/south-africa-healthsites',
+  ]);
+  assert.deepEqual(hrefs(schools), [
+    'https://data.humdata.org/dataset/south-africa-school-geolocation-and-connectivity-status',
+  ]);
+});

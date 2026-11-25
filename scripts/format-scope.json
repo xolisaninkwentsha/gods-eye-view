@@ -1770,5 +1770,9 @@
   "server/providers/saFacilities/index.js",
   "server/providers/saFacilities/parse.js",
   "server/providers/saFacilities/parse.test.mjs",
-  "server/providers/saFacilities/provider.test.mjs"
+  "server/providers/saFacilities/provider.test.mjs",
+  "src/layers/saFacilities/cards.test.mjs",
+  "src/layers/saFacilities/layer.test.mjs",
+  "src/layers/saFacilities/records.test.mjs",
+  "src/layers/saFacilities/source.test.mjs"
 ]

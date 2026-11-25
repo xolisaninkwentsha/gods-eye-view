@@ -83,6 +83,8 @@ const PANEL_GROUPS = [
       'sa-earthquakes',
       'sa-districts-2026',
       'sa-news',
+      'sa-health-facilities',
+      'sa-schools',
     ],
   },
   {

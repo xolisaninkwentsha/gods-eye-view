@@ -29,6 +29,7 @@ import { createSaGovernanceSource } from '../layers/saGovernance/source.js';
 import { createSaWeatherSource } from '../layers/saWeather/source.js';
 import { createSaQuakesSource } from '../layers/saQuakes/source.js';
 import { createSaNewsSource } from '../layers/saNews/source.js';
+import { createSaFacilitiesSource } from '../layers/saFacilities/source.js';
 import { createReferenceSources } from '../sources/reference.js';
 export { createReferenceSources as createStandaloneReferenceSources } from '../sources/reference.js';
 
@@ -83,6 +84,9 @@ export function createStandaloneLayerSources(
     'sa-earthquakes': createSaQuakesSource(),
     // Same-origin /api/sa-news, served by the local server.
     'sa-news': createSaNewsSource(),
+    // Same-origin /api/sa-facilities?set=…, served by the local server.
+    'sa-health-facilities': createSaFacilitiesSource({ set: 'health' }),
+    'sa-schools': createSaFacilitiesSource({ set: 'schools' }),
     wind: createWindSource(),
     weather: createWeatherSource(),
     cyclones: createCycloneSource(),

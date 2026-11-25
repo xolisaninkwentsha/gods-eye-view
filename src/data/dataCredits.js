@@ -144,6 +144,14 @@ export const DATA_CREDITS = [
       'headlines from IOL, Daily Maverick, TimesLIVE, Mail &amp; Guardian, GroundUp, eNCA, The Citizen and SAnews',
   },
   {
+    key: 'za-health',
+    html: '© OpenStreetMap contributors (ODbL), via <a href="https://data.humdata.org/dataset/south-africa-healthsites" target="_blank" rel="noopener">healthsites.io and HDX</a>',
+  },
+  {
+    key: 'za-schools',
+    html: '<a href="https://data.humdata.org/dataset/south-africa-school-geolocation-and-connectivity-status" target="_blank" rel="noopener">Giga (ITU–UNICEF) school locations</a> from the Department of Basic Education, CC BY 4.0, via HDX',
+  },
+  {
     key: 'opensky',
     html:
       'Flights: OpenSky Network — Schäfer et al., ' +

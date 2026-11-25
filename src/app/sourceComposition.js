@@ -65,6 +65,8 @@ export const CATALOG_SOURCE_CONTRACTS = Object.freeze({
   'sa-weather-warnings': contract(['sa-weather-warnings'], ['getSnapshot']),
   'sa-earthquakes': contract(['sa-earthquakes'], ['getSnapshot']),
   'sa-news': contract(['sa-news'], ['getSnapshot']),
+  'sa-health-facilities': contract(['sa-health-facilities'], ['getSnapshot']),
+  'sa-schools': contract(['sa-schools'], ['getSnapshot']),
   news: contract(['news'], ['getHotspots', 'getFeed', 'getOutline']),
   'wildlife-sightings': contract(['wildlife-sightings'], ['getSnapshot']),
   cables: contract(['telegeography-submarine-cables'], ['fetch']),
