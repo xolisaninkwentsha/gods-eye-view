@@ -222,6 +222,8 @@ export function createSaFacilitiesLayer({
         id: `${config.id}:${++instances[set]}:dots`,
         clampTo: 'both',
         horizonCull: true,
+        // recede puts the set on the GPU icon path; its budgeted ground sampling
+        // avoids the ~16 s freeze clamped points caused with 25,539 schools.
         recede: {},
         show: false,
       });
@@ -356,6 +358,15 @@ export function createSaFacilitiesLayer({
         // Visible on the row, not hover-only.
         ...(lines.length ? { info: lines.join(' · ') } : {}),
       };
+    },
+
+    /**
+     * Why a start failed, for the person: the first load never arrived.
+     * Null otherwise (the app then names the layer by id).
+     * @returns {?string}
+     */
+    enableFailureMessage() {
+      return _unavailable ? t('SA facilities source unavailable') : null;
     },
 
     getStats() {

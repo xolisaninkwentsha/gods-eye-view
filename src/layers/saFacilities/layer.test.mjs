@@ -110,7 +110,9 @@ const CASES = {
 };
 
 for (const [set, c] of Object.entries(CASES)) {
-  test(`${set}: draws one dot per record with the contract fields`, async () => {
+  // recede: {} puts the set on the GPU icon path (budgeted ground sampling),
+  // which avoids the ~16 s freeze clamped points caused with 25,539 schools.
+  test(`${set}: draws one dot per record on the GPU icon path (recede) with the contract fields`, async () => {
     const h = harness(set, sourceOf(payload(set, [c.make(`${set}:a`)])));
     assert.equal(await h.layer.update(), true);
     const dots = h.dots();
@@ -388,20 +390,26 @@ test('a stale payload without a usable fetchedAt drops the date, not the line', 
   }
 });
 
-test('a source that fails with nothing held says the data is unavailable', async (t) => {
+test('a first load that fails names the layer for the start-failure toast', async (t) => {
   t.mock.method(console, 'warn', () => {});
-  let next = new Error('SA facilities HTTP 503');
+  let next = new Error('SA facilities HTTP 503 secret-body');
   const h = harness('schools', {
     getSnapshot: async () => {
       if (next instanceof Error) throw next;
       return next;
     },
   });
+  assert.equal(h.layer.enableFailureMessage(), null, 'nothing failed yet');
   assert.equal(await h.layer.update(), false);
-  assert.equal(h.layer.getRowControls().info, 'Data unavailable');
-  assert.equal(h.layer.getStats().error, 'SA facilities HTTP 503');
+  // Never the raw error text; the translated, fixed line.
+  assert.equal(
+    h.layer.enableFailureMessage(),
+    'SA facilities source unavailable',
+  );
+  assert.equal(h.layer.getStats().error, 'SA facilities HTTP 503 secret-body');
   next = payload('schools', [schools('a')]);
   assert.equal(await h.layer.update(), true);
+  assert.equal(h.layer.enableFailureMessage(), null);
   assert.equal(h.layer.getRowControls().info, undefined);
   assert.equal(h.layer.getStats().error, null);
 });
@@ -478,12 +486,34 @@ test('records of one class share one sprite, built once per colour', async () =>
   assert.equal(a.image, b.image);
 });
 
-test('legend counts are computed once per update, not per call', async () => {
-  const h = harness('health', sourceOf(payload('health', [health('a')])));
+test('legend counts are computed once per update, not per call', async (t) => {
+  const h = harness(
+    'health',
+    sourceOf(payload('health', [health('a'), health('b')])),
+  );
   await h.layer.update();
-  const first = h.layer.getRowControls().legend;
-  assert.equal(first[1].count, 1);
-  assert.deepEqual(h.layer.getRowControls().legend, first);
+  // A per-call recount would walk the held records, which sit in a Map.
+  let walks = 0;
+  const original = {};
+  for (const key of ['values', 'entries', 'keys', 'forEach', Symbol.iterator]) {
+    original[key] = Map.prototype[key];
+    Map.prototype[key] = function walked(...args) {
+      walks += 1;
+      return original[key].apply(this, args);
+    };
+  }
+  let first;
+  let second;
+  try {
+    first = h.layer.getRowControls().legend;
+    second = h.layer.getRowControls().legend;
+  } finally {
+    for (const key of Reflect.ownKeys(original))
+      Map.prototype[key] = original[key];
+  }
+  assert.equal(walks, 0, 'getRowControls does not walk the held records');
+  assert.equal(first[1].count, 2);
+  assert.deepEqual(second, first);
 });
 
 test('an unknown set or a missing source is refused', () => {

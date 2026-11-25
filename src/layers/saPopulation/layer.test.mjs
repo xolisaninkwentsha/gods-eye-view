@@ -199,16 +199,19 @@ test('the grid loads once across two enables', async () => {
   assert.equal(h.fills().show, true);
 });
 
-test('a failed load says so and a later update retries', async () => {
+test('a failed first load names the layer for the start-failure toast and a later update retries', async () => {
   let calls = 0;
   const h = harness(async () => {
     calls += 1;
     if (calls === 1) throw new Error('boom');
     return GRID;
   });
+  assert.equal(h.layer.enableFailureMessage(), null, 'nothing failed yet');
   assert.equal(await h.layer.update(), false);
-  assert.equal(h.layer.getRowControls().info, 'Data unavailable');
+  // The fixed, translated line, never the raw error text.
+  assert.equal(h.layer.enableFailureMessage(), 'SA population unavailable');
   assert.equal(await h.layer.update(), true);
+  assert.equal(h.layer.enableFailureMessage(), null);
   assert.equal(h.layer.getRowControls().info, undefined);
   assert.equal(calls, 2);
 });

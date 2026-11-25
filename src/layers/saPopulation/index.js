@@ -306,6 +306,15 @@ export function createSaPopulationLayer({
       };
     },
 
+    /**
+     * Why a start failed, for the person: the population grid never loaded.
+     * Null otherwise (the app then names the layer by id).
+     * @returns {?string}
+     */
+    enableFailureMessage() {
+      return _unavailable ? t('SA population unavailable') : null;
+    },
+
     getStats() {
       return { count: _count, lastUpdate: _lastUpdate, error: _lastError };
     },
