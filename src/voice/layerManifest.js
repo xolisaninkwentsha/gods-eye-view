@@ -494,6 +494,8 @@ export const VOICE_OFF_LAYERS = Object.freeze({
     'fork-local South African health facility layer; no room in the prompt budget',
   'sa-schools':
     'fork-local South African school layer; no room in the prompt budget',
+  'sa-population':
+    'fork-local South African population layer; no room in the prompt budget',
   // Same budget: a historical wreck archive waits for room too.
   shipwrecks: 'historical shipwreck archive; no room in the prompt budget',
   news: 'browsed in the News panel; voice tools are a later step',

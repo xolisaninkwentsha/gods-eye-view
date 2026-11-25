@@ -85,6 +85,7 @@ const PANEL_GROUPS = [
       'sa-news',
       'sa-health-facilities',
       'sa-schools',
+      'sa-population',
     ],
   },
   {

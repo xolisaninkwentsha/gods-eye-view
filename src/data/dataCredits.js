@@ -152,6 +152,10 @@ export const DATA_CREDITS = [
     html: '<a href="https://data.humdata.org/dataset/south-africa-school-geolocation-and-connectivity-status" target="_blank" rel="noopener">Giga (ITU–UNICEF) school locations</a> from the Department of Basic Education, CC BY 4.0, via HDX',
   },
   {
+    key: 'za-population',
+    html: '<a href="https://data.humdata.org/dataset/kontur-population-south-africa" target="_blank" rel="noopener">Kontur Population: South Africa (2023-11-01)</a>, CC BY 4.0',
+  },
+  {
     key: 'opensky',
     html:
       'Flights: OpenSky Network — Schäfer et al., ' +

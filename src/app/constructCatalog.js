@@ -41,6 +41,7 @@ import { createApplicationSaWeather } from './layers/saWeather.js';
 import { createApplicationSaQuakes } from './layers/saQuakes.js';
 import { createApplicationSaNews } from './layers/saNews.js';
 import { createApplicationSaFacilities } from './layers/saFacilities.js';
+import { createApplicationSaPopulation } from './layers/saPopulation.js';
 import { createApplicationNews } from './layers/news.js';
 import { createApplicationWildlifeSightings } from './layers/wildlifeSightings.js';
 import { createApplicationCables } from './layers/submarineCables.js';
@@ -70,6 +71,7 @@ export const LOCAL_ONLY_LAYER_METADATA = Object.freeze([
   Object.freeze({ id: 'sa-news', disposition: 'local-only' }),
   Object.freeze({ id: 'sa-health-facilities', disposition: 'local-only' }),
   Object.freeze({ id: 'sa-schools', disposition: 'local-only' }),
+  Object.freeze({ id: 'sa-population', disposition: 'local-only' }),
 ]);
 
 /** Serialization metadata for every layer the application catalog constructs. */
@@ -202,6 +204,8 @@ export function createApplicationCatalog({
           set: 'schools',
           source: sources['sa-schools'],
         }),
+        // Bundled grid, no source: loaded from the app's own files.
+        createApplicationSaPopulation(),
         // Ages, the window and the counts read the world clock: a host that
         // follows it for the layer shows the news at the time on the timeline.
         createApplicationNews({

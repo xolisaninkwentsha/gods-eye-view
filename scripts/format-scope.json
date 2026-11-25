@@ -1764,6 +1764,8 @@
   "scripts/sa-population.mjs",
   "src/layers/saPopulation/grid.js",
   "src/layers/saPopulation/grid.test.mjs",
+  "src/layers/saPopulation/cards.test.mjs",
+  "src/layers/saPopulation/layer.test.mjs",
   "docs/SOUTH_AFRICA_NEWS.md",
   "server/providers/saFacilities/hdx.js",
   "server/providers/saFacilities/hdx.test.mjs",

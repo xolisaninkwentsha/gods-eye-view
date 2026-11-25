@@ -489,3 +489,14 @@ test('the South African health and schools credits link their HDX datasets', () 
     'https://data.humdata.org/dataset/south-africa-school-geolocation-and-connectivity-status',
   ]);
 });
+
+test('the South African population credit names Kontur and links HDX', () => {
+  const credit = DATA_CREDITS.find((entry) => entry.key === 'za-population');
+  assert.ok(credit, 'the layer must be credited');
+  assert.match(credit.html, /Kontur Population: South Africa \(2023-11-01\)/);
+  assert.match(credit.html, /CC BY 4\.0/);
+  const hrefs = [...credit.html.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(hrefs, [
+    'https://data.humdata.org/dataset/kontur-population-south-africa',
+  ]);
+});
