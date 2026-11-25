@@ -4747,7 +4747,7 @@
   "Unnamed school": "Школа без назви",
   "Internet: {state}": "Інтернет: {state}",
   "Giga school data (ITU–UNICEF)": "Дані про школи Giga (ITU–UNICEF)",
-  "Hospitals, clinics, doctors, pharmacies and dentists mapped in OpenStreetMap, via healthsites.io.": "Лікарні, клініки, кабінети лікарів, аптеки та стоматології, позначені в OpenStreetMap, через healthsites.io.",
+  "Hospitals, clinics, doctors, pharmacies and dentists mapped in OpenStreetMap, via healthsites.io.": "Лікарні, клініки, кабінети лікарів, аптеки та стоматології, нанесені на карту OpenStreetMap, через healthsites.io.",
   "School locations from Giga, coloured by whether the school is connected to the internet.": "Розташування шкіл за даними Giga; колір показує, чи підключена школа до інтернету.",
   "Malformed SA facilities": "Некоректні дані про заклади ПАР",
   "SA facilities source unavailable": "Джерело даних про заклади ПАР недоступне",
